@@ -35,28 +35,42 @@ export default function Login() {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-        />
-        <br />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-        />
-        <br />
-        <button type="submit">Login</button>
-      </form>
-      {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
-      <p>
-        No account? <Link to="/register">Register</Link>
-      </p>
+    <div className="app-shell auth-shell">
+      <header className="auth-header">
+        <h1 className="brand">Mixtape.</h1>
+        <p className="welcome">Welcome back</p>
+      </header>
+
+      <section className="card auth-card">
+        <h3>Login</h3>
+        <form className="auth-form" onSubmit={handleLogin}>
+          <input
+            className="input"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+          />
+          <input
+            className="input"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+          />
+          <div className="form-actions auth-actions">
+            <button className="primary-btn" type="submit">
+              Login
+            </button>
+            {error ? <p className="error-text">{error}</p> : null}
+          </div>
+        </form>
+        <p className="auth-footer">
+          No account? <Link to="/register">Register</Link>
+        </p>
+        <p className="auth-footer">
+          <Link to="/">Back to albums</Link>
+        </p>
+      </section>
     </div>
   );
 }

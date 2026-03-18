@@ -5,14 +5,15 @@ import ProtectedRoute from "./ProtectedRoute";
 import Login from "./Login";
 import Register from "./Register";
 import Dashboard from "./Dashboard";
+import PublicAlbums from "./PublicAlbums";
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* default route */}
-          <Route path="/" element={<Navigate to="/dashboard" />} />
+          {/* public landing page */}
+          <Route path="/" element={<PublicAlbums />} />
 
           {/* public routes */}
           <Route path="/login" element={<Login />} />
@@ -29,7 +30,7 @@ export default function App() {
           />
 
           {/* fallback */}
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider> //wrap the entire app inside this provider so that any component can access the token and login/logout functions

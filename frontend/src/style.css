@@ -1,0 +1,166 @@
+:root {
+  --bg: #f7f7f5;
+  --ink: #1f1f1f;
+  --muted: #6a6a6a;
+  --card: #ffffff;
+  --border: #e6e6e6;
+  --accent: #2f6f64;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.app-shell {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.brand {
+  margin: 0 0 4px 0;
+  font-size: 32px;
+}
+
+.welcome {
+  margin: 0;
+  color: var(--muted);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 14px 0;
+}
+
+.auth-shell {
+  max-width: 420px;
+  padding-top: 40px;
+}
+
+.auth-header {
+  margin-bottom: 12px;
+}
+
+.auth-card h3 {
+  margin: 0 0 10px 0;
+}
+
+.auth-form {
+  display: grid;
+  gap: 10px;
+}
+
+.auth-actions {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.auth-footer {
+  margin: 12px 0 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.primary-btn,
+.ghost-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-text {
+  margin: 0;
+  color: #b00020;
+  font-size: 13px;
+}
+
+.search-input {
+  margin-bottom: 10px;
+}
+
+.playlist-list {
+  display: grid;
+  gap: 8px;
+}
+
+.playlist-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.playlist-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.playlist-meta {
+  color: var(--muted);
+  font-size: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+@media (max-width: 720px) {
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

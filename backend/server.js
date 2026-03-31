@@ -4,6 +4,9 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const verifyToken = require("./middleware/verifyToken");
+// Import the Deezer search function from our service layer
+// Deezer provides free 30-second previews with no API key required
+const { searchTracks } = require("./services/deezer");
 
 const app = express();
 app.use(cors());
@@ -52,13 +55,29 @@ app.post("/api/albums", verifyToken, async (req, res) => {
   res.status(201).json(album);
 });
 
-// Playlist model for user-specific playlists
+// ---- Track sub-schema for Deezer track data ----
+// Each track in a playlist stores its Deezer metadata so we can
+// display album art, play previews, and link to Deezer without
+// needing to re-fetch from the API every time.
+// { _id: false } tells Mongoose not to generate a MongoDB _id for each track.
+const trackSchema = new mongoose.Schema({
+  trackId: String,      // Unique Deezer track identifier
+  name: String,         // Song title (e.g., "Blinding Lights")
+  artist: String,       // Artist name (e.g., "The Weeknd")
+  album: String,        // Album name (e.g., "After Hours")
+  albumArt: String,     // URL to album cover image (250x250)
+  previewUrl: String,   // URL to 30-second audio preview (always available on Deezer!)
+  externalUrl: String,  // Link to open in Deezer
+  durationSec: Number,  // Track length in seconds (e.g., 200 = 3:20)
+}, { _id: false });
+
+// Playlist model — tracks is an array of Deezer track objects
 const playlistSchema = new mongoose.Schema({
   name: String,
   description: String,
   mood: String,
-  tracks: [String],
-  createdBy: String,
+  tracks: [trackSchema],  // Array of Deezer track objects (see trackSchema above)
+  createdBy: String,      // User ID from JWT token — links playlist to its owner
 });
 
 const Playlist = mongoose.model("Playlist", playlistSchema);
@@ -83,9 +102,8 @@ app.post("/api/playlists", verifyToken, async (req, res) => {
     name: String(name).trim(),
     description: description ? String(description).trim() : "",
     mood: mood ? String(mood).trim() : "",
-    tracks: Array.isArray(tracks)
-      ? tracks.map((t) => String(t).trim()).filter(Boolean)
-      : [],
+    // tracks comes from the frontend as an array of Deezer track objects
+    tracks: Array.isArray(tracks) ? tracks : [],
     createdBy: req.user?.id,
   });
 
@@ -115,6 +133,23 @@ app.delete("/api/albums/:id", verifyToken, async (req, res) => {
   const deleted = await Album.findByIdAndDelete(req.params.id);
   if (!deleted) return res.status(404).json({ error: "Album not found" });
   res.json({ message: "Album deleted" });
+});
+
+// ---- Music search endpoint (powered by Deezer) ----
+// Public route (no verifyToken) — both visitors and logged-in users can search.
+// Deezer requires no API key, so this is simpler than Spotify.
+app.get("/api/music/search", async (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.status(400).json({ error: "Query parameter 'q' is required" });
+
+  try {
+    const tracks = await searchTracks(q);
+    res.json(tracks);
+  } catch (err) {
+    // If Deezer API fails, log and return 502
+    console.error("Music search error:", err.message);
+    res.status(502).json({ error: "Failed to search for music" });
+  }
 });
 
 // Start API server

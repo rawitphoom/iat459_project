@@ -1,19 +1,30 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
+import Navbar from "./components/Navbar";
+import MusicToggle from "./components/MusicToggle";
 
 import Login from "./Login";
 import Register from "./Register";
 import Dashboard from "./Dashboard";
+import LandingPage from "./pages/LandingPage";
 import PublicAlbums from "./PublicAlbums";
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <Navbar />
+        <MusicToggle />
         <Routes>
           {/* public landing page */}
-          <Route path="/" element={<PublicAlbums />} />
+          <Route path="/" element={<LandingPage />} />
+
+          {/* discover = browse albums */}
+          <Route path="/discover" element={<PublicAlbums />} />
+
+          {/* search = track search */}
+          <Route path="/search" element={<PublicAlbums />} />
 
           {/* public routes */}
           <Route path="/login" element={<Login />} />
@@ -33,6 +44,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
-    </AuthProvider> //wrap the entire app inside this provider so that any component can access the token and login/logout functions
+    </AuthProvider>
   );
 }

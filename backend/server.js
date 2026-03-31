@@ -137,7 +137,7 @@ app.delete("/api/albums/:id", verifyToken, async (req, res) => {
 
 // ---- Music search endpoint (powered by Deezer) ----
 // Public route (no verifyToken) — both visitors and logged-in users can search.
-// Deezer requires no API key, so this is simpler than Spotify.
+// Deezer requires no API key.
 app.get("/api/music/search", async (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: "Query parameter 'q' is required" });

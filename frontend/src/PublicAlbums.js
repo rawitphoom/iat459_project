@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 // Import TrackSearch so visitors can search and preview songs without logging in
 import TrackSearch from "./TrackSearch";
 
@@ -27,16 +26,8 @@ export default function PublicAlbums() {
 
   return (
     <div className="app-shell">
-      <header className="header-row">
-        <div>
-          <h1 className="brand">Mixtape.</h1>
-          <p className="welcome">Browse albums as a visitor.</p>
-        </div>
-        <div className="auth-actions">
-          <Link className="ghost-btn" to="/login">Login</Link>
-          <Link className="primary-btn" to="/register">Register</Link>
-        </div>
-      </header>
+      <h2 className="brand" style={{ marginBottom: 4 }}>Discover</h2>
+      <p className="welcome" style={{ marginBottom: 16 }}>Browse albums and search for songs.</p>
 
       {/* Song search with click-to-play previews — available to all visitors */}
       <section className="card">

@@ -10,7 +10,7 @@ export default function MusicToggle() {
   useEffect(() => {
     const audio = new Audio(BG_TRACK);
     audio.loop = true;
-    audio.volume = 0.15;
+    audio.volume = 0.80;
     audioRef.current = audio;
 
     // Autoplay on load

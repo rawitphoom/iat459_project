@@ -40,7 +40,7 @@ export default function MusicToggle({ hidden = false }) {
 
   return (
     <button
-      className={`music-toggle ${playing ? "playing" : ""}`}
+      className={`music-toggle ${playing ? "playing" : "muted"}`}
       onClick={toggle}
       aria-label={playing ? "Mute background music" : "Play background music"}
       style={{ display: hidden ? "none" : "flex" }}

@@ -468,6 +468,49 @@ body {
   padding: 40px 24px;
 }
 
+.intro-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(192, 99, 58, 0.2), transparent 30%),
+    #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.intro-card {
+  width: min(100%, 640px);
+  text-align: center;
+  padding: 56px 32px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(6px);
+}
+
+.intro-label {
+  margin: 0 0 16px 0;
+  color: #c0633a;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.intro-title {
+  margin: 0 0 16px 0;
+  color: #fff;
+  font-size: clamp(40px, 8vw, 78px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.intro-subtitle {
+  margin: 0 0 32px 0;
+  color: #aaa;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
 .landing-hero {
   text-align: center;
   max-width: 700px;

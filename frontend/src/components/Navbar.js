@@ -15,14 +15,14 @@ export default function Navbar() {
   const handleLogout = () => {
     setMenuOpen(false);
     logout();
-    navigate("/");
+    navigate("/home");
   };
 
   return (
     <>
       {/* Top bar */}
       <nav className="topbar">
-        <Link to="/" className="topbar-logo">[ ♪ MIXTAPE ]</Link>
+        <Link to="/home" className="topbar-logo">[ ♪ MIXTAPE ]</Link>
         <button className="topbar-menu-btn" onClick={() => setMenuOpen(true)}>
           [ MENU ]
         </button>
@@ -31,7 +31,7 @@ export default function Navbar() {
       {/* Full-screen overlay */}
       <div className={`nav-overlay ${menuOpen ? "open" : ""}`}>
         <div className="nav-overlay-header">
-          <Link to="/" className="topbar-logo" onClick={() => setMenuOpen(false)}>
+          <Link to="/home" className="topbar-logo" onClick={() => setMenuOpen(false)}>
             [ ♪ MIXTAPE ]
           </Link>
           <button className="topbar-menu-btn" onClick={() => setMenuOpen(false)}>

@@ -3,8 +3,8 @@ import { useState, useRef, useEffect } from "react";
 // Background music — local file in public/ folder (loops)
 const BG_TRACK = process.env.PUBLIC_URL + "/bg-music.mp3";
 
-export default function MusicToggle() {
-  const [playing, setPlaying] = useState(true);
+export default function MusicToggle({ hidden = false }) {
+  const [playing, setPlaying] = useState(false);
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -13,19 +13,15 @@ export default function MusicToggle() {
     audio.volume = 0.80;
     audioRef.current = audio;
 
-    // Autoplay on load
-    audio.play().catch(() => {
-      // Browsers block autoplay without user interaction.
-      // Listen for the first click anywhere on the page, then start.
-      setPlaying(false);
-      const startOnClick = () => {
-        audio.play().then(() => setPlaying(true)).catch(() => {});
-        document.removeEventListener("click", startOnClick);
-      };
-      document.addEventListener("click", startOnClick);
-    });
+    // The intro page dispatches this event when the user presses Enter.
+    const startMusic = () => {
+      audio.play().then(() => setPlaying(true)).catch(() => {});
+    };
+
+    window.addEventListener("start-background-music", startMusic);
 
     return () => {
+      window.removeEventListener("start-background-music", startMusic);
       audio.pause();
       audio.src = "";
     };
@@ -36,10 +32,10 @@ export default function MusicToggle() {
     if (!audio) return;
     if (playing) {
       audio.pause();
+      setPlaying(false);
     } else {
-      audio.play().catch(() => {});
+      audio.play().then(() => setPlaying(true)).catch(() => {});
     }
-    setPlaying(!playing);
   };
 
   return (
@@ -47,6 +43,7 @@ export default function MusicToggle() {
       className={`music-toggle ${playing ? "playing" : ""}`}
       onClick={toggle}
       aria-label={playing ? "Mute background music" : "Play background music"}
+      style={{ display: hidden ? "none" : "flex" }}
     >
       <div className="music-bars">
         <span className="bar bar-1" />

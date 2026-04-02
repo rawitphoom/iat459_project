@@ -12,6 +12,7 @@ import Dashboard from "./Dashboard";
 import LandingPage from "./pages/LandingPage";
 import IntroPage from "./pages/IntroPage";
 import PublicAlbums from "./PublicAlbums";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function AppLayout() {
   const location = useLocation();
@@ -65,6 +66,18 @@ function AppLayout() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin route — wrapped in ProtectedRoute so it requires a token.
+            The AdminDashboard component itself also checks user.role === "admin"
+            and redirects non-admins back to /home. */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

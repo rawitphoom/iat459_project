@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
     }
     try {
       const decoded = jwtDecode(token);
-      setUser(decoded); // { id, username }
+      setUser(decoded); // { id, username, role } — role enables admin conditional rendering
     } catch {
       setUser(null);
       setToken("");

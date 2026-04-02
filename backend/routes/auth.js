@@ -40,9 +40,10 @@ router.post("/login", async (req, res) => {
     if (!ok) return res.status(401).json({ error: "Invalid credentials" });
 
     //3. generate token (The "Wristband")
-    // token payload must include id + username :contentReference[oaicite:5]{index=5}
+    // The JWT payload carries id, username, and role so the frontend
+    // and backend middleware can check permissions without querying the DB again.
     const token = jwt.sign(
-      { id: user._id, username: user.username },
+      { id: user._id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "2h" }
     );

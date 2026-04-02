@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const verifyToken = require("./middleware/verifyToken");
+const verifyAdmin = require("./middleware/verifyAdmin");
+const User = require("./models/User");
 // Import the Deezer search function from our service layer
 // Deezer provides free 30-second previews with no API key required
 const { searchTracks } = require("./services/deezer");
@@ -150,6 +152,45 @@ app.get("/api/music/search", async (req, res) => {
     console.error("Music search error:", err.message);
     res.status(502).json({ error: "Failed to search for music" });
   }
+});
+
+// =============================================
+// ADMIN-ONLY ROUTES
+// These require both verifyToken (authentication) AND verifyAdmin (authorization).
+// A regular user with a valid token will get 403 Forbidden.
+// =============================================
+
+// Admin: get all users (hides passwords)
+// Used by the Admin Dashboard to manage the platform
+app.get("/api/admin/users", verifyToken, verifyAdmin, async (req, res) => {
+  // .select("-password") excludes the hashed password from the response
+  const users = await User.find().select("-password");
+  res.json(users);
+});
+
+// Admin: delete any user by ID
+// Only admins can remove user accounts from the platform
+app.delete("/api/admin/users/:id", verifyToken, verifyAdmin, async (req, res) => {
+  const deleted = await User.findByIdAndDelete(req.params.id);
+  if (!deleted) return res.status(404).json({ error: "User not found" });
+  // Also delete all playlists that belonged to the removed user
+  await Playlist.deleteMany({ createdBy: req.params.id });
+  res.json({ message: "User and their playlists deleted" });
+});
+
+// Admin: get ALL playlists from every user
+// Regular GET /api/playlists only returns the logged-in user's playlists
+app.get("/api/admin/playlists", verifyToken, verifyAdmin, async (req, res) => {
+  const playlists = await Playlist.find();
+  res.json(playlists);
+});
+
+// Admin: delete any playlist by ID (regardless of owner)
+// Regular users can only delete their own — admins can delete anyone's
+app.delete("/api/admin/playlists/:id", verifyToken, verifyAdmin, async (req, res) => {
+  const deleted = await Playlist.findByIdAndDelete(req.params.id);
+  if (!deleted) return res.status(404).json({ error: "Playlist not found" });
+  res.json({ message: "Playlist deleted" });
 });
 
 // Start API server

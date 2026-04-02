@@ -7,7 +7,20 @@
       "WebFetch(domain:api.deezer.com)",
       "Bash(brew list:*)",
       "Bash(brew install:*)",
-      "Bash(ffmpeg -i \"/Users/rawitphoom/Downloads/Background_music.mov\" -vn -q:a 4 \"/Users/rawitphoom/Documents/GitHub/iat459_project/frontend/public/bg-music.mp3\" -y)"
+      "Bash(ffmpeg -i \"/Users/rawitphoom/Downloads/Background_music.mov\" -vn -q:a 4 \"/Users/rawitphoom/Documents/GitHub/iat459_project/frontend/public/bg-music.mp3\" -y)",
+      "Bash(pdftotext -v)",
+      "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\")",
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture1.pdf\" /tmp/lec1.txt)",
+      "Read(//tmp/**)",
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture2.pdf\" /tmp/lec2.txt)",
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture3.pdf\" /tmp/lec3.txt)",
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture4.pdf\" /tmp/lec4.txt)",
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture5.pdf\" /tmp/lec5.txt)",
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture6.pdf\" /tmp/lec6.txt)",
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture7.pdf\" /tmp/lec7.txt)",
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture8.pdf\" /tmp/lec8.txt)",
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture10.pdf\" /tmp/lec10.txt)"
     ]
   }
 }

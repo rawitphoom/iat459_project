@@ -8,7 +8,7 @@ export default function Dashboard() {
     // ---- State ----
     const [playlists, setPlaylists] = useState([]);
     const [query, setQuery] = useState("");
-    const [form, setForm] = useState({ name: "", description: "", mood: "" });
+    const [form, setForm] = useState({ name: "", description: "", mood: "", public: false });
     // Tracks selected from search — full track objects with previewUrl, albumArt, etc.
     const [selectedTracks, setSelectedTracks] = useState([]);
     const [formError, setFormError] = useState("");
@@ -19,6 +19,16 @@ export default function Dashboard() {
     const audioRef = useRef(null);
     const { user, token, logout } = useContext(AuthContext);
     const navigate = useNavigate();
+
+    // ---- Stop audio when user navigates away ----
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
+    }, []);
 
     // ---- Load playlists on mount ----
     useEffect(() => {
@@ -75,6 +85,7 @@ export default function Dashboard() {
                     description: form.description.trim(),
                     mood: form.mood.trim(),
                     tracks: selectedTracks,
+                    public: form.public, // Whether this playlist shows up on Discover → Mixtapes
                 }),
             });
 
@@ -85,7 +96,7 @@ export default function Dashboard() {
             }
 
             setPlaylists((prev) => [data, ...prev]);
-            setForm({ name: "", description: "", mood: "" });
+            setForm({ name: "", description: "", mood: "", public: false });
             setSelectedTracks([]);
         } catch {
             setFormError("Server unavailable");
@@ -156,6 +167,15 @@ export default function Dashboard() {
                         onChange={(e) => setForm({ ...form, mood: e.target.value })}
                         placeholder="Mood (optional)" />
                     <div className="form-actions">
+                        {/* Toggle to make playlist visible on Discover page */}
+                        <label className="public-toggle">
+                            <input
+                                type="checkbox"
+                                checked={form.public}
+                                onChange={(e) => setForm({ ...form, public: e.target.checked })}
+                            />
+                            Make public
+                        </label>
                         <button className="primary-btn" type="submit" disabled={isSaving}>
                             {isSaving ? "Saving..." : "Create"}
                         </button>

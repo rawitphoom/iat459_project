@@ -20,7 +20,17 @@
       "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture6.pdf\" /tmp/lec6.txt)",
       "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture7.pdf\" /tmp/lec7.txt)",
       "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture8.pdf\" /tmp/lec8.txt)",
-      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture10.pdf\" /tmp/lec10.txt)"
+      "Bash(pdftotext \"/Users/rawitphoom/Library/CloudStorage/Dropbox/SFU SPRING 2026/IAT459/Lectures/IAT459_lecture10.pdf\" /tmp/lec10.txt)",
+      "Bash(curl -s \"https://api.deezer.com/chart\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''Albums:'''', len\\(d.get\\(''''albums'''',{}\\).get\\(''''data'''',[]\\)\\)\\); print\\(''''Tracks:'''', len\\(d.get\\(''''tracks'''',{}\\).get\\(''''data'''',[]\\)\\)\\); print\\(''''Artists:'''', len\\(d.get\\(''''artists'''',{}\\).get\\(''''data'''',[]\\)\\)\\); print\\(\\); a=d[''''albums''''][''''data''''][0]; print\\(''''Sample album:'''', json.dumps\\(a, indent=2\\)\\)\")",
+      "Bash(curl -s \"https://api.deezer.com/genre\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(g[''''id''''], g[''''name'''']\\) for g in d[''''data''''][:15]]\")",
+      "Bash(curl -s \"https://api.deezer.com/search/album?q=kendrick+lamar&limit=3\")",
+      "Bash(node -e \":*)",
+      "Bash(curl -s \"http://localhost:5001/api/music/chart\")",
+      "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$HOME/.nvm/versions/node/*/bin:$PATH\")",
+      "Bash(curl -s \"https://api.deezer.com/album/1440463\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''Title:'''', d.get\\(''''title''''\\)\\); print\\(''''Release Date:'''', d.get\\(''''release_date''''\\)\\); print\\(''''Genre:'''', d.get\\(''''genres'''',{}\\).get\\(''''data'''',[]\\)\\); print\\(''''Tracks:'''', d.get\\(''''nb_tracks''''\\)\\)\")"
     ]
   }
 }

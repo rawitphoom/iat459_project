@@ -13,6 +13,7 @@ import LandingPage from "./pages/LandingPage";
 import IntroPage from "./pages/IntroPage";
 import PublicAlbums from "./PublicAlbums";
 import AdminDashboard from "./pages/AdminDashboard";
+import AlbumDetail from "./pages/AlbumDetail";
 
 function AppLayout() {
   const location = useLocation();
@@ -55,6 +56,9 @@ function AppLayout() {
 
         {/* search = track search */}
         <Route path="/search" element={<PublicAlbums />} />
+
+        {/* Album detail — shows full track list from Deezer */}
+        <Route path="/album/:id" element={<AlbumDetail />} />
 
         {/* public routes */}
         <Route path="/login" element={<Login />} />

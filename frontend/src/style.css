@@ -126,6 +126,22 @@ body {
   font-size: 13px;
 }
 
+/* Public toggle checkbox on create playlist form */
+.public-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.public-toggle input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .search-input {
   margin-bottom: 10px;
 }
@@ -650,6 +666,424 @@ body {
   100% { height: 8px; }
 }
 
+/* =============================================
+   DISCOVER PAGE — dark themed exploration hub
+   ============================================= */
+
+.discover-page {
+  min-height: calc(100vh - 52px);
+  background: #111;
+  padding: 40px 24px 60px;
+}
+
+.discover-header {
+  max-width: 1100px;
+  margin: 0 auto 32px;
+}
+
+.discover-title {
+  color: #fff;
+  font-size: clamp(32px, 6vw, 56px);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0 0 4px 0;
+}
+
+.discover-subtitle {
+  color: #aaa;
+  font-size: 16px;
+  margin: 0 0 24px 0;
+}
+
+/* ---- Search bar ---- */
+.discover-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  max-width: 600px;
+}
+
+.discover-search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 14px;
+  font-family: 'Oswald', Arial, sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.discover-search-input::placeholder {
+  color: #666;
+}
+
+.discover-search-input:focus {
+  border-color: #c0633a;
+}
+
+.discover-search-btn {
+  padding: 12px 24px;
+  background: #c0633a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: 'Oswald', Arial, sans-serif;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.discover-search-btn:hover {
+  background: #d4764e;
+}
+
+.discover-clear-btn {
+  padding: 12px 16px;
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #333;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Oswald', Arial, sans-serif;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.discover-clear-btn:hover {
+  color: #fff;
+  border-color: #fff;
+}
+
+/* ---- Tabs (Songs | Albums | Mixtapes) ---- */
+.discover-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0;
+}
+
+.discover-tab {
+  padding: 10px 24px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Oswald', Arial, sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.discover-tab:hover {
+  color: #ccc;
+}
+
+.discover-tab.active {
+  color: #fff;
+  border-bottom-color: #c0633a;
+}
+
+/* ---- Loading + empty states ---- */
+.discover-loading {
+  text-align: center;
+  color: #888;
+  font-size: 16px;
+  padding: 40px 0;
+}
+
+.discover-empty {
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+  padding: 40px 0;
+  grid-column: 1 / -1;
+}
+
+/* =============================================
+   ALBUM CARD GRID — responsive card layout
+   ============================================= */
+
+.album-grid,
+.mixtapes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-top: 24px;
+}
+
+.album-card,
+.mixtape-card {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.album-card:hover,
+.mixtape-card:hover {
+  transform: translateY(-4px);
+}
+
+/* ---- Album cover image ---- */
+.album-card-img-wrapper,
+.mixtape-card-img-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #222;
+  margin-bottom: 8px;
+}
+
+.album-card-img,
+.mixtape-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Hover overlay with play icon */
+.album-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.album-card:hover .album-card-overlay {
+  opacity: 1;
+}
+
+.album-card-play {
+  color: #fff;
+  font-size: 32px;
+}
+
+/* Placeholder for mixtapes with no cover art */
+.mixtape-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: #555;
+  background: #1a1a1a;
+}
+
+/* Album/mixtape card text */
+.album-card-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.album-card-artist {
+  color: #888;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =============================================
+   SONGS LIST — track rows on dark background
+   ============================================= */
+
+.songs-list {
+  display: grid;
+  gap: 4px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-top: 24px;
+}
+
+/* Override track-row for dark theme on Discover page */
+.discover-page .track-row {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+.discover-page .track-row:hover {
+  background: #252525;
+}
+
+.discover-page .track-name {
+  color: #fff;
+}
+
+.discover-page .track-artist {
+  color: #888;
+}
+
+.discover-page .icon-btn {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #fff;
+}
+
+.discover-page .icon-btn:hover,
+.discover-page .play-btn.playing {
+  background: #c0633a;
+  border-color: #c0633a;
+  color: #fff;
+}
+
+/* Track number in songs list */
+.track-number {
+  width: 28px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* =============================================
+   ALBUM DETAIL PAGE — dark themed single album view
+   ============================================= */
+
+.album-detail-page {
+  min-height: calc(100vh - 52px);
+  background: #111;
+  padding: 40px 24px 60px;
+}
+
+.album-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.album-detail-header {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 32px;
+  align-items: flex-end;
+}
+
+.album-detail-cover {
+  width: 240px;
+  height: 240px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.album-detail-info {
+  flex: 1;
+}
+
+.album-detail-back {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 14px;
+  font-family: 'Oswald', Arial, sans-serif;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 12px;
+  transition: color 0.2s;
+}
+
+.album-detail-back:hover {
+  color: #fff;
+}
+
+.album-detail-title {
+  color: #fff;
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0 0 4px 0;
+  line-height: 1.1;
+}
+
+.album-detail-artist {
+  color: #ccc;
+  font-size: 20px;
+  margin: 0 0 12px 0;
+}
+
+.album-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #888;
+  font-size: 13px;
+}
+
+.album-detail-tracks {
+  display: grid;
+  gap: 4px;
+}
+
+/* Dark-themed track rows for album detail */
+.album-detail-page .track-row {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+.album-detail-page .track-row:hover {
+  background: #252525;
+}
+
+.album-detail-page .track-name {
+  color: #fff;
+}
+
+.album-detail-page .track-artist {
+  color: #888;
+}
+
+.album-detail-page .icon-btn {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #fff;
+}
+
+.album-detail-page .icon-btn:hover,
+.album-detail-page .play-btn.playing {
+  background: #c0633a;
+  border-color: #c0633a;
+  color: #fff;
+}
+
+/* Responsive: stack cover on top for mobile */
+@media (max-width: 600px) {
+  .album-detail-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .album-detail-cover {
+    width: 200px;
+    height: 200px;
+  }
+
+  .album-detail-meta {
+    justify-content: center;
+  }
+}
+
 /* ---- Admin badge (shown next to admin usernames) ---- */
 .admin-badge {
   display: inline-block;
@@ -677,5 +1111,15 @@ body {
   .landing-actions {
     flex-direction: column;
     align-items: center;
+  }
+
+  .album-grid,
+  .mixtapes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 16px;
+  }
+
+  .discover-search {
+    flex-direction: column;
   }
 }

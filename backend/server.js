@@ -8,7 +8,14 @@ const verifyAdmin = require("./middleware/verifyAdmin");
 const User = require("./models/User");
 // Import the Deezer search function from our service layer
 // Deezer provides free 30-second previews with no API key required
-const { searchTracks } = require("./services/deezer");
+const {
+  searchTracks,
+  searchAlbums,
+  getChart,
+  getGenres,
+  getAlbumDetail,
+  getArtistDetail,
+} = require("./services/deezer");
 
 const app = express();
 app.use(cors());
@@ -80,6 +87,7 @@ const playlistSchema = new mongoose.Schema({
   mood: String,
   tracks: [trackSchema],  // Array of Deezer track objects (see trackSchema above)
   createdBy: String,      // User ID from JWT token — links playlist to its owner
+  public: { type: Boolean, default: false }, // If true, visible on Discover page "Mixtapes" tab
 });
 
 const Playlist = mongoose.model("Playlist", playlistSchema);
@@ -95,6 +103,8 @@ app.get("/api/playlists", verifyToken, async (req, res) => {
 // Create a playlist for the authenticated user
 app.post("/api/playlists", verifyToken, async (req, res) => {
   const { name, description, mood, tracks } = req.body || {};
+  // "public" is a reserved keyword in JS, so we grab it with bracket notation
+  const isPublic = req.body?.public || false;
 
   if (!name) {
     return res.status(400).json({ error: "Playlist name is required" });
@@ -107,6 +117,7 @@ app.post("/api/playlists", verifyToken, async (req, res) => {
     // tracks comes from the frontend as an array of Deezer track objects
     tracks: Array.isArray(tracks) ? tracks : [],
     createdBy: req.user?.id,
+    public: isPublic,  // Whether this playlist is visible on Discover → Mixtapes tab
   });
 
   res.status(201).json(playlist);
@@ -151,6 +162,86 @@ app.get("/api/music/search", async (req, res) => {
     // If Deezer API fails, log and return 502
     console.error("Music search error:", err.message);
     res.status(502).json({ error: "Failed to search for music" });
+  }
+});
+
+// =============================================
+// DEEZER API ROUTES (all public — no auth needed)
+// These proxy Deezer endpoints so the frontend calls our server,
+// keeping API logic on the backend (separation of concerns).
+// =============================================
+
+// Chart — top/trending albums, tracks, and artists
+// Used as the default content on the Discover page
+app.get("/api/music/chart", async (req, res) => {
+  try {
+    const chart = await getChart();
+    res.json(chart);
+  } catch (err) {
+    console.error("Chart error:", err.message);
+    res.status(502).json({ error: "Failed to load chart" });
+  }
+});
+
+// Search albums by query string
+app.get("/api/music/albums", async (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.status(400).json({ error: "Query parameter 'q' is required" });
+  try {
+    const albums = await searchAlbums(q);
+    res.json(albums);
+  } catch (err) {
+    console.error("Album search error:", err.message);
+    res.status(502).json({ error: "Failed to search albums" });
+  }
+});
+
+// Get all Deezer genres — used for filter dropdowns
+app.get("/api/music/genres", async (req, res) => {
+  try {
+    const genres = await getGenres();
+    res.json(genres);
+  } catch (err) {
+    console.error("Genres error:", err.message);
+    res.status(502).json({ error: "Failed to load genres" });
+  }
+});
+
+// Get a single album's full details + track list
+// Used on the Album Detail page when user clicks an album card
+app.get("/api/music/album/:id", async (req, res) => {
+  try {
+    const album = await getAlbumDetail(req.params.id);
+    res.json(album);
+  } catch (err) {
+    console.error("Album detail error:", err.message);
+    res.status(502).json({ error: "Failed to load album" });
+  }
+});
+
+// Get a single artist's details + top tracks
+// Used on the Artist Detail page when user clicks an artist name
+app.get("/api/music/artist/:id", async (req, res) => {
+  try {
+    const artist = await getArtistDetail(req.params.id);
+    res.json(artist);
+  } catch (err) {
+    console.error("Artist detail error:", err.message);
+    res.status(502).json({ error: "Failed to load artist" });
+  }
+});
+
+// =============================================
+// PUBLIC PLAYLISTS (Mixtapes)
+// Regular GET /api/playlists returns only the logged-in user's playlists.
+// This endpoint returns all playlists marked as "public" for the Discover page.
+// =============================================
+app.get("/api/playlists/public", async (req, res) => {
+  try {
+    const playlists = await Playlist.find({ public: true });
+    res.json(playlists);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load public playlists" });
   }
 });
 

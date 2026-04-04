@@ -210,41 +210,33 @@ export default function LandingPage() {
 
       {/* ======== POPULAR MIXTAPES ======== */}
       {mixtapes.length > 0 && (
-        <div className="landing-section">
-          <div className="landing-section-header reveal-up" ref={addRef}>
-            <h2 className="landing-section-title">POPULAR MIXTAPES</h2>
-            <button
-              className="landing-section-link"
-              onClick={() => navigate("/discover")}
-            >
-              View All →
-            </button>
-          </div>
-          <div className="landing-row">
-            {mixtapes.map((mix, i) => (
+        <div className="landing-top3">
+          <h2 className="landing-top3-title reveal-up" ref={addRef}>
+            Popular Mixtapes.
+          </h2>
+          <div className="landing-top3-grid">
+            {mixtapes.slice(0, 3).map((mix, i) => (
               <div
                 key={mix._id}
-                className="landing-row-card reveal-up"
+                className="landing-top3-card reveal-up"
                 ref={addRef}
-                style={{ transitionDelay: `${i * 0.06}s` }}
+                style={{ transitionDelay: `${i * 0.15}s` }}
               >
-                {/* Mixtape cover: mosaic of first 4 track arts, or gradient fallback */}
-                <div className="landing-mixtape-cover">
+                <div className="landing-top3-cover">
                   {mix.tracks?.slice(0, 4).map((t, j) => (
                     <img
                       key={j}
                       src={t.albumArt}
                       alt=""
-                      className="landing-mixtape-thumb"
+                      className="landing-top3-thumb"
                     />
                   ))}
                   {(!mix.tracks || mix.tracks.length === 0) && (
-                    <div className="landing-mixtape-empty">♪</div>
+                    <div className="landing-top3-empty">♪</div>
                   )}
                 </div>
-                <div className="landing-row-name">{mix.name}</div>
-                <div className="landing-row-artist">
-                  {mix.tracks?.length || 0} tracks{mix.mood ? ` · ${mix.mood}` : ""}
+                <div className="landing-top3-label">
+                  {mix.name}
                 </div>
               </div>
             ))}

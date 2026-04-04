@@ -390,6 +390,82 @@ app.delete("/api/reviews/:id", verifyToken, async (req, res) => {
 });
 
 // =============================================
+// USER PROFILE ROUTES
+// Public endpoints to view any user's profile, playlists, and reviews.
+// /api/profile/:id  — returns user info + stats
+// /api/profile/:id/playlists — returns user's public playlists (or all if own profile)
+// /api/profile/:id/reviews — returns user's reviews
+// =============================================
+
+// Public: get user profile info + stats
+app.get("/api/profile/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const playlistCount = await Playlist.countDocuments({ createdBy: req.params.id });
+    const publicPlaylistCount = await Playlist.countDocuments({ createdBy: req.params.id, public: true });
+    const reviewCount = await Review.countDocuments({ userId: req.params.id });
+
+    // Average rating the user gives
+    const ratingAgg = await Review.aggregate([
+      { $match: { userId: req.params.id } },
+      { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+    ]);
+
+    res.json({
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+      createdAt: user.createdAt || null,
+      stats: {
+        playlists: playlistCount,
+        publicPlaylists: publicPlaylistCount,
+        reviews: reviewCount,
+        avgRating: ratingAgg.length > 0 ? Math.round(ratingAgg[0].avg * 10) / 10 : 0,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load profile" });
+  }
+});
+
+// Public: get a user's public playlists. If authed and viewing own profile, return all.
+app.get("/api/profile/:id/playlists", async (req, res) => {
+  try {
+    // Check if the requester is viewing their own profile
+    let filter = { createdBy: req.params.id, public: true };
+
+    // If Authorization header present, check if it's the same user
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      try {
+        const jwt = require("jsonwebtoken");
+        const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+        if (decoded.id === req.params.id) {
+          filter = { createdBy: req.params.id }; // Show all playlists for own profile
+        }
+      } catch {}
+    }
+
+    const playlists = await Playlist.find(filter).sort({ _id: -1 });
+    res.json(playlists);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load playlists" });
+  }
+});
+
+// Public: get a user's reviews
+app.get("/api/profile/:id/reviews", async (req, res) => {
+  try {
+    const reviews = await Review.find({ userId: req.params.id }).sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load reviews" });
+  }
+});
+
+// =============================================
 // PUBLIC PLAYLISTS (Mixtapes)
 // Regular GET /api/playlists returns only the logged-in user's playlists.
 // This endpoint returns all playlists marked as "public" for the Discover page.

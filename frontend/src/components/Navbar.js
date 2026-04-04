@@ -52,6 +52,10 @@ export default function Navbar() {
 
           {token ? (
             <>
+              <button className="nav-overlay-link" onClick={() => handleNav("/profile")}>
+                <span className="nav-link-text">PROFILE</span>
+                <span className="nav-link-arrow"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
+              </button>
               <button className="nav-overlay-link" onClick={() => handleNav("/dashboard")}>
                 <span className="nav-link-text">DASHBOARD</span>
                 <span className="nav-link-arrow"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>

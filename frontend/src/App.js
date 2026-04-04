@@ -14,6 +14,7 @@ import IntroPage from "./pages/IntroPage";
 import PublicAlbums from "./PublicAlbums";
 import AdminDashboard from "./pages/AdminDashboard";
 import AlbumDetail from "./pages/AlbumDetail";
+import ProfilePage from "./pages/ProfilePage";
 
 function AppLayout() {
   const location = useLocation();
@@ -59,6 +60,10 @@ function AppLayout() {
 
         {/* Album detail — shows full track list from Deezer */}
         <Route path="/album/:id" element={<AlbumDetail />} />
+
+        {/* Profile — own profile (requires login) or view another user */}
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/profile/:id" element={<ProfilePage />} />
 
         {/* public routes */}
         <Route path="/login" element={<Login />} />

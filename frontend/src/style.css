@@ -952,6 +952,479 @@ body {
   }
 }
 
+/* ======== TOP 3 POPULAR MIXTAPES ======== */
+.landing-top3 {
+  padding: 100px 64px 80px;
+  text-align: center;
+}
+
+.landing-top3-title {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: clamp(42px, 5vw, 72px);
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 60px 0;
+  letter-spacing: 1px;
+}
+
+.landing-top3-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.landing-top3-card {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.landing-top3-card:hover {
+  transform: translateY(-6px);
+}
+
+.landing-top3-cover {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  background: #1a1a1a;
+}
+
+.landing-top3-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.landing-top3-empty {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  color: rgba(255, 255, 255, 0.1);
+}
+
+.landing-top3-label {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 20px;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 900px) {
+  .landing-top3 {
+    padding: 60px 24px 40px;
+  }
+
+  .landing-top3-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    max-width: 400px;
+  }
+}
+
+/* ======== PROFILE PAGE ======== */
+.profile-page {
+  min-height: 100vh;
+  background: #0e0e0e;
+  padding: 120px 64px 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.profile-loading,
+.profile-empty {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  padding: 120px 0;
+  font-size: 16px;
+}
+
+/* ---- Header ---- */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 56px;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c0633a, #e08a5e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 52px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-username {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 16px 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 40px;
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-stat-num {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.profile-stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ---- Tabs ---- */
+.profile-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 40px;
+}
+
+.profile-tab {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.35);
+  background: none;
+  border: none;
+  padding: 16px 28px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.profile-tab:hover {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-tab.active {
+  color: #fff;
+  border-bottom-color: #c0633a;
+}
+
+.profile-content {
+  min-height: 200px;
+}
+
+.profile-empty-tab {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 15px;
+  text-align: center;
+  padding: 60px 0;
+}
+
+.profile-cta {
+  display: block;
+  margin: 40px auto 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #fff;
+  background: #c0633a;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.profile-cta:hover {
+  opacity: 0.85;
+}
+
+/* ---- Mixtapes Grid ---- */
+.profile-mixtapes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.profile-mixtape-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 28px;
+  transition: border-color 0.2s;
+}
+
+.profile-mixtape-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.profile-mixtape-cover {
+  width: 200px;
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  background: #1a1a1a;
+  float: left;
+  margin-right: 28px;
+  margin-bottom: 12px;
+}
+
+.profile-mixtape-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-mixtape-empty-cover {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.1);
+}
+
+.profile-mixtape-info {
+  overflow: hidden;
+}
+
+.profile-mixtape-name {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.profile-mixtape-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.profile-mixtape-desc {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.5;
+}
+
+/* ---- Track list inside mixtape ---- */
+.profile-mixtape-tracks {
+  clear: both;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 16px;
+}
+
+.profile-track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.15s;
+}
+
+.profile-track:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.profile-track.playing {
+  background: rgba(192, 99, 58, 0.08);
+}
+
+.profile-track-art {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.profile-track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-track-name {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-track-artist {
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.profile-track-play {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.5);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.profile-track-play:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.profile-track-play.active {
+  border-color: #c0633a;
+  color: #c0633a;
+}
+
+/* ---- Reviews Grid ---- */
+.profile-reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.profile-review-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.profile-review-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.profile-review-album {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: #c0633a;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.profile-review-title {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.profile-review-stars {
+  font-size: 16px;
+  color: #c0633a;
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+
+.profile-review-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.profile-review-footer {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 100px 24px 60px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .profile-stats {
+    justify-content: center;
+  }
+
+  .profile-mixtape-cover {
+    float: none;
+    margin: 0 auto 16px;
+  }
+
+  .profile-mixtape-info {
+    text-align: center;
+  }
+
+  .profile-reviews-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---- Intro page (kept separate) ---- */
 .intro-page {
   min-height: 100vh;

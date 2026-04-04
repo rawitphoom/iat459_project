@@ -15,6 +15,7 @@ const {
   getGenres,
   getAlbumDetail,
   getArtistDetail,
+  getArtistAlbums,
 } = require("./services/deezer");
 
 const app = express();
@@ -228,6 +229,163 @@ app.get("/api/music/artist/:id", async (req, res) => {
   } catch (err) {
     console.error("Artist detail error:", err.message);
     res.status(502).json({ error: "Failed to load artist" });
+  }
+});
+
+// Get albums by a specific artist
+// Used for "More by [Artist]" on Album Detail page
+app.get("/api/music/artist/:id/albums", async (req, res) => {
+  try {
+    const albums = await getArtistAlbums(req.params.id);
+    res.json(albums);
+  } catch (err) {
+    console.error("Artist albums error:", err.message);
+    res.status(502).json({ error: "Failed to load artist albums" });
+  }
+});
+
+// =============================================
+// REVIEWS — MongoDB model + routes
+// Users can write reviews for Deezer albums.
+// Each review stores the Deezer album ID so we can
+// fetch reviews for any album detail page.
+// =============================================
+const reviewSchema = new mongoose.Schema({
+  albumId: { type: String, required: true },    // Deezer album ID
+  albumTitle: String,                            // Album name (for display)
+  userId: String,                                // User who wrote the review
+  username: { type: String, required: true },    // Username for display
+  title: String,                                 // Review title/headline
+  rating: { type: Number, min: 1, max: 5, required: true },
+  text: String,                                  // Review body
+  likes: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const Review = mongoose.model("Review", reviewSchema);
+
+// Public: get all reviews for a specific album (by Deezer album ID)
+app.get("/api/reviews/album/:albumId", async (req, res) => {
+  try {
+    const reviews = await Review.find({ albumId: req.params.albumId })
+      .sort({ createdAt: -1 }); // Newest first
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load reviews" });
+  }
+});
+
+// Protected: create a new review (must be logged in)
+app.post("/api/reviews", verifyToken, async (req, res) => {
+  const { albumId, albumTitle, title, rating, text } = req.body || {};
+
+  if (!albumId || !rating) {
+    return res.status(400).json({ error: "Album ID and rating are required" });
+  }
+
+  try {
+    const review = await Review.create({
+      albumId: String(albumId),
+      albumTitle: albumTitle || "",
+      userId: req.user?.id,
+      username: req.user?.username || "Anonymous",
+      title: title ? String(title).trim() : "",
+      rating: Number(rating),
+      text: text ? String(text).trim() : "",
+    });
+    res.status(201).json(review);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to create review" });
+  }
+});
+
+// Public: get average rating for an album
+app.get("/api/reviews/album/:albumId/rating", async (req, res) => {
+  try {
+    const result = await Review.aggregate([
+      { $match: { albumId: req.params.albumId } },
+      { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+    ]);
+    if (result.length === 0) return res.json({ avg: 0, count: 0 });
+    res.json({ avg: Math.round(result[0].avg * 10) / 10, count: result[0].count });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load rating" });
+  }
+});
+
+// Seed fake reviews for testing (public — for development only)
+app.post("/api/reviews/seed/:albumId", async (req, res) => {
+  const { albumId } = req.params;
+  const { albumTitle } = req.body || {};
+
+  const fakeUsers = [
+    "Patrick", "MusicFan42", "VinylCollector", "BassHead",
+    "MelodyHunter", "SoundWave", "RhythmKing", "TuneCritic",
+    "AudioPhile", "BeatDropper"
+  ];
+
+  const fakeTitles = [
+    "Absolutely incredible album",
+    "A masterpiece from start to finish",
+    "Solid record, few weak tracks",
+    "Changed my perspective on music",
+    "Good but not their best work",
+    "Every track is a banger",
+    "Underrated gem of the year",
+    "Perfect for late night listening",
+    "Raw emotion in every note",
+    "Will be remembered for decades"
+  ];
+
+  const fakeTexts = [
+    "This album is a sonic journey that takes you through so many emotions. The production quality is top-notch and every track feels intentional. Highly recommend giving this a full listen with good headphones.",
+    "I've been listening to this on repeat for weeks. The way the tracks flow into each other creates such a cohesive experience. Some of the best songwriting I've heard in a long time.",
+    "Solid effort overall. A few tracks really stand out while others feel like filler. The singles are definitely the highlights, but the deep cuts grow on you after a few listens.",
+    "This record pushed boundaries in ways I didn't expect. The experimental production choices really pay off, and the lyrics are incredibly personal and relatable.",
+    "Not their strongest release, but still better than most of what's out there. The musicianship is undeniable and there are moments of pure brilliance scattered throughout.",
+    "From the opening track to the closer, this album never loses momentum. The energy is infectious and the hooks are unforgettable. Album of the year contender for sure.",
+  ];
+
+  const reviews = [];
+  const count = 6 + Math.floor(Math.random() * 5); // 6-10 reviews
+
+  for (let i = 0; i < count; i++) {
+    const daysAgo = Math.floor(Math.random() * 365);
+    reviews.push({
+      albumId: String(albumId),
+      albumTitle: albumTitle || "",
+      userId: `seed_${i}`,
+      username: fakeUsers[i % fakeUsers.length],
+      title: fakeTitles[i % fakeTitles.length],
+      rating: Math.floor(Math.random() * 2) + 4, // 4 or 5 stars mostly
+      text: fakeTexts[i % fakeTexts.length],
+      likes: Math.floor(Math.random() * 200),
+      createdAt: new Date(Date.now() - daysAgo * 86400000),
+    });
+  }
+
+  try {
+    await Review.deleteMany({ albumId: String(albumId) }); // Clear old seeds
+    const inserted = await Review.insertMany(reviews);
+    res.json({ inserted: inserted.length });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to seed reviews" });
+  }
+});
+
+// Protected: delete own review
+app.delete("/api/reviews/:id", verifyToken, async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.id);
+    if (!review) return res.status(404).json({ error: "Review not found" });
+    // Only the author or admin can delete
+    if (review.userId !== req.user?.id && req.user?.role !== "admin") {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+    await Review.findByIdAndDelete(req.params.id);
+    res.json({ message: "Review deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete review" });
   }
 });
 

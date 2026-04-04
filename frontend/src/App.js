@@ -19,7 +19,7 @@ function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const showSiteChrome = location.pathname !== "/";
-  const hideMusicButton = location.pathname === "/";
+  const hideMusicButton = location.pathname !== "/home";
 
   useEffect(() => {
     const navigationEntry = performance.getEntriesByType("navigation")[0];

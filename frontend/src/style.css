@@ -479,11 +479,103 @@ body {
   min-height: calc(100vh - 52px);
   background: #111;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
+  position: relative;
+  overflow: hidden;
+  perspective: 1200px;
 }
 
+/* ---- 3D Rotating Album Ring ---- */
+.landing-ring-wrapper {
+  position: relative;
+  width: 0;
+  height: 220px;
+  perspective: 1400px;
+  margin-top: 100px;
+  margin-bottom: 40px;
+}
+
+.landing-ring {
+  transform-style: preserve-3d;
+  /* Tilt the ring toward the viewer so all albums are visible */
+  transform: rotateX(-15deg);
+  animation: ringRotate 60s linear infinite;
+}
+
+.landing-ring-item {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  left: -80px;
+  top: -80px;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.landing-ring-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+}
+
+.landing-ring-item:hover {
+  transform: scale(1.12);
+  z-index: 10;
+}
+
+@keyframes ringRotate {
+  from { transform: rotateX(-15deg) rotateY(0deg); }
+  to   { transform: rotateX(-15deg) rotateY(360deg); }
+}
+
+/* ---- Bottom content (below the ring) ---- */
+.landing-bottom {
+  position: relative;
+  z-index: 5;
+  text-align: center;
+}
+
+.landing-main-title {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: clamp(60px, 10vw, 120px);
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 16px 0;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+
+.landing-tagline {
+  font-family: 'DM Mono', monospace;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.7;
+  margin: 0 0 36px 0;
+}
+
+.landing-cta {
+  pointer-events: auto; /* Re-enable clicks on button */
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: #111;
+  background: #fff;
+  border: 2px solid #fff;
+  padding: 14px 40px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.landing-cta:hover {
+  background: transparent;
+  color: #fff;
+}
+
+/* ---- Intro page (kept separate) ---- */
 .intro-page {
   min-height: 100vh;
   background:
@@ -525,65 +617,6 @@ body {
   color: #aaa;
   font-size: 18px;
   line-height: 1.5;
-}
-
-.landing-hero {
-  text-align: center;
-  max-width: 700px;
-}
-
-.landing-title {
-  color: #fff;
-  font-size: clamp(36px, 7vw, 64px);
-  font-weight: 900;
-  font-style: normal;
-  line-height: 1.1;
-  margin: 0 0 20px 0;
-  text-transform: uppercase;
-}
-
-.landing-subtitle {
-  color: #aaa;
-  font-size: 18px;
-  margin: 0 0 32px 0;
-  line-height: 1.5;
-}
-
-.landing-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-}
-
-.landing-btn {
-  padding: 14px 32px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  border: none;
-  border-radius: 0;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-
-.landing-btn-primary {
-  background: #c0633a;
-  color: #fff;
-}
-
-.landing-btn-primary:hover {
-  background: #d4764e;
-}
-
-.landing-btn-secondary {
-  background: transparent;
-  color: #fff;
-  border: 1px solid #555;
-}
-
-.landing-btn-secondary:hover {
-  border-color: #fff;
 }
 
 /* ---- Music toggle button ---- */
@@ -957,130 +990,682 @@ body {
 }
 
 /* =============================================
-   ALBUM DETAIL PAGE — dark themed single album view
+   ALBUM DETAIL PAGE — split layout
+   Left: full-height album cover with save + rating
+   Right: album info + scrollable track list
    ============================================= */
 
-.album-detail-page {
-  min-height: calc(100vh - 52px);
+/* Outer wrapper — the whole page scrolls naturally */
+.ad-wrapper {
   background: #111;
-  padding: 40px 24px 60px;
+  position: relative;
+  min-height: calc(100vh - 52px);
 }
 
-.album-detail-container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.album-detail-header {
+/* Split layout: cover left + tracks right */
+.ad-page {
   display: flex;
-  gap: 32px;
-  margin-bottom: 32px;
-  align-items: flex-end;
+  min-height: calc(100vh - 52px);
+  position: relative;
+  overflow: hidden;
 }
 
-.album-detail-cover {
-  width: 240px;
-  height: 240px;
-  border-radius: 8px;
-  object-fit: cover;
+/* ---- Dynamic glow ---- */
+.ad-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  transition: background 1.4s ease, opacity 1.4s ease;
+}
+
+/* ======== LEFT SIDE: cover image ======== */
+/* No longer sticky — scrolls away with the tracks */
+.ad-left {
+  position: relative;
+  width: 50%;
   flex-shrink: 0;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-}
-
-.album-detail-info {
-  flex: 1;
-}
-
-.album-detail-back {
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 14px;
-  font-family: 'Oswald', Arial, sans-serif;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 12px;
-  transition: color 0.2s;
-}
-
-.album-detail-back:hover {
-  color: #fff;
-}
-
-.album-detail-title {
-  color: #fff;
-  font-size: clamp(28px, 5vw, 48px);
-  font-weight: 900;
-  text-transform: uppercase;
-  margin: 0 0 4px 0;
-  line-height: 1.1;
-}
-
-.album-detail-artist {
-  color: #ccc;
-  font-size: 20px;
-  margin: 0 0 12px 0;
-}
-
-.album-detail-meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  color: #888;
-  font-size: 13px;
+  flex-direction: column;
+  background: transparent;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.album-detail-tracks {
-  display: grid;
-  gap: 4px;
+/* Album cover fills the left side */
+.ad-cover {
+  width: 100%;
+  flex: 1;
+  object-fit: cover;
+  display: block;
 }
 
-/* Dark-themed track rows for album detail */
-.album-detail-page .track-row {
-  background: #1a1a1a;
-  border-color: #2a2a2a;
+/* Floating bar over the cover: save button + star rating */
+.ad-cover-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: none;
 }
 
-.album-detail-page .track-row:hover {
-  background: #252525;
+/* Save album button */
+.ad-save-btn {
+  background: #fff;
+  border: 1px solid #fff;
+  color: #111;
+  font-family: 'DM Mono', monospace;
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Oswald', Arial, sans-serif;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.album-detail-page .track-name {
-  color: #fff;
+.ad-save-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.85);
+  color: #111;
 }
 
-.album-detail-page .track-artist {
-  color: #888;
-}
-
-.album-detail-page .icon-btn {
-  background: #2a2a2a;
-  border-color: #3a3a3a;
-  color: #fff;
-}
-
-.album-detail-page .icon-btn:hover,
-.album-detail-page .play-btn.playing {
+.ad-save-btn.saved {
   background: #c0633a;
   border-color: #c0633a;
   color: #fff;
 }
 
-/* Responsive: stack cover on top for mobile */
-@media (max-width: 600px) {
-  .album-detail-header {
+/* Star rating display */
+.ad-rating {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.ad-rating-star {
+  color: #f5c518;
+  font-size: 20px;
+}
+
+.ad-rating-score {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ad-rating-max {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+}
+
+/* ======== RIGHT SIDE: info + tracks ======== */
+.ad-right {
+  flex: 1;
+  padding: 32px 40px 60px;
+  overflow-y: auto;
+  max-height: calc(100vh - 52px);
+  z-index: 1;
+  position: relative;
+}
+
+/* Back button */
+.ad-back {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-family: 'Oswald', Arial, sans-serif;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 24px;
+  transition: color 0.2s;
+}
+
+.ad-back:hover {
+  color: #fff;
+}
+
+/* "Album" label */
+.ad-label {
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Album title */
+.ad-title {
+  color: #fff;
+  font-size: clamp(32px, 5vw, 60px);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0 0 16px 0;
+  line-height: 1;
+}
+
+/* Artist row: avatar + name + year + songs */
+.ad-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  font-family: 'Roboto', sans-serif;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+/* Small circular avatar with first letter of artist name */
+.ad-artist-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #333;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Real artist profile image (circular) */
+.ad-artist-avatar-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ad-artist-name {
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+}
+
+.ad-meta-dot {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ======== TRACK LIST ======== */
+.ad-tracks {
+  display: grid;
+  gap: 2px;
+}
+
+/* Individual track row */
+.ad-track {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.15s;
+}
+
+.ad-track:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ad-track.playing {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Track number */
+.ad-track-num {
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Track name + artist */
+.ad-track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ad-track-name {
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ad-track-artist {
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+}
+
+/* Duration */
+.ad-track-dur {
+  color: rgba(255, 255, 255, 0.35);
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  min-width: 42px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Heart / like button */
+.ad-track-heart {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.ad-track-heart:hover {
+  color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.15);
+}
+
+.ad-track-heart.liked {
+  color: #c0633a;
+}
+
+/* Play/pause circle button */
+.ad-track-play {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.ad-track-play:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ad-track-play.active {
+  background: #c0633a;
+  border-color: #c0633a;
+  color: #fff;
+}
+
+/* ---- More by Artist section ---- */
+.ad-more {
+  position: relative;
+  z-index: 1;
+  padding: 48px 48px 64px;
+}
+
+.ad-more-title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 20px 0;
+}
+
+.ad-more-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.ad-more-card {
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.ad-more-card:hover {
+  transform: translateY(-4px);
+  opacity: 0.85;
+}
+
+.ad-more-img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+
+.ad-more-name {
+  font-family: 'Roboto', sans-serif;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ad-more-year {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* =============================================
+   REVIEWS SECTION
+   ============================================= */
+.ad-reviews-section {
+  position: relative;
+  z-index: 1;
+  padding: 48px 48px 64px;
+}
+
+.ad-reviews-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.ad-reviews-title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.ad-write-review-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 24px;
+  cursor: pointer;
+  letter-spacing: 1.5px;
+  transition: all 0.2s;
+}
+
+.ad-write-review-btn:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+/* Review form */
+.ad-review-form {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ad-review-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  outline: none;
+}
+
+.ad-review-input:focus,
+.ad-review-textarea:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.ad-review-textarea {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+}
+
+.ad-review-rating-select {
+  display: flex;
+  gap: 6px;
+}
+
+.ad-review-star-pick {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.ad-review-star-pick.active {
+  color: #f5c518;
+}
+
+.ad-review-star-pick:hover {
+  color: #f5c518;
+}
+
+.ad-review-error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin: 0;
+}
+
+.ad-review-form-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.ad-review-submit {
+  font-family: 'DM Mono', monospace;
+  background: #c0633a;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  font-size: 13px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.2s;
+}
+
+.ad-review-submit:hover {
+  background: #d4764d;
+}
+
+.ad-review-cancel {
+  font-family: 'DM Mono', monospace;
+  background: none;
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 24px;
+  font-size: 13px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.ad-review-cancel:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Review cards grid — 3 columns */
+.ad-reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Individual review card */
+.ad-review-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ad-review-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ad-review-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #c0633a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.ad-review-username {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+
+.ad-review-username strong {
+  color: #fff;
+}
+
+.ad-review-date {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 12px;
+}
+
+.ad-review-card-title {
+  font-family: 'Roboto', sans-serif;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ad-review-stars {
+  color: #f5c518;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.ad-review-text {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ad-review-footer {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.ad-review-likes {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 13px;
+}
+
+.ad-reviews-empty {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 14px;
+  text-align: center;
+  padding: 40px 0;
+}
+
+.ad-reviews-load-more {
+  display: block;
+  margin: 28px auto 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 32px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.ad-reviews-load-more:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 1024px) {
+  .ad-reviews-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .ad-reviews-grid {
+    grid-template-columns: 1fr;
+  }
+  .ad-reviews-section {
+    padding: 32px 16px 48px;
+  }
+}
+
+/* ---- Responsive: stack vertically on mobile ---- */
+@media (max-width: 768px) {
+  .ad-page {
     flex-direction: column;
-    align-items: center;
-    text-align: center;
   }
 
-  .album-detail-cover {
-    width: 200px;
-    height: 200px;
+  .ad-left {
+    width: 100%;
+    height: 50vh;
   }
 
-  .album-detail-meta {
-    justify-content: center;
+  .ad-more {
+    padding: 32px 16px 48px;
+  }
+
+  .ad-right {
+    max-height: none;
+    padding: 24px 16px 60px;
   }
 }
 
@@ -1108,9 +1693,11 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .landing-actions {
-    flex-direction: column;
-    align-items: center;
+  .landing-ring-item {
+    width: 100px;
+    height: 100px;
+    left: -50px;
+    top: -50px;
   }
 
   .album-grid,

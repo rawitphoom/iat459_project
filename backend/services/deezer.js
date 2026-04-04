@@ -45,8 +45,8 @@ async function searchAlbums(query, limit = 20) {
     title: album.title,
     artist: album.artist.name,
     artistId: album.artist.id,
-    cover: album.cover_medium,           // 250x250
-    coverBig: album.cover_big,           // 500x500
+    cover: album.cover_big || album.cover_medium,   // 500x500 for grid cards
+    coverXl: album.cover_xl,                         // 1000x1000 for detail page
     link: album.link,
     recordType: album.record_type,       // "album", "single", "ep"
   }));
@@ -83,8 +83,8 @@ async function getChart() {
     title: album.title,
     artist: album.artist.name,
     artistId: album.artist.id,
-    cover: album.cover_medium,
-    coverBig: album.cover_big,
+    cover: album.cover_big || album.cover_medium,   // 500x500 for grid cards
+    coverXl: album.cover_xl,                         // 1000x1000 for detail page
     link: album.link,
     position: album.position,            // Chart position (1, 2, 3...)
   }));
@@ -142,13 +142,23 @@ async function getAlbumDetail(albumId) {
   const res = await axios.get(`https://api.deezer.com/album/${albumId}`);
   const album = res.data;
 
+  // Fetch artist profile image in parallel — album endpoint only gives artist name/id
+  let artistPicture = "";
+  try {
+    const artistRes = await axios.get(`https://api.deezer.com/artist/${album.artist?.id}`);
+    artistPicture = artistRes.data.picture_medium || "";
+  } catch {
+    // Silently fail — we'll fall back to the letter avatar on frontend
+  }
+
   return {
     id: album.id,
     title: album.title,
     artist: album.artist?.name,
     artistId: album.artist?.id,
-    cover: album.cover_medium,
-    coverBig: album.cover_big || album.cover_xl,
+    artistPicture, // Artist profile photo URL (250x250)
+    cover: album.cover_big || album.cover_medium,     // 500x500 fallback
+    coverXl: album.cover_xl,                           // 1000x1000 highest quality
     genre: album.genres?.data?.[0]?.name || "",
     releaseDate: album.release_date,
     totalTracks: album.nb_tracks,
@@ -206,6 +216,26 @@ async function getArtistDetail(artistId) {
   };
 }
 
+/**
+ * Get albums by a specific artist.
+ * Used for "More by [Artist]" section on Album Detail page.
+ */
+async function getArtistAlbums(artistId, limit = 10) {
+  const res = await axios.get(`https://api.deezer.com/artist/${artistId}/albums`, {
+    params: { limit },
+  });
+
+  return (res.data.data || []).map((album) => ({
+    id: album.id,
+    title: album.title,
+    artist: album.artist?.name || "",
+    cover: album.cover_big || album.cover_medium,
+    coverXl: album.cover_xl,
+    releaseDate: album.release_date,
+    recordType: album.record_type,
+  }));
+}
+
 module.exports = {
   searchTracks,
   searchAlbums,
@@ -213,4 +243,5 @@ module.exports = {
   getGenres,
   getAlbumDetail,
   getArtistDetail,
+  getArtistAlbums,
 };

@@ -190,7 +190,7 @@ export default function Discover() {
               <div className="album-card-img-wrapper">
                 <img
                   className="album-card-img"
-                  src={album.coverBig || album.cover}
+                  src={album.cover}
                   alt={album.title}
                 />
                 {/* Hover overlay with play icon */}

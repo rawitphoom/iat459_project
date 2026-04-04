@@ -575,6 +575,383 @@ body {
   color: #fff;
 }
 
+/* ---- Landing page wrapper (scrollable) ---- */
+.landing-page {
+  background: #111;
+}
+
+/* ---- Scroll reveal animation ---- */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal-up.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ======== FEATURES SECTION: "Mixtape lets you..." ======== */
+.landing-features {
+  padding: 100px 64px;
+  display: flex;
+  gap: 60px;
+  align-items: flex-start;
+}
+
+.landing-features-title {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin: 0;
+  flex-shrink: 0;
+  min-width: 260px;
+}
+
+.landing-dot {
+  color: #c0633a;
+}
+
+.landing-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  flex: 1;
+}
+
+.landing-feature-card {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 28px;
+  position: relative;
+}
+
+.landing-feature-icon {
+  display: block;
+  font-size: 20px;
+  color: #c0633a;
+  margin-bottom: 12px;
+}
+
+.landing-feature-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ======== ABOUT SECTION: Vinyl story ======== */
+.landing-about {
+  padding: 80px 64px 120px;
+  display: flex;
+  gap: 80px;
+  background: #f5f0eb;
+}
+
+.landing-about-col {
+  flex: 1;
+}
+
+.landing-about-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #222;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .landing-features {
+    flex-direction: column;
+    padding: 60px 24px;
+    gap: 32px;
+  }
+
+  .landing-features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-about {
+    flex-direction: column;
+    padding: 60px 24px 80px;
+    gap: 40px;
+  }
+}
+
+/* ======== NEW RELEASES — floating scattered layout ======== */
+.landing-releases {
+  position: relative;
+  padding: 80px 0;
+  overflow: hidden;
+}
+
+.landing-releases-left {
+  position: absolute;
+  left: 104px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  max-width: 380px;
+  transform-origin: center center;
+  transition: transform 0.05s linear, opacity 0.05s linear;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.landing-releases-left * {
+  pointer-events: auto;
+}
+
+.landing-releases-label {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin: 0 0 16px 0;
+  line-height: 1.1;
+}
+
+.landing-releases-desc {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.7;
+  margin: 0 0 24px 0;
+}
+
+.landing-releases-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 60px 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.landing-releases-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.landing-releases-track {
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-auto-flow: column;
+  grid-auto-columns: 200px;
+  gap: 80px 60px;
+  padding-left: 500px; /* Start albums after the text area */
+  padding-right: 64px;
+}
+
+.landing-releases-card {
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+.landing-releases-card:hover {
+  transform: scale(1.05) !important;
+  z-index: 2;
+}
+
+.landing-releases-card img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.landing-releases-info {
+  margin-top: 10px;
+}
+
+.landing-releases-name {
+  font-family: 'Roboto', sans-serif;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.landing-releases-artist {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+@media (max-width: 900px) {
+  .landing-releases {
+    flex-direction: column;
+    padding: 40px 24px;
+    align-items: flex-start;
+  }
+
+  .landing-releases-left {
+    max-width: 100%;
+  }
+
+  .landing-releases-track {
+    grid-auto-columns: 150px;
+    gap: 20px 16px;
+  }
+
+  .landing-releases-card img {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+/* ======== POPULAR MIXTAPES + generic section styles ======== */
+.landing-section {
+  padding: 60px 64px 40px;
+}
+
+.landing-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.landing-section-title {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.landing-section-link {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: #c0633a;
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: opacity 0.2s;
+}
+
+.landing-section-link:hover {
+  opacity: 0.7;
+}
+
+/* Horizontal scrolling row */
+.landing-row {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.landing-row::-webkit-scrollbar {
+  height: 6px;
+}
+
+.landing-row::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+}
+
+.landing-row::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+}
+
+.landing-row-card {
+  flex: 0 0 220px;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.landing-row-card:hover {
+  transform: translateY(-4px);
+}
+
+.landing-row-img {
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+.landing-row-name {
+  font-family: 'Roboto', sans-serif;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.landing-row-artist {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Mixtape cover: 2x2 mosaic of track album arts */
+.landing-mixtape-cover {
+  width: 220px;
+  height: 220px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  background: #222;
+}
+
+.landing-mixtape-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.landing-mixtape-empty {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: rgba(255,255,255,0.15);
+}
+
+@media (max-width: 900px) {
+  .landing-section {
+    padding: 40px 24px 24px;
+  }
+
+  .landing-row-card {
+    flex: 0 0 160px;
+  }
+
+  .landing-row-img,
+  .landing-mixtape-cover {
+    width: 160px;
+    height: 160px;
+  }
+}
+
 /* ---- Intro page (kept separate) ---- */
 .intro-page {
   min-height: 100vh;

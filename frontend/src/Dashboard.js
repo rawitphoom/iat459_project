@@ -37,7 +37,7 @@ export default function Dashboard() {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((res) => res.json())
-            .then((data) => setPlaylists(data))
+            .then((data) => setPlaylists(Array.isArray(data) ? data : []))
             .catch(console.error);
     }, [token]);
 

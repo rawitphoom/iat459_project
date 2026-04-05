@@ -24,7 +24,7 @@ export default function AlbumDetail() {
   const [playingId, setPlayingId] = useState(null);
   const audioRef = useRef(null);
 
-  // Liked tracks (local state for now — could connect to MongoDB later)
+  // Liked tracks
   const [likedTracks, setLikedTracks] = useState([]);
 
   // Album saved state
@@ -32,6 +32,12 @@ export default function AlbumDetail() {
 
   // More albums by the same artist
   const [moreAlbums, setMoreAlbums] = useState([]);
+
+  // Heart popup modal state
+  const [heartPopup, setHeartPopup] = useState(null); // track object or null
+  const [heartPos, setHeartPos] = useState({ x: 0, y: 0 }); // popup position
+  const [userPlaylists, setUserPlaylists] = useState([]);
+  const [playlistTrackMap, setPlaylistTrackMap] = useState({}); // { playlistId: [trackIds] }
 
 
   // Reviews
@@ -101,11 +107,10 @@ export default function AlbumDetail() {
       })
       .then((data) => {
         setAlbum(data);
-        // Extract dominant color from cover image for the background glow
         if (data.coverXl || data.cover) {
           extractColor(data.coverXl || data.cover);
         }
-        // Fetch reviews + average rating for this album
+        // Fetch reviews + average rating
         fetch(`http://localhost:5001/api/reviews/album/${id}`)
           .then((r) => r.json())
           .then((revs) => setReviews(Array.isArray(revs) ? revs : []))
@@ -120,7 +125,6 @@ export default function AlbumDetail() {
           fetch(`http://localhost:5001/api/music/artist/${data.artistId}/albums`)
             .then((r) => r.json())
             .then((albums) => {
-              // Filter out the current album
               setMoreAlbums(
                 Array.isArray(albums)
                   ? albums.filter((a) => String(a.id) !== String(id))
@@ -129,10 +133,31 @@ export default function AlbumDetail() {
             })
             .catch(() => {});
         }
+
+        // Check if album is favorited + load liked songs
+        if (token) {
+          fetch(`http://localhost:5001/api/favorites/albums/check/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+            .then((r) => r.json())
+            .then((r) => setSaved(r.isFavorited))
+            .catch(() => {});
+
+          fetch("http://localhost:5001/api/favorites/songs", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+            .then((r) => r.json())
+            .then((favs) => {
+              if (Array.isArray(favs)) {
+                setLikedTracks(favs.map((f) => f.trackId));
+              }
+            })
+            .catch(() => {});
+        }
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [id, extractColor]);
+  }, [id, extractColor, token]);
 
   // ---- Audio preview toggle ----
   const togglePreview = (track) => {
@@ -153,13 +178,144 @@ export default function AlbumDetail() {
     setPlayingId(track.trackId);
   };
 
-  // ---- Toggle like on a track ----
-  const toggleLike = (trackId) => {
+  // ---- Open heart popup for a track ----
+  const openHeartPopup = async (e, track) => {
+    if (!token) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHeartPos({ x: rect.left, y: rect.top });
+    setHeartPopup(track);
+
+    // Fetch user's playlists
+    try {
+      const res = await fetch("http://localhost:5001/api/playlists", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setUserPlaylists(data);
+        // Build map of which playlists contain this track
+        const map = {};
+        data.forEach((pl) => {
+          map[pl._id] = pl.tracks?.map((t) => t.trackId) || [];
+        });
+        setPlaylistTrackMap(map);
+      }
+    } catch {}
+  };
+
+  // ---- Toggle liked songs (favorites) from popup ----
+  const toggleLikedSongs = async () => {
+    if (!heartPopup || !token) return;
+    const track = heartPopup;
+    const isLiked = likedTracks.includes(track.trackId);
+
     setLikedTracks((prev) =>
-      prev.includes(trackId)
-        ? prev.filter((id) => id !== trackId)
-        : [...prev, trackId]
+      isLiked ? prev.filter((id) => id !== track.trackId) : [...prev, track.trackId]
     );
+
+    try {
+      if (isLiked) {
+        await fetch(`http://localhost:5001/api/favorites/songs/${track.trackId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await fetch("http://localhost:5001/api/favorites/songs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            trackId: track.trackId,
+            name: track.name,
+            artist: track.artist,
+            album: album?.title || "",
+            albumArt: album?.cover || "",
+            previewUrl: track.previewUrl,
+            durationSec: track.durationSec,
+          }),
+        });
+      }
+    } catch {
+      setLikedTracks((prev) =>
+        isLiked ? [...prev, track.trackId] : prev.filter((id) => id !== track.trackId)
+      );
+    }
+  };
+
+  // ---- Toggle track in a playlist from popup ----
+  const toggleTrackInPlaylist = async (playlistId) => {
+    if (!heartPopup || !token) return;
+    const track = heartPopup;
+    const trackIds = playlistTrackMap[playlistId] || [];
+    const isInPlaylist = trackIds.includes(track.trackId);
+
+    // Optimistic update
+    setPlaylistTrackMap((prev) => ({
+      ...prev,
+      [playlistId]: isInPlaylist
+        ? trackIds.filter((id) => id !== track.trackId)
+        : [...trackIds, track.trackId],
+    }));
+
+    try {
+      if (isInPlaylist) {
+        await fetch(`http://localhost:5001/api/playlists/${playlistId}/tracks/${track.trackId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await fetch(`http://localhost:5001/api/playlists/${playlistId}/tracks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            trackId: track.trackId,
+            name: track.name,
+            artist: track.artist,
+            album: album?.title || "",
+            albumArt: album?.cover || "",
+            previewUrl: track.previewUrl,
+            durationSec: track.durationSec,
+          }),
+        });
+      }
+    } catch {
+      // Revert
+      setPlaylistTrackMap((prev) => ({
+        ...prev,
+        [playlistId]: isInPlaylist
+          ? [...trackIds]
+          : trackIds.filter((id) => id !== track.trackId),
+      }));
+    }
+  };
+
+  // ---- Toggle save album (saves to MongoDB) ----
+  const toggleSaveAlbum = async () => {
+    if (!token) return;
+
+    const wasSaved = saved;
+    setSaved(!wasSaved); // Optimistic
+
+    try {
+      if (wasSaved) {
+        await fetch(`http://localhost:5001/api/favorites/albums/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await fetch("http://localhost:5001/api/favorites/albums", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            albumId: String(id),
+            title: album?.title || "",
+            artist: album?.artist || "",
+            cover: album?.coverXl || album?.cover || "",
+          }),
+        });
+      }
+    } catch {
+      setSaved(wasSaved); // Revert on error
+    }
   };
 
   // ---- Format seconds to "mm:ss" ----
@@ -263,7 +419,7 @@ export default function AlbumDetail() {
           <div className="ad-cover-footer">
             <button
               className={`ad-save-btn ${saved ? "saved" : ""}`}
-              onClick={() => setSaved(!saved)}
+              onClick={toggleSaveAlbum}
             >
               {saved ? "✓  SAVED" : "＋  SAVE ALBUM"}
             </button>
@@ -319,10 +475,14 @@ export default function AlbumDetail() {
                 </span>
                 <button
                   className={`ad-track-heart ${likedTracks.includes(track.trackId) ? "liked" : ""}`}
-                  onClick={() => toggleLike(track.trackId)}
-                  title="Like"
+                  onClick={(e) => openHeartPopup(e, track)}
+                  title="Add to..."
                 >
-                  {likedTracks.includes(track.trackId) ? "♥" : "♡"}
+                  {likedTracks.includes(track.trackId) ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037.033l.034-.03a6 6 0 0 1 4.733-1.44l.246.036a6 6 0 0 1 3.364 10.008l-.18.185l-.048.041l-7.45 7.379a1 1 0 0 1-1.313.082l-.094-.082l-7.493-7.422A6 6 0 0 1 6.979 3.074"/></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.5 12.572L12 20l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572"/></svg>
+                  )}
                 </button>
                 <button
                   className={`ad-track-play ${playingId === track.trackId ? "active" : ""}`}
@@ -458,6 +618,69 @@ export default function AlbumDetail() {
           </button>
         )}
       </div>
+
+      {/* ======== HEART POPUP MODAL ======== */}
+      {heartPopup && (
+        <div className="heart-popup-overlay" onClick={() => setHeartPopup(null)}>
+          <div
+            className="heart-popup"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "fixed",
+              left: `${Math.min(heartPos.x - 320, window.innerWidth - 360)}px`,
+              top: `${Math.max(Math.min(heartPos.y - 60, window.innerHeight - 400), 20)}px`,
+            }}
+          >
+            <div className="heart-popup-header">
+              <div className="heart-popup-track">
+                <strong>{heartPopup.name}</strong>
+                <span>{heartPopup.artist}</span>
+              </div>
+              <button className="heart-popup-close" onClick={() => setHeartPopup(null)}>✕</button>
+            </div>
+
+            <div className="heart-popup-list">
+              {/* Liked Songs toggle */}
+              <button
+                className={`heart-popup-item ${likedTracks.includes(heartPopup.trackId) ? "active" : ""}`}
+                onClick={toggleLikedSongs}
+              >
+                <span className="heart-popup-icon">♥</span>
+                <span className="heart-popup-name">Liked Songs</span>
+                <span className={`heart-popup-check ${likedTracks.includes(heartPopup.trackId) ? "checked" : ""}`}>
+                  {likedTracks.includes(heartPopup.trackId) ? "✓" : ""}
+                </span>
+              </button>
+
+              {/* User's playlists */}
+              {userPlaylists.map((pl) => {
+                const isIn = (playlistTrackMap[pl._id] || []).includes(heartPopup.trackId);
+                return (
+                  <button
+                    key={pl._id}
+                    className={`heart-popup-item ${isIn ? "active" : ""}`}
+                    onClick={() => toggleTrackInPlaylist(pl._id)}
+                  >
+                    <span className="heart-popup-icon">
+                      {pl.tracks?.length > 0 && pl.tracks[0].albumArt ? (
+                        <img src={pl.tracks[0].albumArt} alt="" className="heart-popup-playlist-art" />
+                      ) : "♪"}
+                    </span>
+                    <span className="heart-popup-name">{pl.name}</span>
+                    <span className={`heart-popup-check ${isIn ? "checked" : ""}`}>
+                      {isIn ? "✓" : ""}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button className="heart-popup-cancel" onClick={() => setHeartPopup(null)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

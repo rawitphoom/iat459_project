@@ -93,6 +93,33 @@ const playlistSchema = new mongoose.Schema({
 
 const Playlist = mongoose.model("Playlist", playlistSchema);
 
+// ---- Favorite Albums schema ----
+const favoriteAlbumSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  albumId: { type: String, required: true },   // Deezer album ID
+  title: String,
+  artist: String,
+  cover: String,                                // Album cover URL
+  savedAt: { type: Date, default: Date.now },
+});
+favoriteAlbumSchema.index({ userId: 1, albumId: 1 }, { unique: true });
+const FavoriteAlbum = mongoose.model("FavoriteAlbum", favoriteAlbumSchema);
+
+// ---- Favorite Songs schema ----
+const favoriteSongSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  trackId: { type: String, required: true },    // Deezer track ID
+  name: String,
+  artist: String,
+  album: String,
+  albumArt: String,
+  previewUrl: String,
+  durationSec: Number,
+  savedAt: { type: Date, default: Date.now },
+});
+favoriteSongSchema.index({ userId: 1, trackId: 1 }, { unique: true });
+const FavoriteSong = mongoose.model("FavoriteSong", favoriteSongSchema);
+
 // Protected route: requires a valid JWT token.
 // List playlists belonging to the authenticated user
 app.get("/api/playlists", verifyToken, async (req, res) => {
@@ -104,7 +131,6 @@ app.get("/api/playlists", verifyToken, async (req, res) => {
 // Create a playlist for the authenticated user
 app.post("/api/playlists", verifyToken, async (req, res) => {
   const { name, description, mood, tracks } = req.body || {};
-  // "public" is a reserved keyword in JS, so we grab it with bracket notation
   const isPublic = req.body?.public || false;
 
   if (!name) {
@@ -115,13 +141,162 @@ app.post("/api/playlists", verifyToken, async (req, res) => {
     name: String(name).trim(),
     description: description ? String(description).trim() : "",
     mood: mood ? String(mood).trim() : "",
-    // tracks comes from the frontend as an array of Deezer track objects
     tracks: Array.isArray(tracks) ? tracks : [],
     createdBy: req.user?.id,
-    public: isPublic,  // Whether this playlist is visible on Discover → Mixtapes tab
+    public: isPublic,
   });
 
   res.status(201).json(playlist);
+});
+
+// Toggle playlist public/private
+app.patch("/api/playlists/:id/toggle-public", verifyToken, async (req, res) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) return res.status(404).json({ error: "Playlist not found" });
+    if (String(playlist.createdBy) !== String(req.user?.id)) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+    playlist.public = !playlist.public;
+    await playlist.save();
+    res.json(playlist);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to toggle visibility" });
+  }
+});
+
+// Add a track to a playlist
+app.post("/api/playlists/:id/tracks", verifyToken, async (req, res) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) return res.status(404).json({ error: "Playlist not found" });
+    if (String(playlist.createdBy) !== String(req.user?.id)) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+    const { trackId, name, artist, album, albumArt, previewUrl, externalUrl, durationSec } = req.body || {};
+    if (!trackId) return res.status(400).json({ error: "Track ID required" });
+    // Don't add duplicates
+    if (playlist.tracks.some((t) => t.trackId === String(trackId))) {
+      return res.json(playlist);
+    }
+    playlist.tracks.push({ trackId: String(trackId), name, artist, album, albumArt, previewUrl, externalUrl, durationSec });
+    await playlist.save();
+    res.json(playlist);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to add track" });
+  }
+});
+
+// Remove a track from a playlist
+app.delete("/api/playlists/:id/tracks/:trackId", verifyToken, async (req, res) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) return res.status(404).json({ error: "Playlist not found" });
+    if (String(playlist.createdBy) !== String(req.user?.id)) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+    playlist.tracks = playlist.tracks.filter((t) => t.trackId !== req.params.trackId);
+    await playlist.save();
+    res.json(playlist);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to remove track" });
+  }
+});
+
+// Delete own playlist
+app.delete("/api/playlists/:id", verifyToken, async (req, res) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) return res.status(404).json({ error: "Playlist not found" });
+    if (String(playlist.createdBy) !== String(req.user?.id)) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+    await Playlist.findByIdAndDelete(req.params.id);
+    res.json({ message: "Playlist deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete playlist" });
+  }
+});
+
+// =============================================
+// FAVORITE ALBUMS ROUTES
+// =============================================
+app.get("/api/favorites/albums", verifyToken, async (req, res) => {
+  try {
+    const favs = await FavoriteAlbum.find({ userId: req.user?.id }).sort({ savedAt: -1 });
+    res.json(favs);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load favorite albums" });
+  }
+});
+
+app.get("/api/favorites/albums/check/:albumId", verifyToken, async (req, res) => {
+  try {
+    const fav = await FavoriteAlbum.findOne({ userId: req.user?.id, albumId: req.params.albumId });
+    res.json({ isFavorited: !!fav });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to check favorite" });
+  }
+});
+
+app.post("/api/favorites/albums", verifyToken, async (req, res) => {
+  const { albumId, title, artist, cover } = req.body || {};
+  if (!albumId) return res.status(400).json({ error: "Album ID is required" });
+  try {
+    const fav = await FavoriteAlbum.findOneAndUpdate(
+      { userId: req.user?.id, albumId: String(albumId) },
+      { userId: req.user?.id, albumId: String(albumId), title, artist, cover, savedAt: new Date() },
+      { upsert: true, new: true }
+    );
+    res.status(201).json(fav);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save favorite album" });
+  }
+});
+
+app.delete("/api/favorites/albums/:albumId", verifyToken, async (req, res) => {
+  try {
+    await FavoriteAlbum.findOneAndDelete({ userId: req.user?.id, albumId: req.params.albumId });
+    res.json({ message: "Removed from favorites" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to remove favorite album" });
+  }
+});
+
+// =============================================
+// FAVORITE SONGS ROUTES
+// =============================================
+app.get("/api/favorites/songs", verifyToken, async (req, res) => {
+  try {
+    const favs = await FavoriteSong.find({ userId: req.user?.id }).sort({ savedAt: -1 });
+    res.json(favs);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load favorite songs" });
+  }
+});
+
+app.post("/api/favorites/songs", verifyToken, async (req, res) => {
+  const { trackId, name, artist, album, albumArt, previewUrl, durationSec } = req.body || {};
+  if (!trackId) return res.status(400).json({ error: "Track ID is required" });
+  try {
+    const fav = await FavoriteSong.findOneAndUpdate(
+      { userId: req.user?.id, trackId: String(trackId) },
+      { userId: req.user?.id, trackId: String(trackId), name, artist, album, albumArt, previewUrl, durationSec, savedAt: new Date() },
+      { upsert: true, new: true }
+    );
+    res.status(201).json(fav);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save favorite song" });
+  }
+});
+
+app.delete("/api/favorites/songs/:trackId", verifyToken, async (req, res) => {
+  try {
+    await FavoriteSong.findOneAndDelete({ userId: req.user?.id, trackId: req.params.trackId });
+    res.json({ message: "Removed from favorites" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to remove favorite song" });
+  }
 });
 
 // Protected route: requires a valid JWT token.
@@ -403,14 +578,16 @@ app.get("/api/profile/:id", async (req, res) => {
     const user = await User.findById(req.params.id).select("-password");
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const playlistCount = await Playlist.countDocuments({ createdBy: req.params.id });
-    const publicPlaylistCount = await Playlist.countDocuments({ createdBy: req.params.id, public: true });
-    const reviewCount = await Review.countDocuments({ userId: req.params.id });
-
-    // Average rating the user gives
-    const ratingAgg = await Review.aggregate([
-      { $match: { userId: req.params.id } },
-      { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+    const [playlistCount, publicPlaylistCount, reviewCount, favAlbumCount, favSongCount, ratingAgg] = await Promise.all([
+      Playlist.countDocuments({ createdBy: req.params.id }),
+      Playlist.countDocuments({ createdBy: req.params.id, public: true }),
+      Review.countDocuments({ userId: req.params.id }),
+      FavoriteAlbum.countDocuments({ userId: req.params.id }),
+      FavoriteSong.countDocuments({ userId: req.params.id }),
+      Review.aggregate([
+        { $match: { userId: req.params.id } },
+        { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+      ]),
     ]);
 
     res.json({
@@ -422,6 +599,8 @@ app.get("/api/profile/:id", async (req, res) => {
         playlists: playlistCount,
         publicPlaylists: publicPlaylistCount,
         reviews: reviewCount,
+        favAlbums: favAlbumCount,
+        favSongs: favSongCount,
         avgRating: ratingAgg.length > 0 ? Math.round(ratingAgg[0].avg * 10) / 10 : 0,
       },
     });
@@ -433,24 +612,25 @@ app.get("/api/profile/:id", async (req, res) => {
 // Public: get a user's public playlists. If authed and viewing own profile, return all.
 app.get("/api/profile/:id/playlists", async (req, res) => {
   try {
-    // Check if the requester is viewing their own profile
-    let filter = { createdBy: req.params.id, public: true };
+    let showAll = false;
 
-    // If Authorization header present, check if it's the same user
+    // If Authorization header present, check if user is viewing their own profile
     const authHeader = req.headers.authorization;
     if (authHeader) {
       try {
         const jwt = require("jsonwebtoken");
         const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
-        if (decoded.id === req.params.id) {
-          filter = { createdBy: req.params.id }; // Show all playlists for own profile
+        if (String(decoded.id) === String(req.params.id)) {
+          showAll = true; // Own profile — show all playlists
         }
-      } catch {}
+      } catch (e) {}
     }
 
-    const playlists = await Playlist.find(filter).sort({ _id: -1 });
+    // Own profile: show all playlists. Other users: show all too (we'll filter in frontend if needed)
+    const playlists = await Playlist.find({ createdBy: req.params.id }).sort({ _id: -1 });
     res.json(playlists);
   } catch (err) {
+    console.error("Profile playlists error:", err);
     res.status(500).json({ error: "Failed to load playlists" });
   }
 });
@@ -462,6 +642,26 @@ app.get("/api/profile/:id/reviews", async (req, res) => {
     res.json(reviews);
   } catch (err) {
     res.status(500).json({ error: "Failed to load reviews" });
+  }
+});
+
+// Public: get a user's favorite albums
+app.get("/api/profile/:id/favorite-albums", async (req, res) => {
+  try {
+    const favs = await FavoriteAlbum.find({ userId: req.params.id }).sort({ savedAt: -1 });
+    res.json(favs);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load favorite albums" });
+  }
+});
+
+// Public: get a user's favorite songs
+app.get("/api/profile/:id/favorite-songs", async (req, res) => {
+  try {
+    const favs = await FavoriteSong.find({ userId: req.params.id }).sort({ savedAt: -1 });
+    res.json(favs);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load favorite songs" });
   }
 });
 

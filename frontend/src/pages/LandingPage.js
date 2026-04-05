@@ -1,5 +1,75 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+
+// Cycling mosaic cover — outgoing set slides out, incoming set slides in, both visible during transition
+function CyclingMosaic({ tracks }) {
+  const allArts = (tracks || []).map((t) => t.albumArt).filter(Boolean);
+  const [currentSet, setCurrentSet] = useState(0);
+  const [nextSet, setNextSet] = useState(null); // null = not transitioning
+
+  const totalSets = Math.ceil(allArts.length / 4);
+
+  useEffect(() => {
+    if (allArts.length <= 4) return;
+
+    const interval = setInterval(() => {
+      const next = (currentSet + 1) % totalSets;
+      setNextSet(next);
+
+      // After both animations finish, commit the swap
+      setTimeout(() => {
+        setCurrentSet(next);
+        setNextSet(null);
+      }, 800);
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [allArts.length, totalSets, currentSet]);
+
+  if (allArts.length === 0) {
+    return (
+      <div className="landing-top3-cover">
+        <div className="landing-top3-empty">♪</div>
+      </div>
+    );
+  }
+
+  const getArts = (idx) => {
+    const arts = [];
+    for (let j = 0; j < 4; j++) {
+      arts.push(allArts[(idx * 4 + j) % allArts.length]);
+    }
+    return arts;
+  };
+
+  const currentArts = getArts(currentSet);
+  const nextArts = nextSet !== null ? getArts(nextSet) : null;
+
+  return (
+    <div className="landing-top3-cover">
+      {/* Current set — slides out when nextSet appears */}
+      {currentArts.map((art, j) => (
+        <img
+          key={`cur-${currentSet}-${j}`}
+          src={art}
+          alt=""
+          className={`landing-top3-thumb corner-${j} ${nextSet !== null ? "slide-out" : ""}`}
+          style={{ gridColumn: (j % 2) + 1, gridRow: Math.floor(j / 2) + 1, zIndex: 1 }}
+        />
+      ))}
+      {/* Next set — slides in on top */}
+      {nextArts && nextArts.map((art, j) => (
+        <img
+          key={`next-${nextSet}-${j}`}
+          src={art}
+          alt=""
+          className={`landing-top3-thumb corner-${j} slide-in`}
+          style={{ gridColumn: (j % 2) + 1, gridRow: Math.floor(j / 2) + 1, zIndex: 2 }}
+        />
+      ))}
+    </div>
+  );
+}
 
 // Static album data for the 3D ring
 const ALBUMS = [
@@ -32,6 +102,7 @@ export default function LandingPage() {
   const scrollRef = useRef(null);
   const releasesLeftRef = useRef(null);
   const releasesScrollRef = useRef(null);
+  const featureTextRefs = useRef([]);
 
   const count = ALBUMS.length;
   const angleStep = 360 / count;
@@ -95,6 +166,27 @@ export default function LandingPage() {
 
     return () => observer.disconnect();
   }, [newReleases, mixtapes]);
+
+  // Scroll-linked text reveal for feature cards
+  useEffect(() => {
+    const handleScroll = () => {
+      featureTextRefs.current.forEach((el) => {
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const windowH = window.innerHeight;
+        // Start revealing when element enters bottom 80% of viewport
+        // Fully revealed when element reaches 55% from top
+        const start = windowH * 1.1;
+        const end = windowH * 0.35;
+        const progress = Math.min(Math.max((start - rect.top) / (start - end), 0), 1);
+        el.style.clipPath = `inset(0 ${(1 - progress) * 100}% 0 0)`;
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // run once on mount
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const addRef = (el) => {
     if (el && !revealRefs.current.includes(el)) {
@@ -160,7 +252,12 @@ export default function LandingPage() {
               style={{ transitionDelay: `${i * 0.12}s` }}
             >
               <span className="landing-feature-icon">{feat.icon}</span>
-              <p className="landing-feature-text">{feat.text}</p>
+              <p className="landing-feature-text">
+                <span
+                  className="reveal-text"
+                  ref={(el) => { if (el) featureTextRefs.current[i] = el; }}
+                >{feat.text}</span>
+              </p>
             </div>
           ))}
         </div>
@@ -212,7 +309,7 @@ export default function LandingPage() {
       {mixtapes.length > 0 && (
         <div className="landing-top3">
           <h2 className="landing-top3-title reveal-up" ref={addRef}>
-            Popular Mixtapes.
+            POPULAR MIXTAPES
           </h2>
           <div className="landing-top3-grid">
             {mixtapes.slice(0, 3).map((mix, i) => (
@@ -222,19 +319,7 @@ export default function LandingPage() {
                 ref={addRef}
                 style={{ transitionDelay: `${i * 0.15}s` }}
               >
-                <div className="landing-top3-cover">
-                  {mix.tracks?.slice(0, 4).map((t, j) => (
-                    <img
-                      key={j}
-                      src={t.albumArt}
-                      alt=""
-                      className="landing-top3-thumb"
-                    />
-                  ))}
-                  {(!mix.tracks || mix.tracks.length === 0) && (
-                    <div className="landing-top3-empty">♪</div>
-                  )}
-                </div>
+                <CyclingMosaic tracks={mix.tracks} />
                 <div className="landing-top3-label">
                   {mix.name}
                 </div>

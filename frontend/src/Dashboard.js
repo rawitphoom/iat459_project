@@ -1,47 +1,34 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
 import TrackSearch from "./TrackSearch";
 
 export default function Dashboard() {
-    const [playlists, setPlaylists] = useState([]);
-    const [query, setQuery] = useState("");
+    const [albums, setAlbums] = useState([]);
+    const [page, setPage] = useState(0);
     const [form, setForm] = useState({ name: "", description: "", mood: "", public: false });
     const [selectedTracks, setSelectedTracks] = useState([]);
     const [formError, setFormError] = useState("");
     const [isSaving, setIsSaving] = useState(false);
-    const [playingId, setPlayingId] = useState(null);
     const [showCreate, setShowCreate] = useState(false);
-    const audioRef = useRef(null);
-    const { user, token, logout } = useContext(AuthContext);
+    const [hoveredIdx, setHoveredIdx] = useState(-1);
+    const { user, token } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    // Stop audio on unmount
-    useEffect(() => {
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current = null;
-            }
-        };
-    }, []);
+    const perPage = 4;
+    const totalPages = Math.ceil(albums.length / perPage);
+    const visible = albums.slice(page * perPage, page * perPage + perPage);
 
-    // Load playlists
+    // Load latest albums from chart (limit to 8)
     useEffect(() => {
-        fetch("http://localhost:5001/api/playlists", {
-            cache: "no-store",
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        fetch("http://localhost:5001/api/music/chart")
             .then((res) => res.json())
-            .then((data) => setPlaylists(Array.isArray(data) ? data : []))
+            .then((data) => {
+                const list = (data?.albums || []).slice(0, 8);
+                setAlbums(list);
+            })
             .catch(console.error);
-    }, [token]);
-
-    const filtered = playlists.filter((p) =>
-        `${p.name} ${p.description} ${p.mood} ${p.tracks?.map((t) => `${t.name} ${t.artist}`).join(" ") || ""}`
-            .toLowerCase()
-            .includes(query.toLowerCase())
-    );
+    }, []);
 
     const handleAddTrack = (track) => {
         if (selectedTracks.some((t) => t.trackId === track.trackId)) return;
@@ -73,7 +60,6 @@ export default function Dashboard() {
             });
             const data = await res.json();
             if (!res.ok) { setFormError(data?.error || "Create failed"); return; }
-            setPlaylists((prev) => [data, ...prev]);
             setForm({ name: "", description: "", mood: "", public: false });
             setSelectedTracks([]);
             setShowCreate(false);
@@ -82,28 +68,6 @@ export default function Dashboard() {
         } finally {
             setIsSaving(false);
         }
-    };
-
-    const togglePreview = (track) => {
-        if (!track.previewUrl) return;
-        if (playingId === track.trackId) {
-            audioRef.current?.pause();
-            setPlayingId(null);
-            return;
-        }
-        if (audioRef.current) audioRef.current.pause();
-        const audio = new Audio(track.previewUrl);
-        audio.volume = 0.5;
-        audio.play();
-        audio.onended = () => setPlayingId(null);
-        audioRef.current = audio;
-        setPlayingId(track.trackId);
-    };
-
-    const formatDuration = (sec) => {
-        const min = Math.floor(sec / 60);
-        const s = sec % 60;
-        return `${min}:${s.toString().padStart(2, "0")}`;
     };
 
     return (
@@ -191,59 +155,59 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* ---- Your Mixtapes Section ---- */}
+            {/* ---- Latest Albums Released ---- */}
             <section className="dash-section">
                 <div className="dash-section-header">
-                    <h2 className="dash-section-title">YOUR MIXTAPES</h2>
-                    <input className="dash-search" value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search your mixtapes..." />
+                    <div>
+                        <h2 className="dash-section-title">LATEST ALBUMS RELEASED</h2>
+                        <p className="dash-section-sub">Check out the weekly release for some new tunes.</p>
+                    </div>
+                    <div className="dash-album-nav">
+                        {albums.map((_, i) => (
+                            <span
+                                key={i}
+                                className={`dash-album-dot ${i === hoveredIdx ? "active" : ""}`}
+                            >
+                                ♪
+                            </span>
+                        ))}
+                    </div>
                 </div>
 
-                {filtered.length === 0 && (
-                    <p className="dash-empty">No mixtapes yet. Create your first one!</p>
-                )}
+                <div className="dash-album-row">
+                    <button
+                        className="dash-carousel-arrow left"
+                        onClick={() => setPage((p) => (p > 0 ? p - 1 : totalPages - 1))}
+                    >
+                        ‹
+                    </button>
 
-                <div className="dash-playlist-grid">
-                    {filtered.map((p) => (
-                        <div key={p._id} className="dash-playlist-card">
-                            {/* Mosaic cover */}
-                            <div className="dash-playlist-cover">
-                                {p.tracks?.slice(0, 4).map((t, j) => (
-                                    t.albumArt ? <img key={j} src={t.albumArt} alt="" /> : <div key={j} className="dash-cover-empty" />
-                                ))}
-                                {(!p.tracks || p.tracks.length === 0) && <div className="dash-cover-placeholder">♪</div>}
+                    <div className="dash-album-grid">
+                        {visible.map((album, i) => (
+                            <div
+                                key={album.id}
+                                className="dash-album-card"
+                                onClick={() => navigate(`/album/${album.id}`)}
+                                onMouseEnter={() => setHoveredIdx(page * perPage + i)}
+                                onMouseLeave={() => setHoveredIdx(-1)}
+                            >
+                                <img
+                                    src={album.coverXl || album.cover}
+                                    alt={album.title}
+                                    className="dash-album-art"
+                                />
+                                <div className="dash-album-title">{album.title?.toUpperCase()}</div>
+                                <div className="dash-album-artist">{album.artist}</div>
                             </div>
-                            <div className="dash-playlist-info">
-                                <div className="dash-playlist-name">{p.name}</div>
-                                {p.mood && <div className="dash-playlist-mood">{p.mood}</div>}
-                                <div className="dash-playlist-count">{p.tracks?.length || 0} tracks</div>
-                            </div>
-                            {/* Track list */}
-                            {p.tracks?.length > 0 && (
-                                <div className="dash-tracks">
-                                    {p.tracks.map((track, i) => (
-                                        <div key={track.trackId || i} className="dash-track-row">
-                                            {track.albumArt && <img className="dash-track-art" src={track.albumArt} alt="" />}
-                                            <div className="dash-track-info">
-                                                <div className="dash-track-name">{track.name}</div>
-                                                <div className="dash-track-artist">
-                                                    {track.artist}
-                                                    {track.durationSec ? ` · ${formatDuration(track.durationSec)}` : ""}
-                                                </div>
-                                            </div>
-                                            <button
-                                                className={`dash-play-btn ${playingId === track.trackId ? "playing" : ""}`}
-                                                onClick={() => togglePreview(track)}
-                                            >
-                                                {playingId === track.trackId ? "⏸" : "▶"}
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+
+                    <button
+                        className="dash-carousel-arrow right"
+                        onClick={() => setPage((p) => (p < totalPages - 1 ? p + 1 : 0))}
+                    >
+                        ›
+                    </button>
                 </div>
             </section>
         </div>

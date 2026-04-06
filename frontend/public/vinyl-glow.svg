@@ -1,0 +1,8 @@
+<svg width="1000" height="1000" viewBox="0 0 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="500" cy="500" r="350" fill="#6B6767" fill-opacity="0.15" filter="url(#glow)"/>
+<defs>
+<filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+<feGaussianBlur stdDeviation="80" result="blur"/>
+</filter>
+</defs>
+</svg>

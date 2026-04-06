@@ -1,0 +1,22 @@
+<svg width="1000" height="1000" viewBox="-500 190 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g>
+<circle cx="0.0784022" cy="690.078" r="472.079" transform="rotate(-30 0.0784022 690.078)" fill="url(#paint0_linear_550_86)"/>
+<circle cx="0.0784022" cy="690.078" r="471.079" transform="rotate(-30 0.0784022 690.078)" stroke="#191818" stroke-width="2"/>
+</g>
+<g>
+<circle cx="-0.343076" cy="691.651" r="100.173" transform="rotate(-30 -0.343076 691.651)" fill="#E0D6D6"/>
+</g>
+<g>
+<circle cx="1.65113" cy="690.5" r="361.695" transform="rotate(-30 1.65113 690.5)" stroke="#2B2727" stroke-width="2" shape-rendering="crispEdges"/>
+</g>
+<g>
+<circle cx="1.2298" cy="692.073" r="263.825" transform="rotate(-30 1.2298 692.073)" stroke="#2B2727" stroke-width="2" shape-rendering="crispEdges"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_550_86" x1="53.0433" y1="298.599" x2="-56.3408" y2="1148.34" gradientUnits="userSpaceOnUse">
+<stop offset="0.125949" stop-color="#121216"/>
+<stop offset="0.496871" stop-color="#241915"/>
+<stop offset="0.813345" stop-color="#121216"/>
+</linearGradient>
+</defs>
+</svg>

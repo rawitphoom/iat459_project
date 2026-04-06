@@ -34,7 +34,13 @@
       "Bash(curl -s \"https://api.deezer.com/artist/1267\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''Name:'''', d.get\\(''''name''''\\)\\); print\\(''''picture_small:'''', d.get\\(''''picture_small''''\\)\\); print\\(''''picture_medium:'''', d.get\\(''''picture_medium''''\\)\\); print\\(''''picture_big:'''', d.get\\(''''picture_big''''\\)\\)\")",
       "Bash(python3 -c \":*)",
-      "Bash(curl -s http://localhost:5001/api/profile/test)"
+      "Bash(curl -s http://localhost:5001/api/profile/test)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(source ~/.zshrc)",
+      "Read(//Users/rawitphoom/Library/**)",
+      "Bash(command -v npx)",
+      "Read(//usr/local/lib/node_modules/**)",
+      "Bash(PATH=\"/usr/local/bin:$PATH\" /usr/local/bin/node -v)"
     ]
   }
 }

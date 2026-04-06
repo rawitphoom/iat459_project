@@ -18,10 +18,22 @@ export default function MusicToggle({ hidden = false }) {
       audio.play().then(() => setPlaying(true)).catch(() => {});
     };
 
+    const pauseMusic = () => {
+      audio.pause();
+      setPlaying(false);
+    };
+    const resumeMusic = () => {
+      audio.play().then(() => setPlaying(true)).catch(() => {});
+    };
+
     window.addEventListener("start-background-music", startMusic);
+    window.addEventListener("pause-background-music", pauseMusic);
+    window.addEventListener("resume-background-music", resumeMusic);
 
     return () => {
       window.removeEventListener("start-background-music", startMusic);
+      window.removeEventListener("pause-background-music", pauseMusic);
+      window.removeEventListener("resume-background-music", resumeMusic);
       audio.pause();
       audio.src = "";
     };

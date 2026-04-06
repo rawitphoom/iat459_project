@@ -300,8 +300,7 @@ function ExploreCarousel({ navigate, token }) {
       audioCtxRef.current.resume();
     }
 
-    // Notify other components to stop their audio
-    window.dispatchEvent(new CustomEvent("mixtape-audio-play", { detail: "explore" }));
+    window.dispatchEvent(new Event("pause-background-music"));
     audioRef.current.play().catch(() => {});
     audioRef.current.onended = () => {
       const nextIdx = (idx + 1) % tracks.length;
@@ -334,6 +333,7 @@ function ExploreCarousel({ navigate, token }) {
     if (isPlaying) {
       audioRef.current?.pause();
       setIsPlaying(false);
+      window.dispatchEvent(new Event("resume-background-music"));
     } else {
       playTrack(center);
     }
@@ -344,17 +344,9 @@ function ExploreCarousel({ navigate, token }) {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  // Pause when other audio plays & cleanup on unmount
+  // Cleanup audio on unmount
   useEffect(() => {
-    const handleOtherAudio = (e) => {
-      if (e.detail !== "explore" && audioRef.current) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
-    };
-    window.addEventListener("mixtape-audio-play", handleOtherAudio);
     return () => {
-      window.removeEventListener("mixtape-audio-play", handleOtherAudio);
       if (audioRef.current) audioRef.current.pause();
     };
   }, []);
@@ -444,7 +436,14 @@ function ExploreCarousel({ navigate, token }) {
                 opacity,
                 zIndex: 10 - absOff,
               }}
-              onClick={() => isCenter ? navigate(`/album/${track.albumId}`) : setCenter(i)}
+              onClick={() => {
+                if (isCenter) {
+                  navigate(`/album/${track.albumId}`);
+                } else {
+                  setCenter(i);
+                  if (isPlaying) playTrack(i);
+                }
+              }}
             >
               <img src={track.cover} alt={track.title} className={`explore-card-img ${tiltClass}`} />
             </div>

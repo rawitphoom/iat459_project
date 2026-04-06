@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 // Cycling mosaic cover — outgoing set slides out, incoming set slides in, both visible during transition
 function CyclingMosaic({ tracks }) {
@@ -94,8 +95,424 @@ const FEATURES = [
   { icon: "♪", text: "Write reviews and rate music to share your opinions with friends and our community." },
 ];
 
+// Real-time equalizer using Web Audio API AnalyserNode
+const EQ_COLUMNS = 60;
+const EQ_SEGMENTS = 20;
+const MAX_HEIGHT = 100;
+
+function EqualizerBars({ analyser, playing, color }) {
+  const segRefs = useRef([]); // 2D array: segRefs[col][seg]
+  const rafRef = useRef(null);
+  const barColor = color || "rgba(255,255,255,0.85)";
+
+  useEffect(() => {
+    if (!analyser || !playing) {
+      // Reset: show only bottom 1 segment
+      segRefs.current.forEach((col) => {
+        if (!col) return;
+        col.forEach((seg, j) => {
+          if (seg) seg.style.opacity = j === 0 ? "1" : "0";
+        });
+      });
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      return;
+    }
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    // Smoothed values per column — segments fall slowly, rise instantly
+    const smoothed = new Float32Array(EQ_COLUMNS);
+
+    const draw = () => {
+      analyser.getByteFrequencyData(dataArray);
+
+      const usableBins = Math.floor(bufferLength * 0.65);
+      const step = usableBins / EQ_COLUMNS;
+
+      for (let i = 0; i < EQ_COLUMNS; i++) {
+        const colSegs = segRefs.current[i];
+        if (!colSegs) continue;
+
+        const lowBin = Math.floor(i * step);
+        const highBin = Math.floor((i + 1) * step);
+
+        let sum = 0;
+        let count = 0;
+        for (let j = lowBin; j < highBin && j < bufferLength; j++) {
+          sum += dataArray[j];
+          count++;
+        }
+        const avg = count > 0 ? sum / count : 0;
+        const target = Math.pow(avg / 255, 0.75) * EQ_SEGMENTS;
+
+        // Rise instantly, fall slowly
+        if (target >= smoothed[i]) {
+          smoothed[i] = target;
+        } else {
+          smoothed[i] = smoothed[i] * 0.85 + target * 0.15;
+        }
+
+        const activeCount = Math.max(1, Math.round(smoothed[i]));
+
+        for (let s = 0; s < EQ_SEGMENTS; s++) {
+          if (colSegs[s]) {
+            colSegs[s].style.opacity = s < activeCount ? "1" : "0";
+          }
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    draw();
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [analyser, playing]);
+
+  return (
+    <div className="explore-eq">
+      {Array.from({ length: EQ_COLUMNS }).map((_, i) => (
+        <div key={i} className="eq-col">
+          {Array.from({ length: EQ_SEGMENTS }).map((_, j) => (
+            <div
+              key={j}
+              className="eq-seg"
+              ref={(el) => {
+                if (!segRefs.current[i]) segRefs.current[i] = [];
+                segRefs.current[i][j] = el;
+              }}
+              style={{ background: barColor, opacity: j === 0 ? 1 : 0 }}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Extract dominant color from an image URL
+function useDominantColor(imgUrl) {
+  const [color, setColor] = useState(null);
+  useEffect(() => {
+    if (!imgUrl) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 50;
+      canvas.height = 50;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, 50, 50);
+      const data = ctx.getImageData(0, 0, 50, 50).data;
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let i = 0; i < data.length; i += 16) {
+        const pr = data[i], pg = data[i + 1], pb = data[i + 2];
+        // Skip very dark and very light pixels
+        if (pr + pg + pb < 40 || pr + pg + pb > 700) continue;
+        r += pr; g += pg; b += pb; count++;
+      }
+      if (count > 0) {
+        r = Math.round(r / count);
+        g = Math.round(g / count);
+        b = Math.round(b / count);
+        // Boost saturation a bit
+        const max = Math.max(r, g, b);
+        const factor = Math.min(255 / max, 1.4);
+        r = Math.min(255, Math.round(r * factor));
+        g = Math.min(255, Math.round(g * factor));
+        b = Math.min(255, Math.round(b * factor));
+        setColor(`rgb(${r}, ${g}, ${b})`);
+      }
+    };
+    img.src = imgUrl;
+  }, [imgUrl]);
+  return color;
+}
+
+// 3D perspective carousel for Explore Your Taste
+function ExploreCarousel({ navigate, token }) {
+  const [tracks, setTracks] = useState([]);
+  const [center, setCenter] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.5);
+  const [tiltClass, setTiltClass] = useState("");
+  const [likedTracks, setLikedTracks] = useState(new Set());
+  const audioRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const analyserRef = useRef(null);
+  const sourceRef = useRef(null);
+  const [analyser, setAnalyser] = useState(null);
+  const eqColor = useDominantColor(tracks[center]?.cover);
+
+  // Fetch chart tracks with preview URLs
+  useEffect(() => {
+    fetch("http://localhost:5001/api/music/chart")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.tracks && data.tracks.length > 0) {
+          const withPreviews = data.tracks
+            .filter((t) => t.previewUrl && t.albumArt)
+            .slice(0, 12)
+            .map((t) => ({
+              id: t.trackId,
+              title: t.name,
+              artist: t.artist,
+              cover: t.albumArtBig || t.albumArt,
+              albumId: t.albumId,
+              preview: t.previewUrl,
+            }));
+          setTracks(withPreviews);
+          setCenter(Math.floor(withPreviews.length / 2));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const playTrack = useCallback((idx) => {
+    const preview = tracks[idx]?.preview;
+    if (!preview) return;
+
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.crossOrigin = "anonymous";
+    }
+    audioRef.current.src = preview;
+    audioRef.current.volume = volume;
+
+    // Set up Web Audio API analyser (once per audio element)
+    if (!audioCtxRef.current) {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const analyserNode = ctx.createAnalyser();
+      analyserNode.fftSize = 512;
+      analyserNode.smoothingTimeConstant = 0.7;
+      const source = ctx.createMediaElementSource(audioRef.current);
+      source.connect(analyserNode);
+      analyserNode.connect(ctx.destination);
+      audioCtxRef.current = ctx;
+      analyserRef.current = analyserNode;
+      sourceRef.current = source;
+      setAnalyser(analyserNode);
+    }
+
+    // Resume audio context if suspended (browser autoplay policy)
+    if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
+
+    audioRef.current.play().catch(() => {});
+    audioRef.current.onended = () => {
+      const nextIdx = (idx + 1) % tracks.length;
+      setCenter(nextIdx);
+      doTilt("right");
+      setTimeout(() => playTrack(nextIdx), 100);
+    };
+    setIsPlaying(true);
+  }, [tracks, volume]);
+
+  const doTilt = useCallback((dir) => {
+    setTiltClass(dir === "right" ? "card-tilt-right" : "card-tilt-left");
+    setTimeout(() => setTiltClass(""), 400);
+  }, []);
+
+  const prev = () => {
+    const newIdx = (center - 1 + tracks.length) % tracks.length;
+    setCenter(newIdx);
+    doTilt("left");
+    playTrack(newIdx);
+  };
+  const next = () => {
+    const newIdx = (center + 1) % tracks.length;
+    setCenter(newIdx);
+    doTilt("right");
+    playTrack(newIdx);
+  };
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      audioRef.current?.pause();
+      setIsPlaying(false);
+    } else {
+      playTrack(center);
+    }
+  };
+
+  // Sync volume
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) audioRef.current.pause();
+    };
+  }, []);
+
+  // Load liked songs if logged in
+  useEffect(() => {
+    if (!token) return;
+    fetch("http://localhost:5001/api/favorites/songs", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setLikedTracks(new Set(data.map((s) => s.trackId)));
+        }
+      })
+      .catch(() => {});
+  }, [token]);
+
+  const handleHeart = async () => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    const track = tracks[center];
+    if (!track) return;
+    const isLiked = likedTracks.has(track.id);
+
+    if (isLiked) {
+      setLikedTracks((prev) => { const s = new Set(prev); s.delete(track.id); return s; });
+      await fetch("http://localhost:5001/api/favorites/songs", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ trackId: track.id }),
+      }).catch(() => {});
+    } else {
+      setLikedTracks((prev) => new Set(prev).add(track.id));
+      await fetch("http://localhost:5001/api/favorites/songs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          trackId: track.id,
+          name: track.title,
+          artist: track.artist,
+          albumArt: track.cover,
+          albumId: track.albumId,
+        }),
+      }).catch(() => {});
+    }
+  };
+
+  if (tracks.length === 0) return null;
+
+  const getOffset = (i) => {
+    let diff = i - center;
+    if (diff > tracks.length / 2) diff -= tracks.length;
+    if (diff < -tracks.length / 2) diff += tracks.length;
+    return diff;
+  };
+
+  return (
+    <div className="explore-section">
+      <h2 className="explore-title">EXPLORE YOUR TASTE</h2>
+
+      <div className="explore-carousel">
+        <div
+          className="explore-glow"
+          style={{ background: eqColor || "rgba(255,255,255,0.15)" }}
+        />
+        {tracks.map((track, i) => {
+          const offset = getOffset(i);
+          if (Math.abs(offset) > 4) return null;
+
+          const isCenter = offset === 0;
+          const absOff = Math.abs(offset);
+          const translateX = offset * 340;
+          const translateZ = isCenter ? 0 : -120 * absOff;
+          const scale = isCenter ? 1 : absOff === 1 ? 0.72 : absOff === 2 ? 0.55 : absOff === 3 ? 0.42 : 0.35;
+          const opacity = isCenter ? 1 : absOff === 1 ? 0.7 : absOff === 2 ? 0.45 : absOff === 3 ? 0.25 : 0;
+
+          return (
+            <div
+              key={track.id}
+              className={`explore-card ${isCenter ? "explore-card-center" : ""}`}
+              style={{
+                transform: `translateX(${translateX}px) translateZ(${translateZ}px) scale(${scale})`,
+                opacity,
+                zIndex: 10 - absOff,
+              }}
+              onClick={() => isCenter ? navigate(`/album/${track.albumId}`) : setCenter(i)}
+            >
+              <img src={track.cover} alt={track.title} className={`explore-card-img ${tiltClass}`} />
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="explore-info">
+        <div className="explore-track-name">{tracks[center]?.title}</div>
+        <div className="explore-track-artist">{tracks[center]?.artist}</div>
+      </div>
+
+      <div className="explore-controls">
+        {/* Heart / Favorite */}
+        <button className="explore-btn explore-btn-heart" onClick={handleHeart}>
+          {tracks[center] && likedTracks.has(tracks[center].id) ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037.033l.034-.03a6 6 0 0 1 4.733-1.44l.246.036a6 6 0 0 1 3.364 10.008l-.18.185l-.048.041l-7.45 7.379a1 1 0 0 1-1.313.082l-.094-.082l-7.493-7.422A6 6 0 0 1 6.979 3.074"/></svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.5 12.572L12 20l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572"/></svg>
+          )}
+        </button>
+
+        <button className="explore-btn explore-btn-arrow" onClick={prev}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        </button>
+        <button className="explore-btn explore-btn-play" onClick={togglePlay}>
+          {isPlaying ? (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          ) : (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          )}
+        </button>
+        <button className="explore-btn explore-btn-arrow" onClick={next}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+        </button>
+
+        {/* Volume with vertical slider */}
+        <div className="explore-vol-inline">
+          <button className="explore-btn explore-btn-vol" onClick={() => setVolume(volume === 0 ? 0.5 : 0)}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {volume === 0 ? (
+                <>
+                  <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                  <line x1="23" y1="9" x2="17" y2="15"/>
+                  <line x1="17" y1="9" x2="23" y2="15"/>
+                </>
+              ) : (
+                <>
+                  <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </>
+              )}
+            </svg>
+          </button>
+          <div className="explore-vol-slider">
+            <div className="explore-vol-fill" style={{ height: `${volume * 100}%` }} />
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              className="explore-vol-input"
+            />
+          </div>
+        </div>
+      </div>
+
+      <EqualizerBars analyser={analyser} playing={isPlaying} color={eqColor} />
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { token } = useContext(AuthContext);
   const revealRefs = useRef([]);
   const [newReleases, setNewReleases] = useState([]);
   const [mixtapes, setMixtapes] = useState([]);
@@ -328,6 +745,9 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {/* ======== EXPLORE YOUR TASTE — 3D carousel ======== */}
+      <ExploreCarousel navigate={navigate} token={token} />
     </div>
   );
 }

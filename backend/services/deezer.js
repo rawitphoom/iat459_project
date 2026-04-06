@@ -98,6 +98,7 @@ async function getChart() {
     album: track.album.title,
     albumId: track.album.id,
     albumArt: track.album.cover_medium,
+    albumArtBig: track.album.cover_big || track.album.cover_medium,
     previewUrl: track.preview,
     externalUrl: track.link,
     durationSec: track.duration,

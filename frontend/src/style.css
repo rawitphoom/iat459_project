@@ -1240,9 +1240,9 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   height: 110px;
-  padding: 0 40px;
+  padding: 0;
   pointer-events: none;
 }
 

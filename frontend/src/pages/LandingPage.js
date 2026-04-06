@@ -300,6 +300,8 @@ function ExploreCarousel({ navigate, token }) {
       audioCtxRef.current.resume();
     }
 
+    // Notify other components to stop their audio
+    window.dispatchEvent(new CustomEvent("mixtape-audio-play", { detail: "explore" }));
     audioRef.current.play().catch(() => {});
     audioRef.current.onended = () => {
       const nextIdx = (idx + 1) % tracks.length;
@@ -342,9 +344,17 @@ function ExploreCarousel({ navigate, token }) {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  // Cleanup audio on unmount
+  // Pause when other audio plays & cleanup on unmount
   useEffect(() => {
+    const handleOtherAudio = (e) => {
+      if (e.detail !== "explore" && audioRef.current) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+    };
+    window.addEventListener("mixtape-audio-play", handleOtherAudio);
     return () => {
+      window.removeEventListener("mixtape-audio-play", handleOtherAudio);
       if (audioRef.current) audioRef.current.pause();
     };
   }, []);

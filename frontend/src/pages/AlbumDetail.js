@@ -170,6 +170,7 @@ export default function AlbumDetail() {
     }
 
     if (audioRef.current) audioRef.current.pause();
+    window.dispatchEvent(new CustomEvent("mixtape-audio-play", { detail: "album" }));
     const audio = new Audio(track.previewUrl);
     audio.volume = 0.5;
     audio.play();

@@ -17,6 +17,7 @@ import PublicAlbums from "./PublicAlbums";
 import AdminDashboard from "./pages/AdminDashboard";
 import AlbumDetail from "./pages/AlbumDetail";
 import ProfilePage from "./pages/ProfilePage";
+import CreateMixtape from "./pages/CreateMixtape";
 
 function AppLayout() {
   const location = useLocation();
@@ -79,6 +80,16 @@ function AppLayout() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Create Mixtape — full page form (protected) */}
+        <Route
+          path="/create-mixtape"
+          element={
+            <ProtectedRoute>
+              <CreateMixtape />
             </ProtectedRoute>
           }
         />

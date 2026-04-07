@@ -21,7 +21,9 @@ const {
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+// Raise the JSON body limit so we can accept base64-encoded mixtape cover
+// images (default Express limit is only 100kb, which is smaller than most photos).
+app.use(express.json({ limit: "10mb" }));
 // Auth endpoints: /api/auth/register and /api/auth/login
 app.use("/api/auth", authRoutes);
 
@@ -86,9 +88,11 @@ const trackSchema = new mongoose.Schema({
 const playlistSchema = new mongoose.Schema({
   name: String,
   description: String,
-  mood: String,
-  tracks: [trackSchema],  // Array of Deezer track objects (see trackSchema above)
-  createdBy: String,      // User ID from JWT token — links playlist to its owner
+  mood: String,             // legacy single-mood string (kept for back-compat)
+  moods: [String],          // array of mood tag chips (e.g., ["Chill", "Focused"])
+  image: String,            // base64 data URL or external image URL for the mixtape cover
+  tracks: [trackSchema],    // Array of Deezer track objects (see trackSchema above)
+  createdBy: String,        // User ID from JWT token — links playlist to its owner
   public: { type: Boolean, default: false }, // If true, visible on Discover page "Mixtapes" tab
 });
 
@@ -131,17 +135,29 @@ app.get("/api/playlists", verifyToken, async (req, res) => {
 // Protected route: requires a valid JWT token.
 // Create a playlist for the authenticated user
 app.post("/api/playlists", verifyToken, async (req, res) => {
-  const { name, description, mood, tracks } = req.body || {};
+  const { name, description, mood, moods, image, tracks } = req.body || {};
   const isPublic = req.body?.public || false;
 
   if (!name) {
     return res.status(400).json({ error: "Playlist name is required" });
   }
 
+  // Normalise moods into an array of trimmed strings (chips from the UI)
+  const moodArr = Array.isArray(moods)
+    ? moods.map((m) => String(m).trim()).filter(Boolean)
+    : [];
+
+  // Keep the legacy `mood` string in sync (joined chips) for back-compat
+  const moodLegacy = mood
+    ? String(mood).trim()
+    : moodArr.join(", ");
+
   const playlist = await Playlist.create({
     name: String(name).trim(),
     description: description ? String(description).trim() : "",
-    mood: mood ? String(mood).trim() : "",
+    mood: moodLegacy,
+    moods: moodArr,
+    image: image ? String(image) : "",
     tracks: Array.isArray(tracks) ? tracks : [],
     createdBy: req.user?.id,
     public: isPublic,

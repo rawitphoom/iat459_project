@@ -249,8 +249,14 @@ export default function AdminDashboard() {
         <div className="admin-grid">
           {playlists.map((p) => (
             <div key={p._id} className="admin-mixtape-card">
-              <div className="admin-mixtape-cover">
-                {p.tracks && p.tracks.length > 0 ? (
+              <div className={`admin-mixtape-cover ${p.image ? "has-custom-cover" : ""}`}>
+                {p.image ? (
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    className="admin-mixtape-cover-image"
+                  />
+                ) : p.tracks && p.tracks.length > 0 ? (
                   <div className="admin-mixtape-mosaic">
                     {[0, 1, 2, 3].map((j) => {
                       const t = p.tracks[j % p.tracks.length];
@@ -299,7 +305,9 @@ export default function AdminDashboard() {
             <div key={p._id} className="admin-list-row">
               <div className="admin-list-col admin-list-col-avatar">
                 <div className="admin-list-mixtape-thumb">
-                  {p.tracks && p.tracks.length > 0 ? (
+                  {p.image ? (
+                    <img src={p.image} alt={p.name} />
+                  ) : p.tracks && p.tracks.length > 0 ? (
                     <img src={p.tracks[0]?.albumArt || ""} alt="" />
                   ) : (
                     <div className="admin-mixtape-empty-sm">-</div>

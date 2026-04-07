@@ -1,18 +1,12 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
-import TrackSearch from "./TrackSearch";
 
 export default function Dashboard() {
     const [albums, setAlbums] = useState([]);
     const [page, setPage] = useState(0);
-    const [form, setForm] = useState({ name: "", description: "", mood: "", public: false });
-    const [selectedTracks, setSelectedTracks] = useState([]);
-    const [formError, setFormError] = useState("");
-    const [isSaving, setIsSaving] = useState(false);
-    const [showCreate, setShowCreate] = useState(false);
     const [hoveredIdx, setHoveredIdx] = useState(-1);
-    const { user, token } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const perPage = 4;
@@ -29,46 +23,6 @@ export default function Dashboard() {
             })
             .catch(console.error);
     }, []);
-
-    const handleAddTrack = (track) => {
-        if (selectedTracks.some((t) => t.trackId === track.trackId)) return;
-        setSelectedTracks((prev) => [...prev, track]);
-    };
-
-    const handleRemoveTrack = (trackId) => {
-        setSelectedTracks((prev) => prev.filter((t) => t.trackId !== trackId));
-    };
-
-    const handleCreate = async (e) => {
-        e.preventDefault();
-        setFormError("");
-        if (!form.name.trim()) { setFormError("Playlist name is required."); return; }
-        if (selectedTracks.length === 0) { setFormError("Add at least one track."); return; }
-
-        try {
-            setIsSaving(true);
-            const res = await fetch("http://localhost:5001/api/playlists", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify({
-                    name: form.name.trim(),
-                    description: form.description.trim(),
-                    mood: form.mood.trim(),
-                    tracks: selectedTracks,
-                    public: form.public,
-                }),
-            });
-            const data = await res.json();
-            if (!res.ok) { setFormError(data?.error || "Create failed"); return; }
-            setForm({ name: "", description: "", mood: "", public: false });
-            setSelectedTracks([]);
-            setShowCreate(false);
-        } catch {
-            setFormError("Server unavailable");
-        } finally {
-            setIsSaving(false);
-        }
-    };
 
     return (
         <div className="dash-page">
@@ -94,7 +48,7 @@ export default function Dashboard() {
                         Create mixtapes and share your thoughts on your favorite albums and songs.
                     </p>
                     <div className="dash-hero-actions">
-                        <button className="dash-action-btn" onClick={() => setShowCreate(true)}>
+                        <button className="dash-action-btn" onClick={() => navigate("/create-mixtape")}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                             CREATE NEW MIXTAPE
                         </button>
@@ -105,55 +59,6 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-
-            {/* ---- Create Mixtape Modal ---- */}
-            {showCreate && (
-                <div className="dash-modal-overlay" onClick={() => setShowCreate(false)}>
-                    <div className="dash-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="dash-modal-close" onClick={() => setShowCreate(false)}>&times;</button>
-                        <h2 className="dash-modal-title">Create New Mixtape</h2>
-                        <form className="dash-form" onSubmit={handleCreate}>
-                            <input className="dash-input" value={form.name}
-                                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                placeholder="Mixtape name" />
-                            <input className="dash-input" value={form.description}
-                                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                                placeholder="Description" />
-                            <input className="dash-input" value={form.mood}
-                                onChange={(e) => setForm({ ...form, mood: e.target.value })}
-                                placeholder="Mood (optional)" />
-                            <label className="dash-toggle">
-                                <input type="checkbox" checked={form.public}
-                                    onChange={(e) => setForm({ ...form, public: e.target.checked })} />
-                                Make public
-                            </label>
-
-                            {selectedTracks.length > 0 && (
-                                <div className="dash-selected-tracks">
-                                    <h4>Tracks ({selectedTracks.length})</h4>
-                                    {selectedTracks.map((track) => (
-                                        <div key={track.trackId} className="dash-sel-track">
-                                            {track.albumArt && <img src={track.albumArt} alt="" className="dash-sel-art" />}
-                                            <span className="dash-sel-name">{track.name} <span style={{ opacity: 0.5 }}>- {track.artist}</span></span>
-                                            <button className="dash-sel-remove" onClick={() => handleRemoveTrack(track.trackId)}>&times;</button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            <div style={{ marginTop: 12 }}>
-                                <h4 style={{ color: "#fff", marginBottom: 8 }}>Add Tracks</h4>
-                                <TrackSearch onAddTrack={handleAddTrack} selectedTracks={selectedTracks} />
-                            </div>
-
-                            <button className="dash-create-btn" type="submit" disabled={isSaving}>
-                                {isSaving ? "Saving..." : "Create Mixtape"}
-                            </button>
-                            {formError && <p className="dash-error">{formError}</p>}
-                        </form>
-                    </div>
-                </div>
-            )}
 
             {/* ---- Latest Albums Released ---- */}
             <section className="dash-section">

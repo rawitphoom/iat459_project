@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 /**
  * TrackSearch — Reusable component for searching songs (powered by Deezer).
@@ -6,16 +6,28 @@ import { useState, useRef } from "react";
  * Each search result shows album art, track info, a play button for the
  * 30-second preview, and an optional "+" button to add to a playlist.
  *
+ * IMPORTANT: This component does NOT render an inner <form> element.
+ * It is often nested inside another <form> (e.g., the CreateMixtape page),
+ * and HTML forbids nested forms — when nesting happens, browsers ignore
+ * the inner form and the outer form ends up handling Enter keys / submit
+ * buttons, which would refresh the parent page.
+ *
  * Props:
  * - onAddTrack(track)  : Callback fired when user clicks "+" to add a track
  * - selectedTracks     : Array of tracks already selected (to show checkmarks)
  * - hideAdd            : If true, hides the "+" button (used on public page)
+ * - initialTracks      : Optional array of tracks to show before any search
+ *                        (e.g., chart/popular tracks). Restored if the user
+ *                        clears the search box.
  */
-export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd }) {
+export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd, initialTracks }) {
   // The text the user typed into the search box
   const [query, setQuery] = useState("");
-  // Array of track objects returned from our backend's /api/music/search
-  const [results, setResults] = useState([]);
+  // Array of track objects returned from our backend's /api/music/search.
+  // Falls back to initialTracks (e.g., chart tracks) until the user searches.
+  const [results, setResults] = useState(initialTracks || []);
+  // Whether the user has typed a real query yet (so we know to stop showing initialTracks)
+  const [hasSearched, setHasSearched] = useState(false);
   // Loading state
   const [searching, setSearching] = useState(false);
   // Error message to display if search fails
@@ -27,31 +39,91 @@ export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd }) {
   // doesn't need to trigger a re-render — we just need to call .pause() on it.
   const audioRef = useRef(null);
 
-  /**
-   * Called when the search form is submitted.
-   * Sends the query to our backend, which forwards it to Deezer's API.
-   */
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  // Keep results in sync with initialTracks until the user runs a real search.
+  // This lets parent components load chart/popular tracks asynchronously and
+  // have them appear here once they arrive.
+  useEffect(() => {
+    if (!hasSearched && initialTracks && initialTracks.length > 0) {
+      setResults(initialTracks);
+    }
+  }, [initialTracks, hasSearched]);
 
+  /**
+   * Actual search request to our backend.
+   * Pulled out of handleSearch so it can be reused by both the
+   * debounced live-search useEffect and the explicit Search button.
+   */
+  const runSearch = async (q) => {
     setSearching(true);
     setError("");
     try {
-      // Call our backend endpoint (NOT Deezer directly — keeps the API layer consistent)
       const res = await fetch(
-        `http://localhost:5001/api/music/search?q=${encodeURIComponent(query.trim())}`
+        `http://localhost:5001/api/music/search?q=${encodeURIComponent(q)}`
       );
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Search failed");
         return;
       }
-      setResults(data);
+      setResults(Array.isArray(data) ? data : []);
     } catch {
       setError("Server unavailable");
     } finally {
       setSearching(false);
+    }
+  };
+
+  /**
+   * Live debounced search — fires 300ms after the user stops typing.
+   * - Empty query → restore the initialTracks list (chart/popular)
+   * - Non-empty query → debounced fetch
+   *
+   * The cleanup function (clearTimeout) ensures we cancel any pending
+   * search the moment the user types another character. This is the
+   * standard React debouncing pattern from Lec 3 (useEffect cleanup).
+   */
+  useEffect(() => {
+    const trimmed = query.trim();
+
+    if (!trimmed) {
+      // User cleared the search box — go back to chart/initial tracks
+      setHasSearched(false);
+      setResults(initialTracks || []);
+      setError("");
+      return;
+    }
+
+    setHasSearched(true);
+    const timer = setTimeout(() => {
+      runSearch(trimmed);
+    }, 300);
+
+    // Cleanup: cancel the pending fetch if the user types again
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
+
+  /**
+   * Manual search trigger — fired by the Search button or Enter key.
+   * Just calls runSearch immediately (skipping the 300ms debounce).
+   */
+  const handleSearchClick = () => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    setHasSearched(true);
+    runSearch(trimmed);
+  };
+
+  /**
+   * Handle Enter key inside the input.
+   * We MUST preventDefault here because this component is often rendered
+   * inside another <form>, and an unhandled Enter would otherwise submit
+   * the parent form (refreshing the page and losing user data).
+   */
+  const handleInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearchClick();
     }
   };
 
@@ -107,18 +179,29 @@ export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd }) {
 
   return (
     <div className="track-search">
-      {/* Search bar: input + submit button */}
-      <form className="track-search-bar" onSubmit={handleSearch}>
+      {/*
+        Search bar: a plain <div> (NOT a <form>) so we don't accidentally
+        create nested forms when this component is dropped into a page that
+        already has its own form.
+      */}
+      <div className="track-search-bar">
         <input
           className="input"
+          type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleInputKeyDown}
           placeholder="Search songs..."
         />
-        <button className="primary-btn" type="submit" disabled={searching}>
+        <button
+          className="primary-btn"
+          type="button"
+          onClick={handleSearchClick}
+          disabled={searching}
+        >
           {searching ? "Searching..." : "Search"}
         </button>
-      </form>
+      </div>
 
       {/* Show error message if search failed */}
       {error && <p className="error-text">{error}</p>}
@@ -154,6 +237,7 @@ export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd }) {
                 {/* Play/pause button — plays a 30-second audio preview */}
                 <button
                   className={`icon-btn play-btn ${playingId === track.trackId ? "playing" : ""}`}
+                  type="button"
                   onClick={() => togglePreview(track)}
                   title={playingId === track.trackId ? "Pause" : "Play preview"}
                 >
@@ -165,6 +249,7 @@ export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd }) {
                 {!hideAdd && (
                   <button
                     className="icon-btn add-btn"
+                    type="button"
                     onClick={() => onAddTrack(track)}
                     disabled={isSelected(track.trackId)}
                     title={isSelected(track.trackId) ? "Already added" : "Add to playlist"}

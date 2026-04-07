@@ -1620,6 +1620,41 @@ body:has(.auth-page) {
   margin: 0 auto;
 }
 
+body:has(.profile-page) {
+  background: #0e0e0e;
+}
+
+.profile-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.profile-logo-img {
+  width: 72px;
+  height: 72px;
+}
+
+.profile-logo-title {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 4px;
+  line-height: 1;
+  display: block;
+}
+
+.profile-logo-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: #DB4A1E;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  display: block;
+}
+
 .profile-loading,
 .profile-empty {
   font-family: 'Roboto', sans-serif;
@@ -1798,6 +1833,19 @@ body:has(.auth-page) {
   justify-content: center;
   font-size: 48px;
   color: rgba(255, 255, 255, 0.1);
+}
+
+/* When the user uploaded a custom cover image, drop the 2x2 grid
+   so the single <img> fills the whole 200x200 square. */
+.profile-mixtape-cover.has-custom-cover {
+  display: block;
+}
+
+.profile-mixtape-cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .profile-mixtape-info {
@@ -3972,6 +4020,14 @@ body:has(.admin-page) {
   object-fit: cover;
 }
 
+/* Custom uploaded cover — single image fills the whole square */
+.admin-mixtape-cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .admin-mixtape-empty {
   width: 100%;
   height: 100%;
@@ -4508,5 +4564,602 @@ body:has(.admin-page) {
 
   .dash-carousel-arrow {
     font-size: 32px;
+  }
+}
+
+/* =====================================================
+   CREATE MIXTAPE PAGE
+   Full-page version of the "Create New Mixtape" flow.
+   Dark theme + copper accent (#DB4A1E), Oswald headings,
+   DM Mono labels.
+   ===================================================== */
+.create-mix-page {
+  min-height: 100vh;
+  background: #0d0d0d;
+  color: #fff;
+  padding: 32px 64px 96px;
+  font-family: "Roboto", sans-serif;
+  box-sizing: border-box;
+}
+
+.create-mix-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.create-mix-iconbtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  font-family: "Roboto Mono", monospace;
+}
+.create-mix-iconbtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.create-mix-title {
+  font-family: "Oswald", sans-serif;
+  font-weight: 700;
+  font-size: 34px;
+  letter-spacing: 1.5px;
+  margin: 0 0 40px;
+  color: #fff;
+}
+.create-mix-title-accent {
+  color: #DB4A1E;
+}
+
+.create-mix-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.create-mix-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.create-mix-label {
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+}
+
+/* Inputs share a soft pill look */
+.create-mix-input,
+.create-mix-textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 16px 22px;
+  color: #fff;
+  font-family: "Oswald", sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  box-sizing: border-box;
+}
+.create-mix-input::placeholder,
+.create-mix-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.create-mix-input:focus,
+.create-mix-textarea:focus {
+  border-color: rgba(219, 74, 30, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.create-mix-textarea {
+  resize: vertical;
+  min-height: 110px;
+  font-family: "Roboto", sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+  line-height: 1.5;
+}
+
+/* Two-column row: image | description+mood */
+.create-mix-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 32px;
+  align-items: stretch;
+}
+
+.create-mix-image-col {
+  height: 100%;
+}
+
+.create-mix-image-box {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 260px;
+  background:
+    radial-gradient(ellipse at center, rgba(219, 74, 30, 0.08), transparent 70%),
+    rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+}
+.create-mix-image-box:hover {
+  border-color: rgba(219, 74, 30, 0.5);
+}
+.create-mix-image-box.has-image {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.create-mix-image-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.create-mix-add-image-btn {
+  position: relative;
+  z-index: 2;
+  background: rgba(20, 20, 20, 0.85);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  backdrop-filter: blur(4px);
+}
+.create-mix-add-image-btn:hover {
+  background: rgba(219, 74, 30, 0.85);
+  border-color: rgba(219, 74, 30, 1);
+  transform: translateY(-1px);
+}
+
+.create-mix-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Mood multi-tag input */
+.create-mix-mood-box {
+  position: relative;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: text;
+  box-sizing: border-box;
+}
+.create-mix-mood-box:focus-within {
+  border-color: rgba(219, 74, 30, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.create-mix-mood-input {
+  flex: 1;
+  min-width: 80px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: "Oswald", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+.create-mix-mood-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.create-mix-mood-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.create-mix-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: #fff;
+  white-space: nowrap;
+}
+.create-mix-chip-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+.create-mix-chip-remove:hover {
+  color: #DB4A1E;
+}
+
+/* Browse tracks — wraps the existing TrackSearch component */
+.create-mix-browse-field {
+  margin-top: 16px;
+}
+.create-mix-track-search {
+  /* Override TrackSearch defaults so the search bar matches our pill style */
+  --tk-bg: rgba(255, 255, 255, 0.03);
+}
+.create-mix-track-search .track-search {
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+.create-mix-track-search .track-search-bar {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 6px 6px 6px 18px;
+}
+.create-mix-track-search .track-search-bar:focus-within {
+  border-color: rgba(219, 74, 30, 0.6);
+}
+.create-mix-track-search .track-search-bar .input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: "Oswald", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  outline: none;
+  padding: 12px 0;
+}
+.create-mix-track-search .track-search-bar .input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.create-mix-track-search .track-search-bar .primary-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 0 22px;
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.create-mix-track-search .track-search-bar .primary-btn:hover {
+  background: rgba(219, 74, 30, 0.85);
+  border-color: rgba(219, 74, 30, 1);
+}
+.create-mix-track-search .track-search-bar .primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.create-mix-track-search .track-results {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-top: 18px;
+  max-height: none;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+.create-mix-track-search .track-row {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px 4px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  transition: background 0.15s;
+}
+.create-mix-track-search .track-row:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+.create-mix-track-search .track-row.selected {
+  background: rgba(219, 74, 30, 0.08);
+}
+.create-mix-track-search .track-art {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.create-mix-track-search .track-info {
+  flex: 1;
+  min-width: 0;
+}
+.create-mix-track-search .track-name {
+  font-family: "Oswald", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.create-mix-track-search .track-artist {
+  font-family: "Roboto Mono", monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.create-mix-track-search .track-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.create-mix-track-search .icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+}
+.create-mix-track-search .icon-btn:hover {
+  background: rgba(219, 74, 30, 0.85);
+  border-color: rgba(219, 74, 30, 1);
+}
+.create-mix-track-search .icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.create-mix-track-search .play-btn.playing {
+  background: #DB4A1E;
+  border-color: #DB4A1E;
+}
+
+/* Selected tracks block (shown beneath the search results) */
+.create-mix-selected {
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+}
+.create-mix-selected-header {
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 12px;
+}
+.create-mix-selected-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.create-mix-selected-row:last-child {
+  border-bottom: none;
+}
+.create-mix-selected-art {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.create-mix-selected-info {
+  flex: 1;
+  min-width: 0;
+}
+.create-mix-selected-name {
+  font-family: "Oswald", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.create-mix-selected-artist {
+  font-family: "Roboto Mono", monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.create-mix-selected-duration {
+  font-family: "Roboto Mono", monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+.create-mix-selected-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.create-mix-selected-remove:hover {
+  color: #DB4A1E;
+}
+
+/* Error message */
+.create-mix-error {
+  color: #DB4A1E;
+  background: rgba(219, 74, 30, 0.12);
+  border: 1px solid rgba(219, 74, 30, 0.35);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  margin: 0;
+  text-align: center;
+}
+
+/* Visibility toggle (Public / Private segmented control) */
+.create-mix-visibility {
+  display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
+  max-width: max-content;
+  align-items: stretch;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+.create-mix-visibility-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.create-mix-visibility-opt:hover {
+  color: #fff;
+}
+.create-mix-visibility-opt.active {
+  background: #DB4A1E;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(219, 74, 30, 0.35);
+}
+.create-mix-visibility-opt svg {
+  flex-shrink: 0;
+}
+.create-mix-visibility-hint {
+  margin: 8px 0 0;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Save button */
+.create-mix-save-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+.create-mix-save-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  padding: 16px 64px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+.create-mix-save-btn:hover:not(:disabled) {
+  background: #DB4A1E;
+  border-color: #DB4A1E;
+  transform: translateY(-1px);
+}
+.create-mix-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 900px) {
+  .create-mix-page {
+    padding: 24px 24px 80px;
+  }
+  .create-mix-row {
+    grid-template-columns: 1fr;
+  }
+  .create-mix-image-box {
+    min-height: 220px;
+  }
+  .create-mix-title {
+    font-size: 26px;
+  }
+}
+@media (max-width: 600px) {
+  .create-mix-page {
+    padding: 20px 16px 72px;
+  }
+  .create-mix-save-btn {
+    padding: 14px 40px;
+    width: 100%;
   }
 }

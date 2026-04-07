@@ -224,6 +224,15 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
+      {/* ======== LOGO ======== */}
+      <div className="profile-logo">
+        <img src="/logo.svg" alt="Mixtape" className="profile-logo-img" />
+        <div className="profile-logo-text">
+          <span className="profile-logo-title">MIXTAPE</span>
+          <span className="profile-logo-sub">Your music collection</span>
+        </div>
+      </div>
+
       {/* ======== HEADER ======== */}
       <div className="profile-header">
         <div className="profile-avatar">
@@ -280,11 +289,18 @@ export default function ProfilePage() {
               {playlists.map((pl) => (
                 <div key={pl._id} className="profile-mixtape-card">
                   <div className="profile-mixtape-top">
-                    <div className="profile-mixtape-cover">
-                      {pl.tracks?.slice(0, 4).map((t, j) => (
-                        <img key={j} src={t.albumArt} alt="" className="profile-mixtape-thumb" />
-                      ))}
-                      {(!pl.tracks || pl.tracks.length === 0) && (
+                    <div className={`profile-mixtape-cover ${pl.image ? "has-custom-cover" : ""}`}>
+                      {pl.image ? (
+                        <img
+                          src={pl.image}
+                          alt={pl.name}
+                          className="profile-mixtape-cover-image"
+                        />
+                      ) : pl.tracks?.length > 0 ? (
+                        pl.tracks.slice(0, 4).map((t, j) => (
+                          <img key={j} src={t.albumArt} alt="" className="profile-mixtape-thumb" />
+                        ))
+                      ) : (
                         <div className="profile-mixtape-empty-cover">♪</div>
                       )}
                     </div>

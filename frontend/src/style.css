@@ -1888,23 +1888,94 @@ body {
 
 /* ---- Intro page (kept separate) ---- */
 .intro-page {
+  position: relative;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(192, 99, 58, 0.2), transparent 30%),
-    #111;
+  background: #111;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
+  overflow: hidden;
+}
+
+/* ---- Album columns background ---- */
+.intro-albums-bg {
+  position: absolute;
+  inset: -250% -150%;
+  display: flex;
+  gap: 10px;
+  padding: 0 5px;
+  z-index: 0;
+  transform-style: preserve-3d;
+  transform: perspective(1000px) rotateX(32deg) rotateZ(-18deg) translateY(-12%) scale(0.55);
+  transform-origin: center 55%;
+}
+
+.intro-album-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.intro-album-tile {
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.intro-album-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Scroll up animation */
+.intro-album-col.scroll-up {
+  animation: intro-scroll-up 60s linear infinite;
+}
+
+/* Scroll down animation */
+.intro-album-col.scroll-down {
+  animation: intro-scroll-down 60s linear infinite;
+}
+
+@keyframes intro-scroll-up {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+@keyframes intro-scroll-down {
+  0%   { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+
+/* Dark overlay so text stays readable */
+.intro-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(17, 17, 17, 0.85) 0%,
+    rgba(17, 17, 17, 0.6) 50%,
+    rgba(17, 17, 17, 0.75) 100%
+  );
 }
 
 .intro-card {
+  position: relative;
+  z-index: 2;
   width: min(100%, 640px);
   text-align: center;
   padding: 56px 32px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(6px);
+  border: none;
+  background: none;
+  backdrop-filter: none;
+  border-radius: 0;
 }
 
 .intro-label {
@@ -1924,10 +1995,36 @@ body {
 }
 
 .intro-subtitle {
-  margin: 0 0 32px 0;
+  margin: 0 0 16px 0;
   color: #aaa;
   font-size: 18px;
   line-height: 1.5;
+}
+
+.intro-enter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 36px;
+  border-radius: 50px;
+  border: none;
+  background: #DB4A1E;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s;
+}
+
+.intro-enter-btn:hover {
+  background: #c43e15;
+  transform: scale(1.05);
+}
+
+.intro-enter-arrow {
+  font-size: 20px;
+  line-height: 1;
 }
 
 /* ---- Music toggle button ---- */
@@ -2017,7 +2114,7 @@ body {
 .discover-page {
   min-height: calc(100vh - 52px);
   background: #111;
-  padding: 40px 24px 60px;
+  padding: 40px 24px 120px;
 }
 
 .discover-header {
@@ -2026,17 +2123,38 @@ body {
 }
 
 .discover-title {
-  color: #fff;
-  font-size: clamp(32px, 6vw, 56px);
+  color: #DB4A1E;
+  font-size: clamp(48px, 10vw, 90px);
   font-weight: 900;
   text-transform: uppercase;
-  margin: 0 0 4px 0;
+  line-height: 1.05;
+  margin: 0;
 }
 
 .discover-subtitle {
   color: #aaa;
   font-size: 16px;
   margin: 0 0 24px 0;
+}
+
+.discover-hero-text {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 28px 0;
+}
+
+.discover-hero-line {
+  display: block;
+  color: #fff;
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: clamp(48px, 10vw, 90px);
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.discover-hero-indent {
+  padding-left: clamp(40px, 8vw, 80px);
 }
 
 /* ---- Search bar ---- */
@@ -2103,36 +2221,101 @@ body {
   border-color: #fff;
 }
 
+/* ---- Floating glass search bar ---- */
+.discover-floating-search {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(90%, 640px);
+  padding: 16px 24px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(30, 30, 30, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+}
+
+.discover-floating-search.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.discover-floating-search-icon {
+  opacity: 0.6;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.discover-floating-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px;
+  font-family: 'Roboto', Arial, sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.discover-floating-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.discover-floating-clear-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: color 0.2s, background 0.2s;
+}
+
+.discover-floating-clear-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* ---- Tabs (Songs | Albums | Mixtapes) ---- */
 .discover-tabs {
   display: flex;
-  gap: 4px;
-  border-bottom: 1px solid #333;
+  gap: 12px;
   padding-bottom: 0;
 }
 
 .discover-tab {
-  padding: 10px 24px;
+  padding: 10px 28px;
   background: none;
-  border: none;
-  color: #888;
+  border: 2px solid #fff;
+  border-radius: 50px;
+  color: #fff;
   font-size: 14px;
   font-weight: 600;
   font-family: 'Oswald', Arial, sans-serif;
   letter-spacing: 1px;
   text-transform: uppercase;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color 0.2s, border-color 0.2s;
+  transition: border-color 0.3s, background 0.3s, color 0.3s;
 }
 
 .discover-tab:hover {
-  color: #ccc;
+  border-color: #DB4A1E;
+  color: #fff;
 }
 
 .discover-tab.active {
+  border-color: #DB4A1E;
+  background: none;
   color: #fff;
-  border-bottom-color: #c0633a;
 }
 
 /* ---- Loading + empty states ---- */
@@ -2261,12 +2444,35 @@ body {
 
 /* Override track-row for dark theme on Discover page */
 .discover-page .track-row {
-  background: #1a1a1a;
-  border-color: #2a2a2a;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
 
 .discover-page .track-row:hover {
-  background: #252525;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Heart button on Discover songs */
+.discover-track-heart {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.discover-track-heart:hover {
+  color: #DB4A1E;
+  transform: scale(1.15);
+}
+
+.discover-track-heart.liked {
+  color: #DB4A1E;
 }
 
 .discover-page .track-name {
@@ -2278,16 +2484,21 @@ body {
 }
 
 .discover-page .icon-btn {
-  background: #2a2a2a;
-  border-color: #3a3a3a;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.discover-page .icon-btn:hover {
+  background: none;
+  border: none;
   color: #fff;
 }
 
-.discover-page .icon-btn:hover,
 .discover-page .play-btn.playing {
-  background: #c0633a;
-  border-color: #c0633a;
-  color: #fff;
+  background: none;
+  border: none;
+  color: #DB4A1E;
 }
 
 /* Track number in songs list */

@@ -1,3 +1,4 @@
+// TEST: Claude Code has access - you can delete this line
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");

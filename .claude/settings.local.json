@@ -40,7 +40,11 @@
       "Read(//Users/rawitphoom/Library/**)",
       "Bash(command -v npx)",
       "Read(//usr/local/lib/node_modules/**)",
-      "Bash(PATH=\"/usr/local/bin:$PATH\" /usr/local/bin/node -v)"
+      "Bash(PATH=\"/usr/local/bin:$PATH\" /usr/local/bin/node -v)",
+      "Bash(pip3 install:*)",
+      "Bash(python3 -c \"from pdfminer.high_level import extract_text; print\\(''ok''\\)\")",
+      "Bash(kill 1436 42088)",
+      "Bash(xargs kill:*)"
     ]
   }
 }

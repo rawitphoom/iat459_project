@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "./context/AuthContext";
 
 // =============================================
 // Discover Page — the main exploration hub for Mixtape.
@@ -12,6 +13,7 @@ const TABS = ["Songs", "Albums", "Mixtapes"];
 
 export default function Discover() {
   const navigate = useNavigate();
+  const { token } = useContext(AuthContext);
 
   // ---- State ----
   const [activeTab, setActiveTab] = useState("Albums");
@@ -34,6 +36,8 @@ export default function Discover() {
   const audioRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
+  const [searchBarVisible, setSearchBarVisible] = useState(false);
+  const [likedTracks, setLikedTracks] = useState([]);
 
   // ---- Stop audio when user navigates away ----
   // useEffect cleanup runs when the component unmounts (user leaves the page).
@@ -46,6 +50,42 @@ export default function Discover() {
       }
     };
   }, []);
+
+  // ---- Load liked songs on mount ----
+  useEffect(() => {
+    if (!token) return;
+    fetch("http://localhost:5001/api/favorites/songs", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((favs) => {
+        if (Array.isArray(favs)) setLikedTracks(favs.map((f) => f.trackId));
+      })
+      .catch(() => {});
+  }, [token]);
+
+  // ---- Toggle like a song ----
+  const toggleLike = async (track) => {
+    if (!token) return navigate("/login");
+    const isLiked = likedTracks.includes(track.trackId);
+    const method = isLiked ? "DELETE" : "POST";
+    try {
+      await fetch("http://localhost:5001/api/favorites/songs", {
+        method,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          trackId: track.trackId,
+          name: track.name,
+          artist: track.artist,
+          albumArt: track.albumArt,
+          previewUrl: track.previewUrl,
+        }),
+      });
+      setLikedTracks((prev) =>
+        isLiked ? prev.filter((id) => id !== track.trackId) : [...prev, track.trackId]
+      );
+    } catch {}
+  };
 
   // ---- Load chart data + public playlists on mount ----
   useEffect(() => {
@@ -60,7 +100,11 @@ export default function Discover() {
         setMixtapes(Array.isArray(publicPlaylists) ? publicPlaylists : []);
       })
       .catch(console.error)
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        // Slide up search bar after albums load
+        setTimeout(() => setSearchBarVisible(true), 300);
+      });
   }, []);
 
   // ---- Search handler ----
@@ -135,29 +179,16 @@ export default function Discover() {
       {/* ---- Header + Search Bar ---- */}
       <div className="discover-header">
         <h1 className="discover-title">Discover</h1>
-        <p className="discover-subtitle">
-          {isSearching
-            ? `Results for "${searchedQuery}"`
-            : "Trending right now"}
-        </p>
-
-        {/* Search bar */}
-        <form className="discover-search" onSubmit={handleSearch}>
-          <input
-            className="discover-search-input"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search songs, albums, artists..."
-          />
-          <button className="discover-search-btn" type="submit">
-            Search
-          </button>
-          {isSearching && (
-            <button className="discover-clear-btn" type="button" onClick={handleClear}>
-              Clear
-            </button>
+        <div className="discover-hero-text">
+          {isSearching ? (
+            <p className="discover-subtitle">Results for "{searchedQuery}"</p>
+          ) : (
+            <>
+              <span className="discover-hero-line discover-hero-indent">TRENDING</span>
+              <span className="discover-hero-line">NOW</span>
+            </>
           )}
-        </form>
+        </div>
 
         {/* Tabs — Songs | Albums | Mixtapes */}
         <div className="discover-tabs">
@@ -230,8 +261,19 @@ export default function Discover() {
                 </div>
               </div>
 
-              {/* Play/pause 30-second preview */}
+              {/* Heart + Play actions */}
               <div className="track-actions">
+                <button
+                  className={`discover-track-heart ${likedTracks.includes(track.trackId) ? "liked" : ""}`}
+                  onClick={() => toggleLike(track)}
+                  title={likedTracks.includes(track.trackId) ? "Unlike" : "Like"}
+                >
+                  {likedTracks.includes(track.trackId) ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037.033l.034-.03a6 6 0 0 1 4.733-1.44l.246.036a6 6 0 0 1 3.364 10.008l-.18.185l-.048.041l-7.45 7.379a1 1 0 0 1-1.313.082l-.094-.082l-7.493-7.422A6 6 0 0 1 6.979 3.074"/></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.5 12.572L12 20l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572"/></svg>
+                  )}
+                </button>
                 <button
                   className={`icon-btn play-btn ${playingId === track.trackId ? "playing" : ""}`}
                   onClick={() => togglePreview(track)}
@@ -283,6 +325,25 @@ export default function Discover() {
           )}
         </div>
       )}
+
+      {/* ---- Floating glass search bar ---- */}
+      <form
+        className={`discover-floating-search ${searchBarVisible ? "visible" : ""}`}
+        onSubmit={handleSearch}
+      >
+        <svg className="discover-floating-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          className="discover-floating-search-input"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Find your favorite artists"
+        />
+        {isSearching && (
+          <button className="discover-floating-clear-btn" type="button" onClick={handleClear}>
+            &#10005;
+          </button>
+        )}
+      </form>
     </div>
   );
 }

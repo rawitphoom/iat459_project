@@ -8,6 +8,8 @@ import { useEffect } from "react";
 
 import Login from "./Login";
 import Register from "./Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./Dashboard";
 import LandingPage from "./pages/LandingPage";
 import IntroPage from "./pages/IntroPage";
@@ -68,6 +70,8 @@ function AppLayout() {
         {/* public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* protected route | if there a token show Dashboard */}
         <Route

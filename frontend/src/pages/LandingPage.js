@@ -528,9 +528,8 @@ export default function LandingPage() {
   const scrollRef = useRef(null);
   const releasesLeftRef = useRef(null);
   const releasesScrollRef = useRef(null);
-  const releasesSectionRef = useRef(null);
-  const scrollCursorRef = useRef(null);
-  const [showScrollCursor, setShowScrollCursor] = useState(false);
+  const releasesTrackRef = useRef(null);
+  const releasesWrapRef = useRef(null);
 
   const count = ALBUMS.length;
   const angleStep = 360 / count;
@@ -553,24 +552,36 @@ export default function LandingPage() {
       .catch(() => {});
   }, []);
 
-  // Scale down + fade the "NEW RELEASES" text as user scrolls horizontally
+  // Scroll-driven horizontal scroll for New Releases
   useEffect(() => {
-    const scrollEl = releasesScrollRef.current;
+    const wrap = releasesWrapRef.current;
+    const trackEl = releasesTrackRef.current;
     const textEl = releasesLeftRef.current;
-    if (!scrollEl || !textEl) return;
+    if (!wrap || !trackEl) return;
 
     const handleScroll = () => {
-      const scrolled = scrollEl.scrollLeft;
-      const fadeDistance = 120; // px of scroll to fully disappear
-      const progress = Math.min(scrolled / fadeDistance, 1);
-      const scale = 1 - progress * 0.6; // scale from 1 → 0.4
-      const opacity = 1 - progress;
-      textEl.style.transform = `translateY(-50%) scale(${scale})`;
-      textEl.style.opacity = opacity;
+      const rect = wrap.getBoundingClientRect();
+      const totalScroll = wrap.offsetHeight - window.innerHeight;
+      const scrolled = -rect.top;
+      const progress = Math.min(Math.max(scrolled / totalScroll, 0), 1);
+
+      // Drive horizontal translate from vertical scroll progress
+      const maxTranslate = trackEl.scrollWidth - window.innerWidth;
+      trackEl.style.transform = `translateX(${-progress * maxTranslate}px)`;
+
+      // Fade out "NEW RELEASES" text as albums scroll in
+      if (textEl) {
+        const fadeProgress = Math.min(progress * 3, 1); // fade faster
+        const scale = 1 - fadeProgress * 0.6;
+        const opacity = 1 - fadeProgress;
+        textEl.style.transform = `translateY(-50%) scale(${scale})`;
+        textEl.style.opacity = opacity;
+      }
     };
 
-    scrollEl.addEventListener("scroll", handleScroll, { passive: true });
-    return () => scrollEl.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [newReleases]);
 
   // Intersection Observer for scroll-reveal animations
@@ -594,30 +605,6 @@ export default function LandingPage() {
 
     return () => observer.disconnect();
   }, [newReleases, mixtapes]);
-
-  // Custom scroll cursor for new releases section
-  useEffect(() => {
-    const section = releasesSectionRef.current;
-    const cursor = scrollCursorRef.current;
-    if (!section || !cursor) return;
-
-    const handleMouseMove = (e) => {
-      cursor.style.left = `${e.clientX}px`;
-      cursor.style.top = `${e.clientY}px`;
-    };
-
-    const handleEnter = () => setShowScrollCursor(true);
-    const handleLeave = () => setShowScrollCursor(false);
-
-    section.addEventListener("mousemove", handleMouseMove);
-    section.addEventListener("mouseenter", handleEnter);
-    section.addEventListener("mouseleave", handleLeave);
-    return () => {
-      section.removeEventListener("mousemove", handleMouseMove);
-      section.removeEventListener("mouseenter", handleEnter);
-      section.removeEventListener("mouseleave", handleLeave);
-    };
-  }, [newReleases]);
 
   // Scroll-driven features: show one message at a time as the user scrolls
   const featuresWrapRef = useRef(null);
@@ -729,83 +716,50 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ======== NEW RELEASES — floating layout ======== */}
+      {/* ======== NEW RELEASES — scroll-driven horizontal ======== */}
       {newReleases.length > 0 && (
-        <div className="landing-releases">
-          <div className="landing-releases-left reveal-up" ref={(el) => { addRef(el); releasesLeftRef.current = el; }}>
-            <h2 className="landing-releases-label">NEW RELEASES</h2>
-            <p className="landing-releases-desc">
-              Fresh albums dropping this week.<br />
-              Scroll to explore what's new.
-            </p>
-            <button
-              className="landing-section-link"
-              onClick={() => navigate("/discover")}
-            >
-              View All →
-            </button>
-          </div>
-          <div className="landing-releases-scroll" ref={releasesScrollRef}>
-            <div className="landing-releases-track">
-              {newReleases.map((album, i) => {
-                const offsets = [0, -30, 15, -45, 8, -20, 35, -10, 25, -40, 12, -35, 30, -15, 5, -25, 20, -8, 38, -42];
-                return (
-                  <div
-                    key={album.id}
-                    className="landing-releases-card-wrap reveal-up"
-                    ref={addRef}
-                    style={{ transitionDelay: `${i * 0.08}s` }}
-                  >
-                  <div
-                    className="landing-releases-card"
-                    style={{
-                      transform: `translateY(${offsets[i % offsets.length]}px)`,
-                    }}
-                    onClick={() => navigate(`/album/${album.id}`)}
-                  >
-                    <img src={album.cover} alt={album.title} />
-                    <div className="landing-releases-info">
-                      <div className="landing-releases-name">{album.title}</div>
-                      <div className="landing-releases-artist">{album.artist}</div>
-                    </div>
-                  </div>
-                  </div>
-                );
-              })}
+        <div className="releases-scroll-wrap" ref={releasesWrapRef}>
+          <div className="landing-releases">
+            <div className="landing-releases-left" ref={releasesLeftRef}>
+              <h2 className="landing-releases-label">NEW RELEASES</h2>
+              <p className="landing-releases-desc">
+                Fresh albums dropping this week.<br />
+                Scroll to explore what's new.
+              </p>
+              <button
+                className="landing-section-link"
+                onClick={() => navigate("/discover")}
+              >
+                View All →
+              </button>
             </div>
-          </div>
-
-          {/* ---- Timeline bar ---- */}
-          <div className="releases-timeline-wrapper">
-          <button
-            className="releases-timeline-arrow left"
-            onClick={() => {
-              const el = document.querySelector('.releases-timeline');
-              if (el) el.scrollBy({ left: -200, behavior: 'smooth' });
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
-          </button>
-          <div className="releases-timeline">
-            <div className="releases-timeline-line" />
-            {(() => {
-              const currentYear = new Date().getFullYear();
-              const startYear = currentYear;
-              const endYear = 1986;
-              const years = [];
-              for (let y = startYear; y >= endYear; y--) {
-                const isMajor = y % 10 === 0 || y === startYear;
-                years.push(
-                  <div key={y} className="releases-timeline-tick">
-                    <div className={`releases-timeline-mark ${isMajor ? "major" : ""}`} />
-                    {isMajor && <span className="releases-timeline-year">{y}</span>}
-                  </div>
-                );
-              }
-              return years;
-            })()}
-          </div>
+            <div className="landing-releases-scroll" ref={releasesScrollRef}>
+              <div className="landing-releases-track" ref={releasesTrackRef}>
+                {newReleases.map((album, i) => {
+                  const offsets = [0, -30, 15, -45, 8, -20, 35, -10, 25, -40, 12, -35, 30, -15, 5, -25, 20, -8, 38, -42];
+                  return (
+                    <div
+                      key={album.id}
+                      className="landing-releases-card-wrap"
+                    >
+                    <div
+                      className="landing-releases-card"
+                      style={{
+                        transform: `translateY(${offsets[i % offsets.length]}px)`,
+                      }}
+                      onClick={() => navigate(`/album/${album.id}`)}
+                    >
+                      <img src={album.cover} alt={album.title} />
+                      <div className="landing-releases-info">
+                        <div className="landing-releases-name">{album.title}</div>
+                        <div className="landing-releases-artist">{album.artist}</div>
+                      </div>
+                    </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}

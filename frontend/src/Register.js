@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function Register() {
       const res = await fetch("http://localhost:5001/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, email, password }),
       });
 
       const data = await res.json();
@@ -32,42 +33,55 @@ export default function Register() {
   };
 
   return (
-    <div className="app-shell auth-shell">
-      <header className="auth-header">
-        <h1 className="brand">AlbumShelf</h1>
-        <p className="welcome">Create your account</p>
-      </header>
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-logo">
+          <img src="/logo.svg" alt="Mixtape" className="auth-logo-img" />
+          <div className="auth-logo-text">
+            <span className="auth-logo-title">MIXTAPE</span>
+            <span className="auth-logo-sub">Your music collection</span>
+          </div>
+        </div>
 
-      <section className="card auth-card">
-        <h3>Register</h3>
+        <h1 className="auth-heading">CREATE YOUR ACCOUNT</h1>
+
+        {error && <div className="auth-error">{error}</div>}
+
         <form className="auth-form" onSubmit={handleRegister}>
+          <label className="auth-label">USERNAME</label>
           <input
-            className="input"
+            className="auth-input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
+            placeholder="Enter username"
           />
+
+          <label className="auth-label">EMAIL</label>
           <input
-            className="input"
+            className="auth-input"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter email"
+          />
+
+          <label className="auth-label">PASSWORD</label>
+          <input
+            className="auth-input"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
+            placeholder="Enter password"
           />
-          <div className="form-actions auth-actions">
-            <button className="primary-btn" type="submit">
-              Create account
-            </button>
-            {error ? <p className="error-text">{error}</p> : null}
-          </div>
+
+          <button className="auth-submit" type="submit">SIGN UP</button>
         </form>
-        <p className="auth-footer">
-          Already have an account? <Link to="/login">Login</Link>
+
+        <p className="auth-switch">
+          Already have an account?{" "}
+          <Link to="/login" className="auth-switch-link">Sign in</Link>
         </p>
-        <p className="auth-footer">
-          <Link to="/">Back to albums</Link>
-        </p>
-      </section>
+      </div>
     </div>
   );
 }

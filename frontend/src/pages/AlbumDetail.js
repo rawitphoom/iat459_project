@@ -378,6 +378,24 @@ export default function AlbumDetail() {
     }
   };
 
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm("Delete this review?")) return;
+    try {
+      const res = await fetch(`http://localhost:5001/api/reviews/${reviewId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setReviews((prev) => prev.filter((r) => r._id !== reviewId));
+        // Refresh average
+        fetch(`http://localhost:5001/api/reviews/album/${id}/rating`)
+          .then((r) => r.json())
+          .then((r) => setAvgRating(r))
+          .catch(() => {});
+      }
+    } catch {}
+  };
+
   if (loading) {
     return (
       <div className="ad-page">
@@ -600,6 +618,17 @@ export default function AlbumDetail() {
               <p className="ad-review-text">{review.text}</p>
               <div className="ad-review-footer">
                 <span className="ad-review-likes">♥ {review.likes || 0}</span>
+                {(user?.role === "admin" || user?.id === review.userId) && (
+                  <button
+                    className="ad-review-delete"
+                    onClick={() => handleDeleteReview(review._id)}
+                    title="Delete review"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           ))}

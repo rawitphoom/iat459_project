@@ -2,46 +2,45 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
-// Admin Dashboard — only accessible to users with role === "admin".
-// Fetches ALL users and ALL playlists across the platform.
-// Admins can delete any user (and their playlists) or delete individual playlists.
+// Extract joined date from MongoDB ObjectId (first 4 bytes = timestamp)
+function getJoinedDate(id) {
+  if (!id || id.length < 8) return "Unknown";
+  const timestamp = parseInt(id.substring(0, 8), 16) * 1000;
+  const d = new Date(timestamp);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
 
 export default function AdminDashboard() {
   const { user, token } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // State for all users and all playlists on the platform
   const [users, setUsers] = useState([]);
   const [playlists, setPlaylists] = useState([]);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState("users"); // "users" | "mixtapes"
+  const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
 
-  // Double-check role on mount — if not admin, bounce back to home.
-  // Hiding the button in the Navbar is UX only, not security.
-  // This protects against someone manually typing /admin in the URL bar.
   useEffect(() => {
     if (user?.role !== "admin") {
       navigate("/home", { replace: true });
       return;
     }
-
-    // Fetch all users and all playlists in parallel
     fetchUsers();
     fetchPlaylists();
   }, [user, token, navigate]);
 
-  // ---- Fetch all users (admin-only endpoint) ----
   const fetchUsers = async () => {
     try {
       const res = await fetch("http://localhost:5001/api/admin/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      // If the server returns 403, the user is not actually an admin
       if (res.status === 403) {
         setError("Access denied — you are not an admin.");
         return;
       }
-
       const data = await res.json();
       if (!res.ok) {
         setError(data?.error || "Failed to load users");
@@ -53,47 +52,34 @@ export default function AdminDashboard() {
     }
   };
 
-  // ---- Fetch all playlists (admin-only endpoint) ----
   const fetchPlaylists = async () => {
     try {
       const res = await fetch("http://localhost:5001/api/admin/playlists", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (res.status === 403) return; // already handled above
+      if (res.status === 403) return;
       const data = await res.json();
       if (res.ok) setPlaylists(data);
-    } catch {
-      // silently fail — user error already shown from fetchUsers
-    }
+    } catch {}
   };
 
-  // ---- Delete a user and all their playlists ----
   const handleDeleteUser = async (userId, username) => {
-    // Prevent admin from deleting themselves
     if (userId === user?.id) {
       alert("You cannot delete your own admin account.");
       return;
     }
-
     if (!window.confirm(`Delete user "${username}" and all their playlists?`)) return;
-
     try {
       const res = await fetch(`http://localhost:5001/api/admin/users/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      // Handle 403 — server rejected the request because user is not admin
       if (res.status === 403) {
         alert("403 Forbidden — the server blocked this action.");
         return;
       }
-
       if (res.ok) {
-        // Remove deleted user from local state
         setUsers((prev) => prev.filter((u) => u._id !== userId));
-        // Remove their playlists from local state too
         setPlaylists((prev) => prev.filter((p) => p.createdBy !== userId));
       }
     } catch {
@@ -101,22 +87,17 @@ export default function AdminDashboard() {
     }
   };
 
-  // ---- Delete any playlist ----
   const handleDeletePlaylist = async (playlistId, playlistName) => {
-    if (!window.confirm(`Delete playlist "${playlistName}"?`)) return;
-
+    if (!window.confirm(`Delete mixtape "${playlistName}"?`)) return;
     try {
       const res = await fetch(`http://localhost:5001/api/admin/playlists/${playlistId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      // Handle 403 — server rejected because user is not admin
       if (res.status === 403) {
         alert("403 Forbidden — the server blocked this action.");
         return;
       }
-
       if (res.ok) {
         setPlaylists((prev) => prev.filter((p) => p._id !== playlistId));
       }
@@ -125,86 +106,224 @@ export default function AdminDashboard() {
     }
   };
 
-  // Find the username for a given user ID (for displaying playlist owner)
   const getUsernameById = (id) => {
     const found = users.find((u) => u._id === id);
     return found ? found.username : "Unknown";
   };
 
+  // Filter out current admin from user list for display
+  const displayUsers = users.filter((u) => u._id !== user?.id);
+
   return (
-    <div className="app-shell">
-      {/* ---- Header ---- */}
-      <header className="header-row">
-        <div>
-          <h1 className="brand">Admin Dashboard</h1>
-          <p className="welcome">
-            Logged in as {user?.username} (admin)
-          </p>
-        </div>
-      </header>
+    <div className="admin-page">
+      {/* Header */}
+      <div className="admin-header">
+        <h1 className="admin-title">
+          WELCOME BACK {user?.username?.toUpperCase()}!
+          <span className="admin-role-tag">[ADMIN]</span>
+        </h1>
+      </div>
 
-      {/* Show error if the server rejected access */}
-      {error && (
-        <div className="card">
-          <p className="error-text">{error}</p>
-        </div>
-      )}
+      {error && <div className="admin-error">{error}</div>}
 
-      {/* ---- All Users Section ---- */}
-      <section className="card">
-        <h3>All Users ({users.length})</h3>
-        <div className="playlist-list">
-          {users.map((u) => (
-            <div key={u._id} className="playlist-item">
-              <div className="playlist-title">
-                {u.username}
-                {/* Show a badge for admin users */}
-                {u.role === "admin" && (
-                  <span className="admin-badge">ADMIN</span>
-                )}
+      {/* Tab bar + view toggle */}
+      <div className="admin-controls">
+        <div className="admin-tabs">
+          <button
+            className={`admin-tab ${tab === "users" ? "active" : ""}`}
+            onClick={() => setTab("users")}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 6 }}>
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            ALL USERS ({users.length})
+          </button>
+          <button
+            className={`admin-tab ${tab === "mixtapes" ? "active" : ""}`}
+            onClick={() => setTab("mixtapes")}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 6 }}>
+              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+            </svg>
+            ALL MIXTAPES ({playlists.length})
+          </button>
+        </div>
+        <div className="admin-view-toggle">
+          <button
+            className={`admin-view-btn ${viewMode === "grid" ? "active" : ""}`}
+            onClick={() => setViewMode("grid")}
+            title="Grid view"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
+            </svg>
+          </button>
+          <button
+            className={`admin-view-btn ${viewMode === "list" ? "active" : ""}`}
+            onClick={() => setViewMode("list")}
+            title="List view"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-divider" />
+
+      {/* Users Tab */}
+      {tab === "users" && viewMode === "grid" && (
+        <div className="admin-grid">
+          {displayUsers.map((u) => (
+            <div key={u._id} className="admin-user-card">
+              <div className="admin-user-avatar">
+                <img
+                  src={u.profileImage || `https://api.dicebear.com/7.x/big-smile/svg?seed=${u.username}`}
+                  alt=""
+                />
               </div>
-              <div className="playlist-meta">
-                <span>Role: {u.role}</span>
-                <span>ID: {u._id}</span>
+              <div className="admin-user-avatar-label">PROFILE IMAGE</div>
+              <div className="admin-user-detail">
+                <span className="admin-user-field">NAME</span> {u.name || u.username}
               </div>
-              {/* Only show delete button for non-admin users (can't delete yourself) */}
-              {u._id !== user?.id && (
-                <button
-                  className="ghost-btn"
-                  style={{ marginTop: "8px", color: "#b00020", borderColor: "#ecc" }}
-                  onClick={() => handleDeleteUser(u._id, u.username)}
-                >
-                  Delete User
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ---- All Playlists Section ---- */}
-      <section className="card">
-        <h3>All Playlists ({playlists.length})</h3>
-        <div className="playlist-list">
-          {playlists.map((p) => (
-            <div key={p._id} className="playlist-item">
-              <div className="playlist-title">{p.name}</div>
-              <div className="playlist-meta">
-                <span>By: {getUsernameById(p.createdBy)}</span>
-                {p.mood && <span>Mood: {p.mood}</span>}
-                <span>{p.tracks?.length || 0} tracks</span>
+              <div className="admin-user-detail">
+                <span className="admin-user-field">USERNAME</span> {u.username}
+              </div>
+              <div className="admin-user-detail">
+                <span className="admin-user-field">JOINED</span> {getJoinedDate(u._id)}
               </div>
               <button
-                className="ghost-btn"
-                style={{ marginTop: "8px", color: "#b00020", borderColor: "#ecc" }}
-                onClick={() => handleDeletePlaylist(p._id, p.name)}
+                className="admin-remove-btn"
+                onClick={() => handleDeleteUser(u._id, u.username)}
               >
-                Delete Playlist
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 6 }}>
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+                REMOVE USER
               </button>
             </div>
           ))}
         </div>
-      </section>
+      )}
+
+      {tab === "users" && viewMode === "list" && (
+        <div className="admin-list">
+          <div className="admin-list-header">
+            <div className="admin-list-col admin-list-col-avatar" />
+            <div className="admin-list-col admin-list-col-name">NAME</div>
+            <div className="admin-list-col admin-list-col-username">USERNAME</div>
+            <div className="admin-list-col admin-list-col-joined">JOINED</div>
+            <div className="admin-list-col admin-list-col-action">REMOVE USER</div>
+          </div>
+          {displayUsers.map((u) => (
+            <div key={u._id} className="admin-list-row">
+              <div className="admin-list-col admin-list-col-avatar">
+                <img
+                  src={u.profileImage || `https://api.dicebear.com/7.x/big-smile/svg?seed=${u.username}`}
+                  alt=""
+                  className="admin-list-avatar"
+                />
+              </div>
+              <div className="admin-list-col admin-list-col-name">{u.name || u.username}</div>
+              <div className="admin-list-col admin-list-col-username">{u.username}</div>
+              <div className="admin-list-col admin-list-col-joined">{getJoinedDate(u._id)}</div>
+              <div className="admin-list-col admin-list-col-action">
+                <button
+                  className="admin-remove-icon"
+                  onClick={() => handleDeleteUser(u._id, u.username)}
+                  title="Remove user"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Mixtapes Tab */}
+      {tab === "mixtapes" && viewMode === "grid" && (
+        <div className="admin-grid">
+          {playlists.map((p) => (
+            <div key={p._id} className="admin-mixtape-card">
+              <div className="admin-mixtape-cover">
+                {p.tracks && p.tracks.length > 0 ? (
+                  <div className="admin-mixtape-mosaic">
+                    {[0, 1, 2, 3].map((j) => {
+                      const t = p.tracks[j % p.tracks.length];
+                      return (
+                        <img
+                          key={j}
+                          src={t?.albumArt || ""}
+                          alt=""
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="admin-mixtape-empty">No Tracks</div>
+                )}
+              </div>
+              <div className="admin-mixtape-info">
+                <div className="admin-mixtape-name">{p.name}</div>
+                <div className="admin-mixtape-tracks">{p.tracks?.length || 0} TRACKS</div>
+              </div>
+              <div className="admin-mixtape-creator">{getUsernameById(p.createdBy)}</div>
+              <button
+                className="admin-remove-btn"
+                onClick={() => handleDeletePlaylist(p._id, p.name)}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 6 }}>
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+                REMOVE MIXTAPE
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "mixtapes" && viewMode === "list" && (
+        <div className="admin-list">
+          <div className="admin-list-header">
+            <div className="admin-list-col admin-list-col-avatar" />
+            <div className="admin-list-col admin-list-col-name">NAME</div>
+            <div className="admin-list-col admin-list-col-username">CREATOR</div>
+            <div className="admin-list-col admin-list-col-joined">TRACKS</div>
+            <div className="admin-list-col admin-list-col-action">REMOVE</div>
+          </div>
+          {playlists.map((p) => (
+            <div key={p._id} className="admin-list-row">
+              <div className="admin-list-col admin-list-col-avatar">
+                <div className="admin-list-mixtape-thumb">
+                  {p.tracks && p.tracks.length > 0 ? (
+                    <img src={p.tracks[0]?.albumArt || ""} alt="" />
+                  ) : (
+                    <div className="admin-mixtape-empty-sm">-</div>
+                  )}
+                </div>
+              </div>
+              <div className="admin-list-col admin-list-col-name">{p.name}</div>
+              <div className="admin-list-col admin-list-col-username">{getUsernameById(p.createdBy)}</div>
+              <div className="admin-list-col admin-list-col-joined">{p.tracks?.length || 0}</div>
+              <div className="admin-list-col admin-list-col-action">
+                <button
+                  className="admin-remove-icon"
+                  onClick={() => handleDeletePlaylist(p._id, p.name)}
+                  title="Remove mixtape"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

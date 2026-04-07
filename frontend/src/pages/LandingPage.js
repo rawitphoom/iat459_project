@@ -89,8 +89,8 @@ const ALBUMS = [
 ];
 
 const FEATURES = [
-  { icon: "♪", text: "Collect music into lists, rank an artist's discography, and more." },
   { icon: "♪", text: "Keep track of all the music you have listened to." },
+  { icon: "♪", text: "Collect music into lists, rank an artist's discography, and more." },
   { icon: "♪", text: "Stay up to date as new albums are being released." },
   { icon: "♪", text: "Write reviews and rate music to share your opinions with friends and our community." },
 ];
@@ -531,7 +531,6 @@ export default function LandingPage() {
   const releasesSectionRef = useRef(null);
   const scrollCursorRef = useRef(null);
   const [showScrollCursor, setShowScrollCursor] = useState(false);
-  const featureTextRefs = useRef([]);
 
   const count = ALBUMS.length;
   const angleStep = 360 / count;
@@ -620,24 +619,34 @@ export default function LandingPage() {
     };
   }, [newReleases]);
 
-  // Scroll-linked text reveal for feature cards
+  // Scroll-driven features: show one message at a time as the user scrolls
+  const featuresWrapRef = useRef(null);
+  const [featuresProgress, setFeaturesProgress] = useState(-1);
+
   useEffect(() => {
     const handleScroll = () => {
-      featureTextRefs.current.forEach((el) => {
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        const windowH = window.innerHeight;
-        // Start revealing when element enters bottom 80% of viewport
-        // Fully revealed when element reaches 55% from top
-        const start = windowH * 1.1;
-        const end = windowH * 0.35;
-        const progress = Math.min(Math.max((start - rect.top) / (start - end), 0), 1);
-        el.style.clipPath = `inset(0 ${(1 - progress) * 100}% 0 0)`;
-      });
+      const wrap = featuresWrapRef.current;
+      if (!wrap) return;
+      const rect = wrap.getBoundingClientRect();
+      const totalScroll = wrap.offsetHeight - window.innerHeight;
+      const scrolled = -rect.top;
+      const progress = Math.min(Math.max(scrolled / totalScroll, 0), 1);
+      // Hold the title for the first bit, then advance through each feature.
+      const featureProgress = (progress - 0.1) / 0.9; // after title
+      if (featureProgress <= 0) {
+        setFeaturesProgress(-1);
+        return;
+      }
+
+      const idx = Math.min(
+        FEATURES.length - 1,
+        Math.max(0, Math.floor(featureProgress * FEATURES.length))
+      );
+      setFeaturesProgress(idx);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // run once on mount
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -691,28 +700,32 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ======== FEATURES: "Mixtape lets you..." ======== */}
-      <div className="landing-features">
-        <h2 className="landing-features-title reveal-up" ref={addRef}>
-          MIXTAPE<br />LETS YOU<span className="landing-dot">...</span>
-        </h2>
-        <div className="landing-features-grid">
-          {FEATURES.map((feat, i) => (
-            <div
-              key={i}
-              className="landing-feature-card reveal-up"
-              ref={addRef}
-              style={{ transitionDelay: `${i * 0.12}s` }}
-            >
-              <span className="landing-feature-icon">{feat.icon}</span>
-              <p className="landing-feature-text">
-                <span
-                  className="reveal-text"
-                  ref={(el) => { if (el) featureTextRefs.current[i] = el; }}
-                >{feat.text}</span>
-              </p>
-            </div>
-          ))}
+      {/* Scroll buffer — keeps hero visible longer */}
+      <div className="landing-scroll-spacer" />
+
+      {/* ======== FEATURES: "Mixtape lets you..." — scroll-driven ======== */}
+      <div className="features-scroll-wrap" ref={featuresWrapRef}>
+        <div className="features-sticky">
+          <h2 className="features-title">
+            MIXTAPE<br />LETS YOU<span className="landing-dot">...</span>
+          </h2>
+          <div className="features-display">
+            {FEATURES.map((feat, i) => (
+              <div
+                key={i}
+                className={`features-slide ${
+                  i === featuresProgress
+                    ? "active"
+                    : i < featuresProgress
+                      ? "past"
+                      : "next"
+                }`}
+              >
+                <span className="features-card-icon">{feat.icon}</span>
+                <p className="features-card-text">{feat.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

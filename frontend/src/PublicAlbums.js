@@ -185,7 +185,9 @@ export default function Discover() {
           ) : (
             <>
               <span className="discover-hero-line discover-hero-indent">TRENDING</span>
-              <span className="discover-hero-line">NOW</span>
+              <span className="discover-hero-line discover-hero-slide" key={activeTab}>
+                {activeTab === "Songs" ? "SONGS" : activeTab === "Albums" ? "ALBUMS" : "MIXTAPES"}
+              </span>
             </>
           )}
         </div>

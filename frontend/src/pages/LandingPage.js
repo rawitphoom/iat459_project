@@ -528,6 +528,9 @@ export default function LandingPage() {
   const scrollRef = useRef(null);
   const releasesLeftRef = useRef(null);
   const releasesScrollRef = useRef(null);
+  const releasesSectionRef = useRef(null);
+  const scrollCursorRef = useRef(null);
+  const [showScrollCursor, setShowScrollCursor] = useState(false);
   const featureTextRefs = useRef([]);
 
   const count = ALBUMS.length;
@@ -592,6 +595,30 @@ export default function LandingPage() {
 
     return () => observer.disconnect();
   }, [newReleases, mixtapes]);
+
+  // Custom scroll cursor for new releases section
+  useEffect(() => {
+    const section = releasesSectionRef.current;
+    const cursor = scrollCursorRef.current;
+    if (!section || !cursor) return;
+
+    const handleMouseMove = (e) => {
+      cursor.style.left = `${e.clientX}px`;
+      cursor.style.top = `${e.clientY}px`;
+    };
+
+    const handleEnter = () => setShowScrollCursor(true);
+    const handleLeave = () => setShowScrollCursor(false);
+
+    section.addEventListener("mousemove", handleMouseMove);
+    section.addEventListener("mouseenter", handleEnter);
+    section.addEventListener("mouseleave", handleLeave);
+    return () => {
+      section.removeEventListener("mousemove", handleMouseMove);
+      section.removeEventListener("mouseenter", handleEnter);
+      section.removeEventListener("mouseleave", handleLeave);
+    };
+  }, [newReleases]);
 
   // Scroll-linked text reveal for feature cards
   useEffect(() => {
@@ -712,6 +739,11 @@ export default function LandingPage() {
                 return (
                   <div
                     key={album.id}
+                    className="landing-releases-card-wrap reveal-up"
+                    ref={addRef}
+                    style={{ transitionDelay: `${i * 0.08}s` }}
+                  >
+                  <div
                     className="landing-releases-card"
                     style={{
                       transform: `translateY(${offsets[i % offsets.length]}px)`,
@@ -724,9 +756,43 @@ export default function LandingPage() {
                       <div className="landing-releases-artist">{album.artist}</div>
                     </div>
                   </div>
+                  </div>
                 );
               })}
             </div>
+          </div>
+
+          {/* ---- Timeline bar ---- */}
+          <div className="releases-timeline-wrapper">
+          <button
+            className="releases-timeline-arrow left"
+            onClick={() => {
+              const el = document.querySelector('.releases-timeline');
+              if (el) el.scrollBy({ left: -200, behavior: 'smooth' });
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+          <div className="releases-timeline">
+            <div className="releases-timeline-line" />
+            {(() => {
+              const currentYear = new Date().getFullYear();
+              const startYear = currentYear;
+              const endYear = 1986;
+              const years = [];
+              for (let y = startYear; y >= endYear; y--) {
+                const isMajor = y % 10 === 0 || y === startYear;
+                years.push(
+                  <div key={y} className="releases-timeline-tick">
+                    <div className={`releases-timeline-mark ${isMajor ? "major" : ""}`} />
+                    {isMajor && <span className="releases-timeline-year">{y}</span>}
+                  </div>
+                );
+              }
+              return years;
+            })()}
+          </div>
           </div>
         </div>
       )}

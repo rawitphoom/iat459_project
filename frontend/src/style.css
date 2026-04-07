@@ -562,17 +562,18 @@ body {
   font-family: 'DM Mono', monospace;
   font-size: 14px;
   letter-spacing: 2px;
-  color: #111;
-  background: #fff;
-  border: 2px solid #fff;
+  color: #fff;
+  background: #DB4A1E;
+  border: 2px solid #DB4A1E;
   padding: 14px 40px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
 
 .landing-cta:hover {
-  background: transparent;
-  color: #fff;
+  background: #fff;
+  color: #DB4A1E;
+  border-color: #fff;
 }
 
 /* ---- Landing page wrapper (scrollable) ---- */
@@ -754,6 +755,87 @@ body {
   gap: 80px 60px;
   padding-left: 500px; /* Start albums after the text area */
   padding-right: 64px;
+}
+
+/* ---- Releases timeline bar ---- */
+.releases-timeline-wrapper {
+  position: relative;
+  width: 100%;
+  padding: 0 40px;
+}
+
+.releases-timeline-arrow {
+  position: absolute;
+  left: 0;
+  top: -4px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #DB4A1E;
+  border: none;
+  border-radius: 20px;
+  color: #111;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.releases-timeline-arrow:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+
+.releases-timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+  padding: 0;
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.releases-timeline::-webkit-scrollbar {
+  display: none;
+}
+
+.releases-timeline-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.releases-timeline-tick {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.releases-timeline-mark {
+  width: 1px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.releases-timeline-mark.major {
+  height: 16px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.releases-timeline-year {
+  margin-top: 6px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
 }
 
 .landing-releases-card {
@@ -2155,6 +2237,22 @@ body {
 
 .discover-hero-indent {
   padding-left: clamp(40px, 8vw, 80px);
+}
+
+.discover-hero-slide {
+  animation: discover-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  overflow: hidden;
+}
+
+@keyframes discover-slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ---- Search bar ---- */

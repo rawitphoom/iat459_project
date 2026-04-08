@@ -18,6 +18,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AlbumDetail from "./pages/AlbumDetail";
 import ProfilePage from "./pages/ProfilePage";
 import CreateMixtape from "./pages/CreateMixtape";
+import WriteReview from "./pages/WriteReview";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 
 function AppLayout() {
   const location = useLocation();
@@ -55,6 +58,10 @@ function AppLayout() {
         {/* public landing page */}
         <Route path="/home" element={<LandingPage />} />
 
+        {/* informational pages */}
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+
         {/* discover = browse albums */}
         <Route path="/discover" element={<PublicAlbums />} />
 
@@ -90,6 +97,15 @@ function AppLayout() {
           element={
             <ProtectedRoute>
               <CreateMixtape />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/write-review"
+          element={
+            <ProtectedRoute>
+              <WriteReview />
             </ProtectedRoute>
           }
         />

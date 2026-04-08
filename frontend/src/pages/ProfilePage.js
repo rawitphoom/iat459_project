@@ -224,15 +224,6 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
-      {/* ======== LOGO ======== */}
-      <div className="profile-logo">
-        <img src="/logo.svg" alt="Mixtape" className="profile-logo-img" />
-        <div className="profile-logo-text">
-          <span className="profile-logo-title">MIXTAPE</span>
-          <span className="profile-logo-sub">Your music collection</span>
-        </div>
-      </div>
-
       {/* ======== HEADER ======== */}
       <div className="profile-header">
         <div className="profile-avatar">

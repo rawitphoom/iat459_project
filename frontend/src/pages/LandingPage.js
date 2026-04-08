@@ -637,6 +637,7 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+
   const addRef = (el) => {
     if (el && !revealRefs.current.includes(el)) {
       revealRefs.current.push(el);
@@ -767,15 +768,14 @@ export default function LandingPage() {
       {/* ======== POPULAR MIXTAPES ======== */}
       {mixtapes.length > 0 && (
         <div className="landing-top3">
-          <h2 className="landing-top3-title reveal-up" ref={addRef}>
+          <h2 className="landing-top3-title">
             POPULAR MIXTAPES
           </h2>
           <div className="landing-top3-grid">
             {mixtapes.slice(0, 3).map((mix, i) => (
               <div
                 key={mix._id}
-                className="landing-top3-card reveal-up"
-                ref={addRef}
+                className="landing-top3-card"
                 style={{ transitionDelay: `${i * 0.15}s` }}
               >
                 <CyclingMosaic tracks={mix.tracks} />

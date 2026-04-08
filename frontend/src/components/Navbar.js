@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Navbar() {
@@ -7,6 +7,7 @@ export default function Navbar() {
   // Pull user object too — we need user.role to conditionally show the Admin link
   const { token, user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleNav = (path) => {
     setMenuOpen(false);
@@ -19,27 +20,58 @@ export default function Navbar() {
     navigate("/home");
   };
 
+  // Inline horizontal nav links shown on the topbar
+  const topLinks = [
+    { label: "DASHBOARD", path: "/dashboard", auth: true },
+    { label: "DISCOVER", path: "/discover", auth: false },
+    { label: "SEARCH", path: "/search", auth: false },
+    { label: "PROFILE", path: "/profile", auth: true },
+  ].filter((l) => (l.auth ? !!token : true));
+
+  const isActive = (path) =>
+    location.pathname === path || location.pathname.startsWith(path + "/");
+
   return (
     <>
       {/* Top bar */}
       <nav className="topbar">
         <Link to="/home" className="topbar-logo">[ ♪ MIXTAPE ]</Link>
-        <button className="topbar-menu-btn" onClick={() => setMenuOpen(true)}>
-          [ MENU ]
+
+        <div className={`topbar-links ${menuOpen ? "is-hidden" : ""}`}>
+          {topLinks.map((l) => (
+            <button
+              key={l.path}
+              className={`topbar-link ${isActive(l.path) ? "active" : ""}`}
+              onClick={() => navigate(l.path)}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          className={`topbar-menu-btn ${menuOpen ? "is-open" : ""}`}
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+        >
+          {menuOpen ? (
+            <svg width="40" height="40" viewBox="0 0 47 47" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="45" height="45" rx="22.5" fill="white" stroke="white" strokeWidth="2"/>
+              <line x1="17" y1="17" x2="30" y2="30" stroke="black" strokeWidth="2.5" strokeLinecap="round"/>
+              <line x1="30" y1="17" x2="17" y2="30" stroke="black" strokeWidth="2.5" strokeLinecap="round"/>
+            </svg>
+          ) : (
+            <svg width="40" height="40" viewBox="0 0 47 47" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="45" height="45" rx="22.5" stroke="currentColor" strokeWidth="2"/>
+              <circle cx="17.5" cy="23.5" r="2.5" fill="currentColor"/>
+              <circle cx="28.5" cy="23.5" r="2.5" fill="currentColor"/>
+            </svg>
+          )}
         </button>
       </nav>
 
       {/* Full-screen overlay */}
       <div className={`nav-overlay ${menuOpen ? "open" : ""}`}>
-        <div className="nav-overlay-header">
-          <Link to="/home" className="topbar-logo" onClick={() => setMenuOpen(false)}>
-            [ ♪ MIXTAPE ]
-          </Link>
-          <button className="topbar-menu-btn" onClick={() => setMenuOpen(false)}>
-            [ CLOSE ]
-          </button>
-        </div>
-
         <div className="nav-overlay-links">
           <button className="nav-overlay-link" onClick={() => handleNav("/search")}>
             <span className="nav-link-text">SEARCH</span>
@@ -90,8 +122,8 @@ export default function Navbar() {
         </div>
 
         <div className="nav-overlay-footer">
-          <span className="nav-footer-link">ABOUT</span>
-          <span className="nav-footer-link">CONTACT</span>
+          <span className="nav-footer-link" onClick={() => handleNav("/about")}>ABOUT</span>
+          <span className="nav-footer-link" onClick={() => handleNav("/contact")}>CONTACT</span>
           <span className="nav-footer-link">FAQ</span>
         </div>
       </div>

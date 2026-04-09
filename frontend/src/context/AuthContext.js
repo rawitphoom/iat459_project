@@ -16,6 +16,12 @@ export function AuthProvider({ children }) {
     }
     try {
       const decoded = jwtDecode(token);
+      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+        setUser(null);
+        setToken("");
+        localStorage.removeItem("token");
+        return;
+      }
       setUser(decoded); // { id, username, role } — role enables admin conditional rendering
     } catch {
       setUser(null);

@@ -166,6 +166,27 @@ app.post("/api/playlists", verifyToken, async (req, res) => {
   res.status(201).json(playlist);
 });
 
+// Update playlist
+app.put("/api/playlists/:id", verifyToken, async (req, res) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) return res.status(404).json({ error: "Playlist not found" });
+    if (playlist.createdBy !== req.user.id) return res.status(403).json({ error: "Not authorized" });
+
+    const { name, description, image, public: isPublic, tracks } = req.body;
+    if (name !== undefined) playlist.name = name;
+    if (description !== undefined) playlist.description = description;
+    if (image !== undefined) playlist.image = image;
+    if (isPublic !== undefined) playlist.public = isPublic;
+    if (tracks !== undefined) playlist.tracks = tracks;
+
+    await playlist.save();
+    res.json(playlist);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update playlist" });
+  }
+});
+
 // Toggle playlist public/private
 app.patch("/api/playlists/:id/toggle-public", verifyToken, async (req, res) => {
   try {
@@ -445,6 +466,7 @@ app.get("/api/music/artist/:id/albums", async (req, res) => {
 const reviewSchema = new mongoose.Schema({
   albumId: { type: String, required: true },    // Deezer album ID
   albumTitle: String,                            // Album name (for display)
+  albumArt: String,                              // Album cover URL (for display)
   userId: String,                                // User who wrote the review
   username: { type: String, required: true },    // Username for display
   title: String,                                 // Review title/headline
@@ -469,7 +491,7 @@ app.get("/api/reviews/album/:albumId", async (req, res) => {
 
 // Protected: create a new review (must be logged in)
 app.post("/api/reviews", verifyToken, async (req, res) => {
-  const { albumId, albumTitle, title, rating, text } = req.body || {};
+  const { albumId, albumTitle, albumArt, title, rating, text } = req.body || {};
 
   if (!albumId || !rating) {
     return res.status(400).json({ error: "Album ID and rating are required" });
@@ -479,6 +501,7 @@ app.post("/api/reviews", verifyToken, async (req, res) => {
     const review = await Review.create({
       albumId: String(albumId),
       albumTitle: albumTitle || "",
+      albumArt: albumArt || "",
       userId: req.user?.id,
       username: req.user?.username || "Anonymous",
       title: title ? String(title).trim() : "",
@@ -488,6 +511,19 @@ app.post("/api/reviews", verifyToken, async (req, res) => {
     res.status(201).json(review);
   } catch (err) {
     res.status(500).json({ error: "Failed to create review" });
+  }
+});
+
+// Public: get recent reviews across all albums (for dashboard feed)
+app.get("/api/reviews/recent", async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 5, 20);
+    const reviews = await Review.find({})
+      .sort({ createdAt: -1 })
+      .limit(limit);
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load reviews" });
   }
 });
 
@@ -565,6 +601,25 @@ app.post("/api/reviews/seed/:albumId", async (req, res) => {
   }
 });
 
+// Protected: update own review
+app.put("/api/reviews/:id", verifyToken, async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.id);
+    if (!review) return res.status(404).json({ error: "Review not found" });
+    if (review.userId !== req.user?.id) return res.status(403).json({ error: "Not authorized" });
+
+    const { title, rating, text } = req.body;
+    if (title !== undefined) review.title = title;
+    if (rating !== undefined) review.rating = rating;
+    if (text !== undefined) review.text = text;
+
+    await review.save();
+    res.json(review);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update review" });
+  }
+});
+
 // Protected: delete own review
 app.delete("/api/reviews/:id", verifyToken, async (req, res) => {
   try {
@@ -610,6 +665,9 @@ app.get("/api/profile/:id", async (req, res) => {
     res.json({
       _id: user._id,
       username: user.username,
+      name: user.name || "",
+      email: user.email || "",
+      avatar: user.avatar || "",
       role: user.role,
       createdAt: user.createdAt || null,
       stats: {
@@ -672,6 +730,54 @@ app.get("/api/profile/:id/favorite-albums", async (req, res) => {
   }
 });
 
+// Protected: update own profile (name, username, email, avatar)
+app.put("/api/profile", verifyToken, async (req, res) => {
+  try {
+    const { name, username, email, avatar } = req.body;
+    if (username) {
+      const taken = await User.findOne({ username, _id: { $ne: req.user.id } });
+      if (taken) return res.status(409).json({ error: "Username already taken" });
+    }
+    const update = {};
+    if (name !== undefined) update.name = name;
+    if (username !== undefined) update.username = username;
+    if (email !== undefined) update.email = email;
+    if (avatar !== undefined) update.avatar = avatar;
+    const user = await User.findByIdAndUpdate(req.user.id, update, { new: true }).select("-password");
+    res.json({
+      _id: user._id,
+      username: user.username,
+      name: user.name || "",
+      email: user.email || "",
+      avatar: user.avatar || "",
+      role: user.role,
+    });
+  } catch (err) {
+    console.error("Update profile error:", err);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+// Protected: change password
+app.post("/api/auth/change-password", verifyToken, async (req, res) => {
+  try {
+    const bcrypt = require("bcryptjs");
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: "Missing fields" });
+    if (newPassword.length < 6) return res.status(400).json({ error: "Password too short" });
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    const ok = await bcrypt.compare(currentPassword, user.password);
+    if (!ok) return res.status(401).json({ error: "Current password is incorrect" });
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ message: "Password updated" });
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({ error: "Failed to change password" });
+  }
+});
+
 // Public: get a user's favorite songs
 app.get("/api/profile/:id/favorite-songs", async (req, res) => {
   try {
@@ -689,7 +795,8 @@ app.get("/api/profile/:id/favorite-songs", async (req, res) => {
 // =============================================
 app.get("/api/playlists/public", async (req, res) => {
   try {
-    const playlists = await Playlist.find({ public: true });
+    const playlists = await Playlist.find({ public: true })
+      .populate("createdBy", "username");
     res.json(playlists);
   } catch (err) {
     res.status(500).json({ error: "Failed to load public playlists" });

@@ -5,8 +5,10 @@ const mongoose = require("mongoose");
 // Default is "user" — admins must be created intentionally (e.g. via DB or seed script).
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
+  name: { type: String, default: "" },
   email: { type: String },
   password: { type: String, required: true },
+  avatar: { type: String, default: "" },
   role: { type: String, enum: ["user", "admin"], default: "user" },
   resetToken: { type: String },
   resetTokenExpiry: { type: Date },

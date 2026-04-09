@@ -55,7 +55,17 @@
       "Bash(lsof -nP -iTCP:5001 -sTCP:LISTEN)",
       "Bash(/opt/homebrew/bin/wc -l /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/pages/ProfilePage.js)",
       "Bash(lsof -ti:3000)",
-      "Bash(xargs -I {} kill {})"
+      "Bash(xargs -I {} kill {})",
+      "Bash(curl -s http://localhost:5001/api/playlists/public)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d[0].keys\\(\\)\\)\\); print\\('owner:', d[0].get\\('owner'\\), 'createdBy:', d[0].get\\('createdBy'\\), 'username:', d[0].get\\('username'\\)\\)\")",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',c=>s+=c\\).on\\('end',\\(\\)=>{const d=JSON.parse\\(s\\);console.log\\(Object.keys\\(d[0]\\)\\);console.log\\('owner:',d[0].owner\\);}\\)\")",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',c=>s+=c\\).on\\('end',\\(\\)=>{const d=JSON.parse\\(s\\);console.log\\('createdBy:',JSON.stringify\\(d[0].createdBy\\)\\);console.log\\('count:',d.length\\);}\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5001/api/music/chart)",
+      "Bash(node server.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5001/api/auth/change-password -X POST -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(curl -s http://localhost:5001/api/health)",
+      "Bash(kill 31468 34755)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST http://localhost:5001/api/auth/change-password -H \"Content-Type: application/json\" -d '{}')"
     ]
   }
 }

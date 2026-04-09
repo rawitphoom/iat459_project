@@ -35,7 +35,20 @@ export default function Navbar() {
     <>
       {/* Top bar */}
       <nav className="topbar">
-        <Link to="/home" className="topbar-logo">[ ♪ MIXTAPE ]</Link>
+        <Link
+          to="/home"
+          className="topbar-logo"
+          onClick={(e) => {
+            // If already on /home, just scroll back to the top instead of
+            // navigating (which would be a no-op and feel broken).
+            if (location.pathname === "/home") {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+        >
+          [ ♪ MIXTAPE ]
+        </Link>
 
         <div className={`topbar-links ${menuOpen ? "is-hidden" : ""}`}>
           {topLinks.map((l) => (

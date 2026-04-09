@@ -5,10 +5,27 @@ import { AuthContext } from "../context/AuthContext";
 export default function ProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, token } = useContext(AuthContext);
+  const { user, token, logout } = useContext(AuthContext);
 
   const profileId = id || user?.id;
   const isOwn = !id || id === user?.id;
+
+  // Edit profile / change password popups
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [changePwOpen, setChangePwOpen] = useState(false);
+  const [editProfileName, setEditProfileName] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editAvatar, setEditAvatar] = useState("");
+  const [editProfileSaving, setEditProfileSaving] = useState(false);
+  const [editProfileError, setEditProfileError] = useState("");
+  const editAvatarFileRef = useRef(null);
+
+  const [pwCurrent, setPwCurrent] = useState("");
+  const [pwNew, setPwNew] = useState("");
+  const [pwConfirm, setPwConfirm] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwError, setPwError] = useState("");
 
   const [profile, setProfile] = useState(null);
   const [playlists, setPlaylists] = useState([]);
@@ -27,6 +44,23 @@ export default function ProfilePage() {
   const [heartPos, setHeartPos] = useState({ x: 0, y: 0 });
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [playlistTrackMap, setPlaylistTrackMap] = useState({});
+
+  // Edit mixtape popup
+  const [editPopup, setEditPopup] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editImage, setEditImage] = useState("");
+  const [editIsPublic, setEditIsPublic] = useState(false);
+  const [editTracks, setEditTracks] = useState([]);
+  const [editSaving, setEditSaving] = useState(false);
+  const editFileInputRef = useRef(null);
+
+  // Edit review popup
+  const [editReviewPopup, setEditReviewPopup] = useState(null);
+  const [editReviewTitle, setEditReviewTitle] = useState("");
+  const [editReviewRating, setEditReviewRating] = useState(5);
+  const [editReviewText, setEditReviewText] = useState("");
+  const [editReviewSaving, setEditReviewSaving] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -54,13 +88,114 @@ export default function ProfilePage() {
       .then(([profileData, playlistData, reviewData, favAlbumData, favSongData]) => {
         setProfile(profileData);
         setPlaylists(Array.isArray(playlistData) ? playlistData : []);
-        setReviews(Array.isArray(reviewData) ? reviewData : []);
+        const rawReviews = Array.isArray(reviewData) ? reviewData : [];
+        // Enrich reviews with album art from Deezer API
+        Promise.all(
+          rawReviews.map(async (r) => {
+            if ((r.albumArt && r.artistName) || !r.albumId) return r;
+            try {
+              const res = await fetch(`http://localhost:5001/api/music/album/${r.albumId}`);
+              const album = await res.json();
+              return {
+                ...r,
+                albumArt: r.albumArt || album.coverXl || album.cover || "",
+                artistName: r.artistName || album.artist || "",
+              };
+            } catch { return r; }
+          })
+        ).then(setReviews);
         setFavAlbums(Array.isArray(favAlbumData) ? favAlbumData : []);
         setFavSongs(Array.isArray(favSongData) ? favSongData : []);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [profileId, token]);
+
+  // ---- Edit profile / change password handlers ----
+  const openEditProfile = () => {
+    setEditProfileName(profile?.name || "");
+    setEditUsername(profile?.username || "");
+    setEditEmail(profile?.email || "");
+    setEditAvatar(profile?.avatar || "");
+    setEditProfileError("");
+    setEditProfileOpen(true);
+  };
+
+  const handleEditAvatarFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setEditAvatar(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const saveProfile = async () => {
+    if (!token) return;
+    setEditProfileSaving(true);
+    setEditProfileError("");
+    try {
+      const res = await fetch("http://localhost:5001/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: editProfileName,
+          username: editUsername,
+          email: editEmail,
+          avatar: editAvatar,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setEditProfileError(data.error || "Failed to update profile");
+        return;
+      }
+      setProfile((p) => ({ ...p, ...data }));
+      setEditProfileOpen(false);
+    } catch {
+      setEditProfileError("Network error");
+    } finally {
+      setEditProfileSaving(false);
+    }
+  };
+
+  const openChangePassword = () => {
+    setPwCurrent("");
+    setPwNew("");
+    setPwConfirm("");
+    setPwError("");
+    setEditProfileOpen(false);
+    setChangePwOpen(true);
+  };
+
+  const savePassword = async () => {
+    if (!token) return;
+    if (pwNew !== pwConfirm) { setPwError("Passwords do not match"); return; }
+    if (pwNew.length < 6) { setPwError("Password must be at least 6 characters"); return; }
+    setPwSaving(true);
+    setPwError("");
+    try {
+      const res = await fetch("http://localhost:5001/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ currentPassword: pwCurrent, newPassword: pwNew }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPwError(data.error || "Failed to change password");
+        return;
+      }
+      setChangePwOpen(false);
+    } catch {
+      setPwError("Network error");
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  const handleSignOut = () => {
+    logout?.();
+    navigate("/login");
+  };
 
   // Toggle playlist public/private
   const togglePublic = async (playlistId) => {
@@ -90,6 +225,113 @@ export default function ProfilePage() {
       }
     } catch {}
   };
+
+  // ---- Edit mixtape popup handlers ----
+  const openEditPopup = (pl) => {
+    setEditPopup(pl);
+    setEditName(pl.name || "");
+    setEditDescription(pl.description || "");
+    setEditImage(pl.image || "");
+    setEditIsPublic(pl.public || false);
+    setEditTracks([...(pl.tracks || [])]);
+  };
+
+  const closeEditPopup = () => setEditPopup(null);
+
+  const handleEditImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert("Image must be under 2MB"); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => setEditImage(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleEditRemoveTrack = (trackId) => {
+    setEditTracks((prev) => prev.filter((t) => t.trackId !== trackId));
+  };
+
+  const handleEditSave = async () => {
+    if (!editName.trim()) { alert("Name is required"); return; }
+    setEditSaving(true);
+    try {
+      const res = await fetch(`http://localhost:5001/api/playlists/${editPopup._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: editName,
+          description: editDescription,
+          image: editImage,
+          public: editIsPublic,
+          tracks: editTracks,
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setPlaylists((prev) => prev.map((p) => (p._id === updated._id ? updated : p)));
+        closeEditPopup();
+      }
+    } catch {}
+    setEditSaving(false);
+  };
+
+  // ---- Edit review popup handlers ----
+  const openEditReview = (review) => {
+    setEditReviewPopup(review);
+    setEditReviewTitle(review.title || "");
+    setEditReviewRating(review.rating || 5);
+    setEditReviewText(review.text || "");
+  };
+
+  const closeEditReview = () => setEditReviewPopup(null);
+
+  const handleEditReviewSave = async () => {
+    if (!editReviewRating) { alert("Rating is required"); return; }
+    setEditReviewSaving(true);
+    try {
+      const res = await fetch(`http://localhost:5001/api/reviews/${editReviewPopup._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          title: editReviewTitle,
+          rating: editReviewRating,
+          text: editReviewText,
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setReviews((prev) => prev.map((r) => {
+          if (r._id !== updated._id) return r;
+          return {
+            ...r,
+            title: updated.title,
+            rating: updated.rating,
+            text: updated.text,
+          };
+        }));
+        closeEditReview();
+      }
+    } catch {}
+    setEditReviewSaving(false);
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    if (!token || !window.confirm("Delete this review?")) return;
+    try {
+      const res = await fetch(`http://localhost:5001/api/reviews/${reviewId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setReviews((prev) => prev.filter((r) => r._id !== reviewId));
+      }
+    } catch {}
+  };
+
+  useEffect(() => {
+    document.body.style.overflow = (editPopup || editReviewPopup) ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [editPopup, editReviewPopup]);
 
   // Audio preview toggle
   const togglePreview = (track) => {
@@ -226,11 +468,18 @@ export default function ProfilePage() {
     <div className="profile-page">
       {/* ======== HEADER ======== */}
       <div className="profile-header">
-        <div className="profile-avatar">
-          {profile.username?.charAt(0).toUpperCase()}
+        <div className="profile-header-left">
+          <div className="profile-avatar">
+            {profile.avatar ? (
+              <img src={profile.avatar} alt={profile.username} className="profile-avatar-img" />
+            ) : (
+              profile.username?.charAt(0).toUpperCase()
+            )}
+          </div>
+          <h1 className="profile-name">{profile.name || profile.username}</h1>
+          <div className="profile-handle">{profile.username}</div>
         </div>
-        <div className="profile-info">
-          <h1 className="profile-username">{profile.username}</h1>
+        <div className="profile-header-right">
           <div className="profile-stats">
             <div className="profile-stat">
               <span className="profile-stat-num">{profile.stats?.playlists || 0}</span>
@@ -249,6 +498,12 @@ export default function ProfilePage() {
               <span className="profile-stat-label">Reviews</span>
             </div>
           </div>
+          {isOwn && (
+            <div className="profile-header-actions">
+              <button className="profile-header-btn" onClick={openEditProfile}>EDIT PROFILE</button>
+              <button className="profile-header-btn" onClick={handleSignOut}>SIGN OUT</button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -261,7 +516,7 @@ export default function ProfilePage() {
           SAVED ALBUMS ({favAlbums.length})
         </button>
         <button className={`profile-tab ${activeTab === "songs" ? "active" : ""}`} onClick={() => setActiveTab("songs")}>
-          LIKED SONGS ({favSongs.length})
+          LIKED TRACKS ({favSongs.length})
         </button>
         <button className={`profile-tab ${activeTab === "reviews" ? "active" : ""}`} onClick={() => setActiveTab("reviews")}>
           REVIEWS ({reviews.length})
@@ -279,14 +534,13 @@ export default function ProfilePage() {
             <div className="profile-mixtapes-grid">
               {playlists.map((pl) => (
                 <div key={pl._id} className="profile-mixtape-card">
+                  {isOwn && (
+                    <button className="profile-mixtape-edit-btn" onClick={(e) => { e.stopPropagation(); openEditPopup(pl); }}>EDIT</button>
+                  )}
                   <div className="profile-mixtape-top">
                     <div className={`profile-mixtape-cover ${pl.image ? "has-custom-cover" : ""}`}>
                       {pl.image ? (
-                        <img
-                          src={pl.image}
-                          alt={pl.name}
-                          className="profile-mixtape-cover-image"
-                        />
+                        <img src={pl.image} alt={pl.name} className="profile-mixtape-cover-image" />
                       ) : pl.tracks?.length > 0 ? (
                         pl.tracks.slice(0, 4).map((t, j) => (
                           <img key={j} src={t.albumArt} alt="" className="profile-mixtape-thumb" />
@@ -298,62 +552,26 @@ export default function ProfilePage() {
                     <div className="profile-mixtape-info">
                       <div className="profile-mixtape-name">{pl.name}</div>
                       <div className="profile-mixtape-meta">
-                        {pl.tracks?.length || 0} tracks
-                        {pl.mood ? ` · ${pl.mood}` : ""}
+                        {pl.tracks?.length || 0} TRACKS
                       </div>
-                      {pl.description && (
-                        <div className="profile-mixtape-desc">{pl.description}</div>
-                      )}
                       {isOwn && (
                         <div className="profile-mixtape-actions">
                           <button
                             className={`profile-visibility-toggle ${pl.public ? "public" : ""}`}
-                            onClick={() => togglePublic(pl._id)}
+                            onClick={(e) => { e.stopPropagation(); togglePublic(pl._id); }}
                           >
                             {pl.public ? "● Public" : "○ Private"}
-                          </button>
-                          <button className="profile-delete-btn" onClick={() => deletePlaylist(pl._id)}>
-                            Delete
                           </button>
                         </div>
                       )}
                     </div>
                   </div>
-
-                  {pl.tracks?.length > 0 && (
-                    <div className="profile-mixtape-tracks">
-                      {pl.tracks.map((track, i) => (
-                        <div key={track.trackId || i} className={`profile-track ${playingId === track.trackId ? "playing" : ""}`}>
-                          <img className="profile-track-art" src={track.albumArt} alt={track.album} />
-                          <div className="profile-track-info">
-                            <div className="profile-track-name">{track.name}</div>
-                            <div className="profile-track-artist">
-                              {track.artist}
-                              {track.durationSec ? ` · ${formatDuration(track.durationSec)}` : ""}
-                            </div>
-                          </div>
-                          {track.previewUrl && (
-                            <button
-                              className={`profile-track-play ${playingId === track.trackId ? "active" : ""}`}
-                              onClick={() => togglePreview(track)}
-                            >
-                              {playingId === track.trackId ? "❚❚" : "▶"}
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
           )}
 
-          {isOwn && (
-            <button className="profile-cta" onClick={() => navigate("/dashboard")}>
-              + CREATE NEW MIXTAPE
-            </button>
-          )}
+
         </div>
       )}
 
@@ -372,9 +590,23 @@ export default function ProfilePage() {
                   className="profile-fav-album-card"
                   onClick={() => navigate(`/album/${fav.albumId}`)}
                 >
-                  <img className="profile-fav-album-img" src={fav.cover} alt={fav.title} />
-                  <div className="profile-fav-album-name">{fav.title}</div>
-                  <div className="profile-fav-album-artist">{fav.artist}</div>
+                  <div className="profile-fav-album-cover">
+                    <img
+                      src={process.env.PUBLIC_URL + "/review-vinyl.svg"}
+                      alt=""
+                      className="profile-fav-album-vinyl"
+                    />
+                    <img className="profile-fav-album-img" src={fav.cover} alt={fav.title} />
+                  </div>
+                  <div className="profile-fav-album-bottom">
+                    <div>
+                      <div className="profile-fav-album-name">{fav.title}</div>
+                      <div className="profile-fav-album-artist">{fav.artist}</div>
+                    </div>
+                    <span className="profile-fav-album-heart">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037.033l.034-.03a6 6 0 0 1 4.733-1.44l.246.036a6 6 0 0 1 3.364 10.008l-.18.185l-.048.041l-7.45 7.379a1 1 0 0 1-1.313.082l-.094-.082l-7.493-7.422A6 6 0 0 1 6.979 3.074"/></svg>
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -382,7 +614,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* ======== LIKED SONGS TAB ======== */}
+      {/* ======== LIKED TRACKS TAB ======== */}
       {activeTab === "songs" && (
         <div className="profile-content">
           {favSongs.length === 0 ? (
@@ -435,20 +667,40 @@ export default function ProfilePage() {
               {isOwn ? "You haven't written any reviews yet." : "No reviews yet."}
             </p>
           ) : (
-            <div className="profile-reviews-grid">
+            <div className="profile-reviews-list">
               {reviews.map((review) => (
-                <div
-                  key={review._id}
-                  className="profile-review-card"
-                  onClick={() => review.albumId && navigate(`/album/${review.albumId}`)}
-                >
-                  <div className="profile-review-album">{review.albumTitle || "Unknown Album"}</div>
-                  {review.title && <div className="profile-review-title">{review.title}</div>}
-                  <div className="profile-review-stars">{renderStars(review.rating)}</div>
-                  <p className="profile-review-text">{review.text}</p>
-                  <div className="profile-review-footer">
-                    <span>{formatDate(review.createdAt)}</span>
-                    <span>♥ {review.likes || 0}</span>
+                <div key={review._id} className="profile-review-card">
+                  <div className="profile-review-body">
+                    <div className="profile-review-date">Posted {formatDate(review.createdAt)}</div>
+                    <div className="profile-review-album">{review.albumTitle || "Unknown Album"}</div>
+                    <div className="profile-review-artist">{review.artistName || ""}</div>
+                    <div className="profile-review-stars">{renderStars(review.rating)}</div>
+                    {review.title && <div className="profile-review-title">{review.title}</div>}
+                    {review.text && <p className="profile-review-text">{review.text}</p>}
+                  </div>
+                  <div className="profile-review-right">
+                    <div className="profile-review-cover">
+                      <img
+                        src={process.env.PUBLIC_URL + "/review-vinyl.svg"}
+                        alt=""
+                        className="profile-review-vinyl"
+                      />
+                      {review.albumArt && (
+                        <img
+                          src={review.albumArt}
+                          alt={review.albumTitle}
+                          className="profile-review-art"
+                        />
+                      )}
+                    </div>
+                    {isOwn && (
+                      <button
+                        className="profile-review-edit-btn"
+                        onClick={() => openEditReview(review)}
+                      >
+                        EDIT REVIEW
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -506,6 +758,260 @@ export default function ProfilePage() {
             </div>
 
             <button className="heart-popup-cancel" onClick={() => setHeartPopup(null)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* ======== EDIT MIXTAPE POPUP ======== */}
+      {editPopup && (
+        <div className="edit-mixtape-overlay" onClick={closeEditPopup}>
+          <div className="edit-mixtape-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="edit-mixtape-topbar">
+              <button className="edit-mixtape-back" onClick={closeEditPopup}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+              </button>
+              <button className="edit-mixtape-delete" onClick={async () => { await deletePlaylist(editPopup._id); closeEditPopup(); }}>
+                <svg width="24" height="24" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.26949 11.82C5.26949 10.9383 5.93074 10.2215 6.74724 10.2215H11.8552C12.8691 10.1928 13.7642 9.497 14.1092 8.46583L14.1667 8.28375L14.3871 7.57075C14.5212 7.13375 14.6382 6.75234 14.803 6.41117C15.4508 5.06567 16.6507 4.13225 18.0364 3.89267C18.3891 3.83325 18.759 3.83325 19.1864 3.83325H25.8526C26.28 3.83325 26.6518 3.83325 27.0026 3.89267C28.3883 4.13225 29.5901 5.06567 30.236 6.41117C30.4008 6.75234 30.5177 7.13375 30.6519 7.57075L30.8723 8.28375L30.9298 8.46583C31.2748 9.497 32.3482 10.1947 33.364 10.2215H38.2898C39.1082 10.2215 39.7695 10.9364 39.7695 11.82C39.7695 12.7036 39.1082 13.4166 38.2917 13.4166H6.74533C5.92883 13.4166 5.26949 12.7017 5.26949 11.82Z" fill="#F36A40"/><path opacity="0.5" d="M22.2462 42.1667H23.7546C28.943 42.1667 31.5363 42.1667 33.2249 40.5126C34.9115 38.8566 35.084 36.1426 35.429 30.7165L35.9274 22.8946C36.1152 19.9487 36.2091 18.4767 35.3619 17.5433C34.5148 16.6099 33.0869 16.6099 30.2272 16.6099H15.7736C12.9159 16.6099 11.486 16.6099 10.6389 17.5433C9.79169 18.4767 9.88753 19.9487 10.0734 22.8946L10.5718 30.7146C10.9168 36.1445 11.0893 38.8566 12.7759 40.5126C14.4626 42.1686 17.0578 42.1667 22.2462 42.1667Z" fill="#F36A40"/></svg>
+              </button>
+            </div>
+
+            <div className="edit-mixtape-field">
+              <label className="edit-mixtape-label">NAME</label>
+              <input className="edit-mixtape-input" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            </div>
+
+            <div className="edit-mixtape-row">
+              <div className="edit-mixtape-field edit-mixtape-image-section">
+                <label className="edit-mixtape-label">MIXTAPE IMAGE</label>
+                <div className="edit-mixtape-image-box">
+                  {editImage ? (
+                    <img src={editImage} alt="" className="edit-mixtape-image-preview" />
+                  ) : editPopup.tracks?.length > 0 ? (
+                    <div className="edit-mixtape-image-mosaic">
+                      {editPopup.tracks.slice(0, 4).map((t, j) => (
+                        <img key={j} src={t.albumArt} alt="" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="edit-mixtape-image-empty">♪</div>
+                  )}
+                </div>
+                <button className="edit-mixtape-change-image" onClick={() => editFileInputRef.current?.click()}>CHANGE IMAGE</button>
+                <input ref={editFileInputRef} type="file" accept="image/*" hidden onChange={handleEditImageChange} />
+              </div>
+
+              <div className="edit-mixtape-field edit-mixtape-desc-section">
+                <label className="edit-mixtape-label">DESCRIPTION</label>
+                <textarea className="edit-mixtape-textarea" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Add a description..." />
+
+                <label className="edit-mixtape-label" style={{ marginTop: 20 }}>VISIBILITY</label>
+                <div className={`create-mix-visibility ${editIsPublic ? "is-public" : "is-private"}`}>
+                  <span className="create-mix-visibility-slider" aria-hidden="true" />
+                  <button type="button" className={`create-mix-visibility-opt ${!editIsPublic ? "active" : ""}`} onClick={(e) => { e.stopPropagation(); setEditIsPublic(false); }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                    PRIVATE
+                  </button>
+                  <button type="button" className={`create-mix-visibility-opt ${editIsPublic ? "active" : ""}`} onClick={(e) => { e.stopPropagation(); setEditIsPublic(true); }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+                    PUBLIC
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="edit-mixtape-field edit-mixtape-tracks-section">
+              <div className="edit-mixtape-tracks-header">
+                <label className="edit-mixtape-label">TRACKS ({editTracks.length})</label>
+                <button className="edit-mixtape-add-tracks" onClick={() => { closeEditPopup(); navigate("/search"); }}>ADD TRACKS</button>
+              </div>
+              <div className="edit-mixtape-tracks-list">
+                {editTracks.map((track, i) => (
+                  <div key={track.trackId + i} className="edit-mixtape-track-row">
+                    <span className="edit-mixtape-track-num">{i + 1}</span>
+                    {track.albumArt && <img src={track.albumArt} alt="" className="edit-mixtape-track-art" />}
+                    <div className="edit-mixtape-track-info">
+                      <div className="edit-mixtape-track-name">{track.name}</div>
+                      <div className="edit-mixtape-track-artist">{track.artist}</div>
+                    </div>
+                    <button className="edit-mixtape-track-remove" onClick={() => handleEditRemoveTrack(track.trackId)}>—</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="edit-mixtape-bottom">
+              <button className="edit-mixtape-cancel" onClick={closeEditPopup}>CANCEL</button>
+              <button className="edit-mixtape-save" onClick={handleEditSave} disabled={editSaving}>
+                {editSaving ? "SAVING..." : "SAVE CHANGES"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======== EDIT REVIEW POPUP ======== */}
+      {editReviewPopup && (
+        <div className="edit-mixtape-overlay" onClick={closeEditReview}>
+          <div className="edit-review-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="edit-mixtape-topbar">
+              <button className="edit-mixtape-back" onClick={closeEditReview}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+              </button>
+              <button className="edit-mixtape-delete" onClick={async () => { await handleDeleteReview(editReviewPopup._id); closeEditReview(); }}>
+                <svg width="24" height="24" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.26949 11.82C5.26949 10.9383 5.93074 10.2215 6.74724 10.2215H11.8552C12.8691 10.1928 13.7642 9.497 14.1092 8.46583L14.1667 8.28375L14.3871 7.57075C14.5212 7.13375 14.6382 6.75234 14.803 6.41117C15.4508 5.06567 16.6507 4.13225 18.0364 3.89267C18.3891 3.83325 18.759 3.83325 19.1864 3.83325H25.8526C26.28 3.83325 26.6518 3.83325 27.0026 3.89267C28.3883 4.13225 29.5901 5.06567 30.236 6.41117C30.4008 6.75234 30.5177 7.13375 30.6519 7.57075L30.8723 8.28375L30.9298 8.46583C31.2748 9.497 32.3482 10.1947 33.364 10.2215H38.2898C39.1082 10.2215 39.7695 10.9364 39.7695 11.82C39.7695 12.7036 39.1082 13.4166 38.2917 13.4166H6.74533C5.92883 13.4166 5.26949 12.7017 5.26949 11.82Z" fill="#F36A40"/><path opacity="0.5" d="M22.2462 42.1667H23.7546C28.943 42.1667 31.5363 42.1667 33.2249 40.5126C34.9115 38.8566 35.084 36.1426 35.429 30.7165L35.9274 22.8946C36.1152 19.9487 36.2091 18.4767 35.3619 17.5433C34.5148 16.6099 33.0869 16.6099 30.2272 16.6099H15.7736C12.9159 16.6099 11.486 16.6099 10.6389 17.5433C9.79169 18.4767 9.88753 19.9487 10.0734 22.8946L10.5718 30.7146C10.9168 36.1445 11.0893 38.8566 12.7759 40.5126C14.4626 42.1686 17.0578 42.1667 22.2462 42.1667Z" fill="#F36A40"/></svg>
+              </button>
+            </div>
+
+            <div className="edit-review-album-section">
+              <div className="edit-review-cover">
+                <img
+                  src={process.env.PUBLIC_URL + "/review-vinyl.svg"}
+                  alt=""
+                  className="edit-review-vinyl"
+                />
+                {editReviewPopup.albumArt ? (
+                  <img
+                    src={editReviewPopup.albumArt}
+                    alt={editReviewPopup.albumTitle}
+                    className="edit-review-art"
+                  />
+                ) : (
+                  <div className="edit-review-art-placeholder">♪</div>
+                )}
+              </div>
+              <div className="edit-review-album-info">
+                <div className="edit-review-album-name">{editReviewPopup.albumTitle || "Unknown Album"}</div>
+                <div className="edit-review-album-artist">{editReviewPopup.artistName || ""}</div>
+              </div>
+            </div>
+
+            <div className="edit-mixtape-field">
+              <label className="edit-mixtape-label">RATING</label>
+              <div className="edit-review-rating-select">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <span
+                    key={n}
+                    className={`edit-review-star-pick ${n <= editReviewRating ? "active" : ""}`}
+                    onClick={() => setEditReviewRating(n)}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="edit-mixtape-field">
+              <label className="edit-mixtape-label">REVIEW TITLE</label>
+              <input className="edit-mixtape-input" value={editReviewTitle} onChange={(e) => setEditReviewTitle(e.target.value)} placeholder="Review title..." />
+            </div>
+
+            <div className="edit-mixtape-field">
+              <label className="edit-mixtape-label">ADD A REVIEW</label>
+              <textarea className="edit-mixtape-textarea edit-review-textarea" value={editReviewText} onChange={(e) => setEditReviewText(e.target.value)} placeholder="Write your review..." />
+            </div>
+
+            <div className="edit-mixtape-bottom">
+              <button className="edit-mixtape-cancel" onClick={closeEditReview}>CANCEL</button>
+              <button className="edit-mixtape-save" onClick={handleEditReviewSave} disabled={editReviewSaving}>
+                {editReviewSaving ? "SAVING..." : "SAVE CHANGES"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======== EDIT PROFILE POPUP ======== */}
+      {editProfileOpen && (
+        <div className="edit-profile-overlay" onClick={() => setEditProfileOpen(false)}>
+          <div className="edit-profile-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="edit-profile-back" onClick={() => setEditProfileOpen(false)} aria-label="Back">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+            </button>
+
+            <div className="edit-profile-grid">
+              <div className="edit-profile-left">
+                <div className="edit-profile-avatar">
+                  {editAvatar ? (
+                    <img src={editAvatar} alt="" />
+                  ) : (
+                    <span>{(editUsername || "?").charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <button className="edit-profile-change-image" onClick={() => editAvatarFileRef.current?.click()}>CHANGE IMAGE</button>
+                <input ref={editAvatarFileRef} type="file" accept="image/*" hidden onChange={handleEditAvatarFile} />
+              </div>
+
+              <div className="edit-profile-right">
+                <div className="edit-profile-field">
+                  <label className="edit-profile-label">NAME</label>
+                  <input className="edit-profile-input" value={editProfileName} onChange={(e) => setEditProfileName(e.target.value)} />
+                </div>
+
+                <div className="edit-profile-field">
+                  <label className="edit-profile-label">USERNAME</label>
+                  <input className="edit-profile-input" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} />
+                </div>
+
+                <div className="edit-profile-field">
+                  <label className="edit-profile-label">EMAIL</label>
+                  <input className="edit-profile-input" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+                </div>
+
+                <div className="edit-profile-field">
+                  <label className="edit-profile-label">PASSWORD</label>
+                  <div className="edit-profile-pw-row">
+                    <span className="edit-profile-pw-mask">**********</span>
+                    <button className="edit-profile-change-pw" onClick={openChangePassword}>CHANGE PASSWORD</button>
+                  </div>
+                </div>
+
+                {editProfileError && <div className="edit-profile-error">{editProfileError}</div>}
+
+                <div className="edit-profile-bottom">
+                  <button className="edit-profile-cancel" onClick={() => setEditProfileOpen(false)}>CANCEL</button>
+                  <button className="edit-profile-save" onClick={saveProfile} disabled={editProfileSaving}>
+                    {editProfileSaving ? "SAVING..." : "SAVE CHANGES"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======== CHANGE PASSWORD POPUP ======== */}
+      {changePwOpen && (
+        <div className="edit-profile-overlay" onClick={() => setChangePwOpen(false)}>
+          <div className="edit-profile-modal edit-profile-modal--pw" onClick={(e) => e.stopPropagation()}>
+            <button className="edit-profile-back" onClick={() => { setChangePwOpen(false); setEditProfileOpen(true); }} aria-label="Back">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+            </button>
+
+            <div className="edit-profile-pw-stack">
+              <div className="edit-profile-field">
+                <label className="edit-profile-label">CURRENT PASSWORD</label>
+                <input className="edit-profile-input" type="password" value={pwCurrent} onChange={(e) => setPwCurrent(e.target.value)} />
+              </div>
+
+              <div className="edit-profile-field">
+                <label className="edit-profile-label">NEW PASSWORD</label>
+                <input className="edit-profile-input" type="password" value={pwNew} onChange={(e) => setPwNew(e.target.value)} />
+              </div>
+
+              <div className="edit-profile-field">
+                <label className="edit-profile-label">CONFIRM PASSWORD</label>
+                <input className="edit-profile-input" type="password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} />
+              </div>
+
+              {pwError && <div className="edit-profile-error">{pwError}</div>}
+
+              <div className="edit-profile-bottom">
+                <button className="edit-profile-cancel" onClick={() => setChangePwOpen(false)}>CANCEL</button>
+                <button className="edit-profile-save" onClick={savePassword} disabled={pwSaving}>
+                  {pwSaving ? "SAVING..." : "SAVE CHANGES"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

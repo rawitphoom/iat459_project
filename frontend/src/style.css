@@ -614,15 +614,37 @@ body:has(.auth-page) {
   cursor: pointer;
   padding: 6px 2px;
   position: relative;
-  transition: color 0.2s ease;
+  transition: color 0.25s ease, letter-spacing 0.25s ease;
+}
+
+.topbar-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: #DB4A1E;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .topbar-link:hover {
   color: #DB4A1E;
+  letter-spacing: 3px;
+}
+
+.topbar-link:hover::after {
+  transform: scaleX(1);
 }
 
 .topbar-link.active {
   color: #DB4A1E;
+}
+
+.topbar-link.active::after {
+  transform: scaleX(1);
 }
 
 @media (max-width: 800px) {
@@ -2448,24 +2470,65 @@ body:has(.profile-page) {
 /* ---- Header ---- */
 .profile-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 40px;
   margin-bottom: 56px;
 }
 
+.profile-header-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.profile-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 24px;
+  flex: 1;
+}
+
 .profile-avatar {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   background: linear-gradient(135deg, #c0633a, #e08a5e);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Oswald', Arial, sans-serif;
-  font-size: 52px;
+  font-size: 60px;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-name {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 900;
+  color: #fff;
+  margin: 8px 0 0 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.profile-handle {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 1px;
 }
 
 .profile-info {
@@ -2480,6 +2543,29 @@ body:has(.profile-page) {
   margin: 0 0 16px 0;
   letter-spacing: 1px;
   text-transform: uppercase;
+}
+
+.profile-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.profile-header-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 24px;
+  padding: 10px 22px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.profile-header-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 .profile-stats {
@@ -2577,6 +2663,7 @@ body:has(.profile-page) {
 }
 
 .profile-mixtape-card {
+  position: relative;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
@@ -2737,74 +2824,206 @@ body:has(.profile-page) {
 }
 
 /* ---- Reviews Grid ---- */
-.profile-reviews-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+.profile-reviews-list {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
 }
 
 .profile-review-card {
+  display: flex;
+  justify-content: space-between;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  padding: 24px;
-  cursor: pointer;
-  transition: border-color 0.2s, transform 0.2s;
+  padding: 32px;
+  transition: border-color 0.2s;
 }
 
 .profile-review-card:hover {
   border-color: rgba(255, 255, 255, 0.12);
-  transform: translateY(-2px);
+}
+
+.profile-review-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-review-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
 }
 
 .profile-review-album {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.profile-review-artist {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  color: #c0633a;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
   letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.profile-review-stars {
+  font-size: 20px;
+  color: #e8a849;
+  margin-bottom: 16px;
+  letter-spacing: 2px;
 }
 
 .profile-review-title {
   font-family: 'Oswald', Arial, sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #fff;
   margin-bottom: 8px;
 }
 
-.profile-review-stars {
-  font-size: 16px;
-  color: #c0633a;
-  margin-bottom: 12px;
-  letter-spacing: 2px;
-}
-
 .profile-review-text {
-  font-family: 'Roboto', sans-serif;
-  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.45);
-  line-height: 1.6;
-  margin: 0 0 16px 0;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 400px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.profile-review-footer {
+.profile-review-right {
   display: flex;
-  justify-content: space-between;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.25);
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-left: 32px;
+  margin-right: 24px;
+  flex-shrink: 0;
 }
 
-/* ---- Mixtape actions (toggle + delete) ---- */
+.profile-review-cover {
+  position: relative;
+  width: 240px;
+  height: 200px;
+}
+
+.profile-review-vinyl {
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 180px;
+  height: 180px;
+  z-index: 0;
+}
+
+.profile-review-art {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 180px;
+  height: 180px;
+  border-radius: 8px;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.profile-review-edit-btn {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(135deg,
+    rgba(221, 183, 168, 0.50) 0%,
+    rgba(221, 183, 168, 0.37) 20%,
+    rgba(221, 183, 168, 0.29) 28%,
+    rgba(221, 183, 168, 0.21) 40%,
+    rgba(221, 183, 168, 0.18) 48%,
+    rgba(221, 183, 168, 0.14) 54%,
+    rgba(221, 183, 168, 0.13) 59%,
+    rgba(221, 183, 168, 0.10) 67%
+  );
+  border: 1.5px solid rgba(236, 236, 236, 0.4);
+  padding: 10px 24px;
+  border-radius: 14px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.profile-review-edit-btn:hover {
+  color: #fff;
+  border-color: rgba(236, 236, 236, 0.6);
+  background: linear-gradient(135deg,
+    rgba(221, 183, 168, 0.60) 0%,
+    rgba(221, 183, 168, 0.45) 20%,
+    rgba(221, 183, 168, 0.35) 40%,
+    rgba(221, 183, 168, 0.25) 60%,
+    rgba(221, 183, 168, 0.18) 80%
+  );
+}
+
+/* ---- Mixtape card layout ---- */
 .profile-mixtape-top {
   display: flex;
+  align-items: flex-start;
   gap: 28px;
+}
+
+.profile-mixtape-edit-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(135deg,
+    rgba(221, 183, 168, 0.50) 0%,
+    rgba(221, 183, 168, 0.37) 20%,
+    rgba(221, 183, 168, 0.29) 28%,
+    rgba(221, 183, 168, 0.21) 40%,
+    rgba(221, 183, 168, 0.18) 48%,
+    rgba(221, 183, 168, 0.14) 54%,
+    rgba(221, 183, 168, 0.13) 59%,
+    rgba(221, 183, 168, 0.10) 67%
+  );
+  border: 1.5px solid rgba(236, 236, 236, 0.4);
+  padding: 10px 24px;
+  border-radius: 14px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s;
+  z-index: 2;
+  transition: all 0.2s;
+}
+
+.profile-mixtape-edit-btn:hover {
+  color: #fff;
+  border-color: rgba(236, 236, 236, 0.6);
+  background: linear-gradient(135deg,
+    rgba(221, 183, 168, 0.60) 0%,
+    rgba(221, 183, 168, 0.45) 20%,
+    rgba(221, 183, 168, 0.35) 40%,
+    rgba(221, 183, 168, 0.25) 60%,
+    rgba(221, 183, 168, 0.18) 80%
+  );
 }
 
 .profile-mixtape-actions {
@@ -2859,26 +3078,61 @@ body:has(.profile-page) {
 /* ---- Saved Albums Grid ---- */
 .profile-fav-albums-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
 .profile-fav-album-card {
   cursor: pointer;
   transition: transform 0.2s;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 24px;
 }
 
 .profile-fav-album-card:hover {
   transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.profile-fav-album-cover {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  transform: translateX(-30px);
+}
+
+.profile-fav-album-vinyl {
+  position: absolute;
+  right: -70px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 .profile-fav-album-img {
-  width: 100%;
-  aspect-ratio: 1;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  width: 180px;
+  height: 180px;
   object-fit: cover;
   border-radius: 8px;
-  display: block;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.profile-fav-album-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
 }
 
 .profile-fav-album-name {
@@ -2886,7 +3140,6 @@ body:has(.profile-page) {
   font-size: 14px;
   font-weight: 500;
   color: #fff;
-  margin-top: 10px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2899,19 +3152,571 @@ body:has(.profile-page) {
   margin-top: 2px;
 }
 
+.profile-fav-album-heart {
+  color: #DB4A1E;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(219, 74, 30, 0.12);
+}
+
 /* ---- Liked Songs List ---- */
 .profile-fav-songs-list {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+.profile-fav-songs-list .profile-track {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px 28px;
+  gap: 20px;
+}
+
+.profile-fav-songs-list .profile-track:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.profile-fav-songs-list .profile-track-art {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+}
+
+.profile-fav-songs-list .profile-track-name {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.profile-fav-songs-list .profile-track-artist {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
 }
 
 .profile-fav-song-num {
   font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.25);
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.profile-fav-songs-list .ad-track-heart {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(192, 99, 58, 0.15);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-fav-songs-list .profile-track-play {
+  width: 36px;
+  height: 36px;
+  background: rgba(192, 99, 58, 0.15);
+  border: none;
+  color: #fff;
+}
+
+/* ---- Edit Mixtape Popup ---- */
+.edit-mixtape-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.edit-mixtape-modal {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  width: 700px;
+  max-height: 92vh;
+  overflow: hidden;
+  padding: 24px 28px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-mixtape-modal::-webkit-scrollbar { width: 6px; }
+.edit-mixtape-modal::-webkit-scrollbar-track { background: transparent; }
+.edit-mixtape-modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+.edit-mixtape-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.edit-mixtape-back {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-mixtape-back:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.edit-mixtape-delete {
+  background: rgba(192, 99, 58, 0.12);
+  border: 1px solid rgba(192, 99, 58, 0.25);
+  color: #c0633a;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-mixtape-delete:hover {
+  background: rgba(192, 99, 58, 0.25);
+  border-color: #c0633a;
+}
+
+.edit-mixtape-field {
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.edit-mixtape-label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.edit-mixtape-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 16px;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.edit-mixtape-input:focus {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.edit-mixtape-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.edit-mixtape-image-section {
+  flex-shrink: 0;
+  width: 170px;
+}
+
+.edit-mixtape-desc-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-mixtape-image-box {
+  width: 170px;
+  height: 170px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.edit-mixtape-image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.edit-mixtape-image-mosaic {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  height: 100%;
+}
+
+.edit-mixtape-image-mosaic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.edit-mixtape-image-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.edit-mixtape-change-image {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-mixtape-change-image:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.edit-mixtape-textarea {
+  width: 100%;
+  min-height: 100px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #fff;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.edit-mixtape-textarea:focus {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.edit-mixtape-tracks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.edit-mixtape-tracks-header .edit-mixtape-label {
+  margin-bottom: 0;
+}
+
+.edit-mixtape-add-tracks {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(135deg,
+    rgba(221, 183, 168, 0.50) 0%,
+    rgba(221, 183, 168, 0.37) 20%,
+    rgba(221, 183, 168, 0.29) 28%,
+    rgba(221, 183, 168, 0.21) 40%,
+    rgba(221, 183, 168, 0.18) 48%,
+    rgba(221, 183, 168, 0.14) 54%,
+    rgba(221, 183, 168, 0.13) 59%,
+    rgba(221, 183, 168, 0.10) 67%
+  );
+  border: 1.5px solid rgba(236, 236, 236, 0.4);
+  padding: 10px 24px;
+  border-radius: 14px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s;
+}
+
+.edit-mixtape-add-tracks:hover {
+  color: #fff;
+  border-color: rgba(236, 236, 236, 0.6);
+}
+
+.edit-mixtape-tracks-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.edit-mixtape-tracks-list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 260px;
+}
+
+.edit-mixtape-tracks-list::-webkit-scrollbar { width: 4px; }
+.edit-mixtape-tracks-list::-webkit-scrollbar-track { background: transparent; }
+.edit-mixtape-tracks-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.edit-mixtape-track-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.edit-mixtape-track-num {
+  font-family: 'DM Mono', monospace;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.2);
-  width: 28px;
-  text-align: right;
+  width: 20px;
+  text-align: center;
   flex-shrink: 0;
+}
+
+.edit-mixtape-track-art {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.edit-mixtape-track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-mixtape-track-name {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.edit-mixtape-track-artist {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.edit-mixtape-track-remove {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.edit-mixtape-track-remove:hover {
+  background: rgba(192, 99, 58, 0.15);
+  border-color: rgba(192, 99, 58, 0.3);
+  color: #c0633a;
+}
+
+.edit-mixtape-bottom {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 0;
+  border-top: none;
+  flex-shrink: 0;
+}
+
+.edit-mixtape-cancel {
+  padding: 14px 40px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-mixtape-cancel:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.edit-mixtape-save {
+  padding: 14px 40px;
+  background: #DB4A1E;
+  box-shadow: 0 2px 10px rgba(219, 74, 30, 0.4);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-mixtape-save:hover {
+  background: #e5562a;
+}
+
+.edit-mixtape-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ======== EDIT REVIEW POPUP ======== */
+.edit-review-modal {
+  width: 550px;
+  max-height: 92vh;
+  background: #1a1a1a;
+  border-radius: 20px;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+}
+
+.edit-review-album-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.edit-review-cover {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.edit-review-vinyl {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: -30px;
+  width: 100px;
+  height: 100px;
+  pointer-events: none;
+}
+
+.edit-review-art {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  z-index: 1;
+}
+
+.edit-review-album-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 30px;
+}
+
+.edit-review-album-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.edit-review-album-artist {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.edit-review-rating-select {
+  display: flex;
+  gap: 6px;
+}
+
+.edit-review-star-pick {
+  font-size: 1.6rem;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.edit-review-star-pick.active {
+  color: #F36A40;
+}
+
+.edit-review-star-pick:hover {
+  color: #ff7d56;
+}
+
+.edit-review-modal .edit-mixtape-input {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+}
+
+.edit-review-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.edit-review-art-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #2a2a2a;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: #555;
+  z-index: 1;
 }
 
 /* ---- Responsive ---- */
@@ -2947,8 +3752,12 @@ body:has(.profile-page) {
     justify-content: center;
   }
 
-  .profile-reviews-grid {
-    grid-template-columns: 1fr;
+  .profile-review-card {
+    flex-direction: column;
+  }
+  .profile-review-right {
+    margin-left: 0;
+    margin-top: 20px;
   }
 
   .profile-fav-albums-grid {
@@ -3190,227 +3999,264 @@ body:has(.profile-page) {
    DISCOVER PAGE — dark themed exploration hub
    ============================================= */
 
+body:has(.discover-page) {
+  background: #0a0a0a;
+}
+
 .discover-page {
   min-height: calc(100vh - 52px);
-  background: #111;
-  padding: 40px 24px 120px;
+  background: #0a0a0a;
+  padding: 40px 60px 120px;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-.discover-header {
-  max-width: 1100px;
-  margin: 0 auto 32px;
-}
-
-.discover-title {
-  color: #DB4A1E;
-  font-size: clamp(48px, 10vw, 90px);
+/* ---- Hero title ---- */
+.discover-hero {
+  font-family: 'Oswald', Arial, sans-serif;
   font-weight: 900;
+  font-size: clamp(48px, 8vw, 88px);
+  line-height: 1;
+  color: #fff;
+  margin: 20px 0 48px 0;
   text-transform: uppercase;
-  line-height: 1.05;
-  margin: 0;
-}
-
-.discover-subtitle {
-  color: #aaa;
-  font-size: 16px;
-  margin: 0 0 24px 0;
-}
-
-.discover-hero-text {
-  display: flex;
-  flex-direction: column;
-  margin: 0 0 28px 0;
+  letter-spacing: 1px;
 }
 
 .discover-hero-line {
   display: block;
+}
+
+.discover-hero-accent {
+  color: #F36A40;
+  display: inline-block;
+  animation: discover-hero-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes discover-hero-rise {
+  0% { opacity: 0; transform: translateY(40px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Controls row: toggle + filter ---- */
+.discover-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+/* 3-way toggle: TRACKS | ALBUMS | MIXTAPES */
+.discover-toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 6px;
+  gap: 0;
+  user-select: none;
+  width: 460px;
+  max-width: 100%;
+}
+
+.discover-toggle-slider {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: calc((100% - 12px) / 3);
+  border-radius: 999px;
+  background: #F36A40;
+  box-shadow: 0 2px 12px rgba(243, 106, 64, 0.45);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.discover-toggle.pos-0 .discover-toggle-slider { transform: translateX(0); }
+.discover-toggle.pos-1 .discover-toggle-slider { transform: translateX(100%); }
+.discover-toggle.pos-2 .discover-toggle-slider { transform: translateX(200%); }
+
+.discover-toggle-opt {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  padding: 12px 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.25s ease;
+  text-align: center;
+  width: 100%;
+}
+
+.discover-toggle-opt:hover { color: #fff; }
+.discover-toggle-opt.active { color: #fff; }
+
+/* Filter button + dropdown */
+.discover-filter-wrap {
+  position: relative;
+}
+
+.discover-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 12px 22px;
   color: #fff;
-  font-family: 'Oswald', Arial, sans-serif;
-  font-size: clamp(48px, 10vw, 90px);
-  font-weight: 900;
-  line-height: 1.05;
-  text-transform: uppercase;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.discover-hero-indent {
-  padding-left: clamp(40px, 8vw, 80px);
+.discover-filter-btn:hover,
+.discover-filter-btn.has-value {
+  background: #F36A40;
+  border-color: #F36A40;
+  box-shadow: 0 2px 12px rgba(243, 106, 64, 0.45);
 }
 
-.discover-hero-slide {
-  animation: discover-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-  overflow: hidden;
+.discover-filter-label {
+  font-weight: 600;
 }
 
-@keyframes discover-slide-up {
-  0% {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.discover-filter-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+}
+
+.discover-filter-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+
+.discover-filter-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.discover-filter-item.active {
+  color: #F36A40;
+}
+
+.discover-filter-item-parent svg {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.discover-filter-genre-list {
+  max-height: 280px;
+  overflow-y: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.discover-filter-empty {
+  padding: 12px 16px;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
 }
 
 /* ---- Search bar ---- */
-.discover-search {
+.discover-search-bar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  max-width: 600px;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 6px 6px 6px 24px;
+  margin-bottom: 40px;
+  transition: border-color 0.2s;
+}
+
+.discover-search-bar:focus-within {
+  border-color: #F36A40;
+}
+
+.discover-search-icon {
+  color: rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
 }
 
 .discover-search-input {
   flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #333;
-  border-radius: 8px;
-  background: #1a1a1a;
-  color: #fff;
-  font-size: 14px;
-  font-family: 'Oswald', Arial, sans-serif;
+  background: transparent;
+  border: none;
   outline: none;
-  transition: border-color 0.2s;
+  color: #fff;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 15px;
+  padding: 16px 0;
 }
 
 .discover-search-input::placeholder {
-  color: #666;
+  color: rgba(255, 255, 255, 0.45);
 }
 
-.discover-search-input:focus {
-  border-color: #c0633a;
+.discover-search-clear {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 16px;
+  transition: color 0.2s;
 }
 
-.discover-search-btn {
-  padding: 12px 24px;
-  background: #c0633a;
+.discover-search-clear:hover { color: #fff; }
+
+.discover-search-submit {
+  background: #1f1f1f;
   color: #fff;
   border: none;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 14px;
-  font-family: 'Oswald', Arial, sans-serif;
-  letter-spacing: 1px;
+  border-radius: 999px;
+  padding: 14px 36px;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-.discover-search-btn:hover {
-  background: #d4764e;
-}
-
-.discover-clear-btn {
-  padding: 12px 16px;
-  background: transparent;
-  color: #aaa;
-  border: 1px solid #333;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: 'Oswald', Arial, sans-serif;
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-}
-
-.discover-clear-btn:hover {
-  color: #fff;
-  border-color: #fff;
-}
-
-/* ---- Floating glass search bar ---- */
-.discover-floating-search {
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%) translateY(120px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: min(90%, 640px);
-  padding: 16px 24px;
-  border-radius: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(30, 30, 30, 0.65);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  opacity: 0;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
-}
-
-.discover-floating-search.visible {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-
-.discover-floating-search-icon {
-  opacity: 0.6;
-  flex-shrink: 0;
-  color: #fff;
-}
-
-.discover-floating-search-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #fff;
-  font-size: 16px;
-  font-family: 'Roboto', Arial, sans-serif;
-  letter-spacing: 0.3px;
-}
-
-.discover-floating-search-input::placeholder {
-  color: rgba(255, 255, 255, 0.45);
-}
-
-.discover-floating-clear-btn {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 50%;
-  transition: color 0.2s, background 0.2s;
-}
-
-.discover-floating-clear-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* ---- Tabs (Songs | Albums | Mixtapes) ---- */
-.discover-tabs {
-  display: flex;
-  gap: 12px;
-  padding-bottom: 0;
-}
-
-.discover-tab {
-  padding: 10px 28px;
-  background: none;
-  border: 2px solid #fff;
-  border-radius: 50px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'Oswald', Arial, sans-serif;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: border-color 0.3s, background 0.3s, color 0.3s;
-}
-
-.discover-tab:hover {
-  border-color: #DB4A1E;
-  color: #fff;
-}
-
-.discover-tab.active {
-  border-color: #DB4A1E;
-  background: none;
-  color: #fff;
+.discover-search-submit:hover {
+  background: #2a2a2a;
 }
 
 /* ---- Loading + empty states ---- */
@@ -3436,11 +4282,21 @@ body:has(.profile-page) {
 .album-grid,
 .mixtapes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 24px;
-  max-width: 1100px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   padding-top: 24px;
+}
+
+.discover-page .album-card-img-wrapper,
+.discover-page .mixtape-card-img-wrapper {
+  border-radius: 0;
+}
+
+.discover-page .album-card-title,
+.discover-page .mixtape-card .album-card-title {
+  margin-top: 10px;
 }
 
 .album-card,
@@ -3617,14 +4473,72 @@ body:has(.profile-page) {
   background: #111;
   position: relative;
   min-height: calc(100vh - 52px);
+  padding: 64px 64px 64px;
+}
+
+/* Slide in from right to left when navigating to album */
+.ad-slide-in {
+  animation: adSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes adSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Back button (top-left, circular) */
+.ad-back-btn {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 32px;
+}
+
+.ad-back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* "9 TRACKS • 27 MINS" header — left-aligned with track numbers */
+.ad-summary {
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 24px;
+  padding-left: 16px;
+  text-transform: uppercase;
+}
+
+.ad-summary-dot {
+  margin: 0 12px;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 /* Split layout: cover left + tracks right */
 .ad-page {
   display: flex;
-  min-height: calc(100vh - 52px);
+  gap: 64px;
   position: relative;
-  overflow: hidden;
+  z-index: 1;
+  margin-bottom: 64px;
 }
 
 /* ---- Dynamic glow ---- */
@@ -3633,202 +4547,142 @@ body:has(.profile-page) {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.12;
+  opacity: 0.18;
   transition: background 1.4s ease, opacity 1.4s ease;
 }
 
-/* ======== LEFT SIDE: cover image ======== */
-/* No longer sticky — scrolls away with the tracks */
+/* ======== LEFT SIDE: cover image + info ======== */
 .ad-left {
   position: relative;
-  width: 50%;
+  width: 360px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: transparent;
-  overflow: hidden;
   z-index: 1;
 }
 
-/* Album cover fills the left side */
+/* Square album cover */
 .ad-cover {
-  width: 100%;
-  flex: 1;
+  width: 360px;
+  height: 360px;
   object-fit: cover;
   display: block;
+  border-radius: 4px;
 }
 
-/* Floating bar over the cover: save button + star rating */
-.ad-cover-footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+.ad-left-info {
+  padding-top: 24px;
+}
+
+.ad-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.ad-title {
+  color: #fff;
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.05;
+  letter-spacing: 0.5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ad-year {
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 1px;
+  flex-shrink: 0;
+  padding-top: 6px;
+}
+
+.ad-artist-line {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  font-style: italic;
+  margin-bottom: 22px;
+}
+
+/* Save album button — pill shape with light border */
+.ad-save-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  background: none;
-}
-
-/* Save album button */
-.ad-save-btn {
-  background: #fff;
-  border: 1px solid #fff;
-  color: #111;
-  font-family: 'DM Mono', monospace;
-  padding: 8px 20px;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: 'Oswald', Arial, sans-serif;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 500;
   letter-spacing: 2px;
+  border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .ad-save-btn:hover {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(255, 255, 255, 0.85);
-  color: #111;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 .ad-save-btn.saved {
-  background: #c0633a;
+  background: rgba(192, 99, 58, 0.15);
   border-color: #c0633a;
-  color: #fff;
+  color: #c0633a;
 }
 
-/* Star rating display */
-.ad-rating {
+/* Five-star average rating display */
+.ad-rating-stars {
   display: flex;
-  align-items: baseline;
-  gap: 4px;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+  font-size: 22px;
 }
 
 .ad-rating-star {
-  color: #f5c518;
-  font-size: 20px;
-}
-
-.ad-rating-score {
-  color: #fff;
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.ad-rating-max {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 14px;
-}
-
-/* ======== RIGHT SIDE: info + tracks ======== */
-.ad-right {
-  flex: 1;
-  padding: 32px 40px 60px;
-  overflow-y: auto;
-  max-height: calc(100vh - 52px);
-  z-index: 1;
-  position: relative;
-}
-
-/* Back button */
-.ad-back {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 13px;
-  font-family: 'Oswald', Arial, sans-serif;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 24px;
+  color: rgba(255, 255, 255, 0.18);
   transition: color 0.2s;
 }
 
-.ad-back:hover {
-  color: #fff;
+.ad-rating-star.filled {
+  color: #f5c518;
 }
 
-/* "Album" label */
-.ad-label {
-  color: rgba(255, 255, 255, 0.4);
-  font-family: 'Roboto', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 8px;
-}
-
-/* Album title */
-.ad-title {
-  color: #fff;
-  font-size: clamp(32px, 5vw, 60px);
-  font-weight: 900;
-  text-transform: uppercase;
-  margin: 0 0 16px 0;
-  line-height: 1;
-}
-
-/* Artist row: avatar + name + year + songs */
-.ad-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  font-family: 'Roboto', sans-serif;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  margin-bottom: 32px;
-}
-
-/* Small circular avatar with first letter of artist name */
-.ad-artist-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #333;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* Real artist profile image (circular) */
-.ad-artist-avatar-img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.ad-artist-name {
-  color: #fff;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-}
-
-.ad-meta-dot {
-  color: rgba(255, 255, 255, 0.3);
+/* ======== RIGHT SIDE: tracks (no separators) ======== */
+.ad-right {
+  flex: 1;
+  z-index: 1;
+  position: relative;
+  min-width: 0;
 }
 
 /* ======== TRACK LIST ======== */
 .ad-tracks {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-/* Individual track row */
+/* Individual track row — no border lines */
 .ad-track {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 14px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 18px;
+  padding: 12px 16px;
+  border-radius: 8px;
   transition: background 0.15s;
 }
 
@@ -3837,16 +4691,17 @@ body:has(.profile-page) {
 }
 
 .ad-track.playing {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(192, 99, 58, 0.12);
 }
 
 /* Track number */
 .ad-track-num {
-  width: 20px;
+  width: 24px;
   text-align: center;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.3);
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
   flex-shrink: 0;
 }
 
@@ -3938,47 +4793,49 @@ body:has(.profile-page) {
 .ad-more {
   position: relative;
   z-index: 1;
-  padding: 48px 48px 64px;
+  margin: 16px 0 56px;
 }
 
 .ad-more-title {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Oswald', Arial, sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: #fff;
-  margin: 0 0 20px 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0 0 24px 0;
 }
 
 .ad-more-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px;
 }
 
 .ad-more-card {
   cursor: pointer;
-  transition: transform 0.2s, opacity 0.2s;
+  transition: transform 0.25s, opacity 0.25s;
 }
 
 .ad-more-card:hover {
   transform: translateY(-4px);
-  opacity: 0.85;
 }
 
 .ad-more-img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 4px;
   display: block;
 }
 
 .ad-more-name {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Oswald', Arial, sans-serif;
   color: #fff;
   font-size: 13px;
-  font-weight: 500;
-  margin-top: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-top: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3986,8 +4843,9 @@ body:has(.profile-page) {
 
 .ad-more-year {
   font-family: 'Roboto', sans-serif;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.45);
   font-size: 12px;
+  font-style: italic;
   margin-top: 2px;
 }
 
@@ -3997,7 +4855,7 @@ body:has(.profile-page) {
 .ad-reviews-section {
   position: relative;
   z-index: 1;
-  padding: 48px 48px 64px;
+  margin-top: 16px;
 }
 
 .ad-reviews-header {
@@ -4008,28 +4866,40 @@ body:has(.profile-page) {
 }
 
 .ad-reviews-title {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Oswald', Arial, sans-serif;
   font-size: 28px;
   font-weight: 700;
   color: #fff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   margin: 0;
 }
 
 .ad-write-review-btn {
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 26px;
+  border-radius: 999px;
   cursor: pointer;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   transition: all 0.2s;
 }
 
+.ad-write-review-star {
+  color: #f5c518;
+  font-size: 16px;
+}
+
 .ad-write-review-btn:hover {
-  border-color: #fff;
-  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Review form */
@@ -4136,73 +5006,103 @@ body:has(.profile-page) {
   border-color: rgba(255, 255, 255, 0.4);
 }
 
-/* Review cards grid — 3 columns */
-.ad-reviews-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* Review cards — vinyl + cover layout */
+.ad-reviews-list {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
 }
 
 /* Individual review card */
 .ad-review-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 20px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 32px;
+  gap: 32px;
+  transition: border-color 0.2s;
 }
 
-.ad-review-card-header {
+.ad-review-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.ad-review-body {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.ad-review-date {
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.ad-review-card-title {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.ad-review-card-artist {
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  margin-bottom: 18px;
+}
+
+.ad-review-userline {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .ad-review-avatar {
-  width: 44px;
-  height: 44px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid #c0633a;
+  background: linear-gradient(135deg, #c0633a, #8a4422);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Roboto', sans-serif;
-  font-size: 18px;
+  font-size: 11px;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
 }
 
 .ad-review-username {
-  font-family: 'Roboto', sans-serif;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
-}
-
-.ad-review-username strong {
-  color: #fff;
-}
-
-.ad-review-date {
-  font-family: 'Roboto', sans-serif;
-  color: rgba(255, 255, 255, 0.35);
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
   font-size: 12px;
-}
-
-.ad-review-card-title {
-  font-family: 'Roboto', sans-serif;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.5px;
 }
 
 .ad-review-stars {
   color: #f5c518;
-  font-size: 16px;
+  font-size: 18px;
   letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.ad-review-headline {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
 }
 
 .ad-review-text {
@@ -4211,20 +5111,16 @@ body:has(.profile-page) {
   font-size: 13px;
   line-height: 1.6;
   margin: 0;
-}
-
-.ad-review-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 4px;
+  max-width: 520px;
 }
 
 .ad-review-delete {
+  position: absolute;
+  top: 0;
+  right: 0;
   background: transparent;
   border: none;
-  color: rgba(255,255,255,0.25);
+  color: rgba(255, 255, 255, 0.25);
   cursor: pointer;
   padding: 4px 6px;
   border-radius: 4px;
@@ -4236,10 +5132,41 @@ body:has(.profile-page) {
   background: rgba(176, 0, 32, 0.15);
 }
 
-.ad-review-likes {
-  font-family: 'Roboto', sans-serif;
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 13px;
+/* Right side — vinyl + cover */
+.ad-review-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ad-review-cover {
+  position: relative;
+  width: 280px;
+  height: 200px;
+}
+
+.ad-review-vinyl {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 200px;
+  height: 200px;
+  z-index: 0;
+}
+
+.ad-review-art {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 180px;
+  height: 180px;
+  border-radius: 6px;
+  object-fit: cover;
+  z-index: 1;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .ad-reviews-empty {
@@ -4269,40 +5196,257 @@ body:has(.profile-page) {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-@media (max-width: 1024px) {
-  .ad-reviews-grid {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 1100px) {
+  .ad-more-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 640px) {
-  .ad-reviews-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 900px) {
+  .ad-wrapper {
+    padding: 20px 24px 48px;
   }
-  .ad-reviews-section {
-    padding: 32px 16px 48px;
-  }
-}
-
-/* ---- Responsive: stack vertically on mobile ---- */
-@media (max-width: 768px) {
   .ad-page {
     flex-direction: column;
+    gap: 32px;
   }
-
   .ad-left {
     width: 100%;
-    height: 50vh;
+    align-items: center;
   }
+  .ad-cover {
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    aspect-ratio: 1;
+  }
+  .ad-more-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ad-review-card {
+    flex-direction: column;
+    padding: 24px;
+  }
+  .ad-review-cover {
+    width: 240px;
+    height: 180px;
+  }
+  .ad-review-vinyl,
+  .ad-review-art {
+    width: 160px;
+    height: 160px;
+  }
+}
 
-  .ad-more {
-    padding: 32px 16px 48px;
-  }
+/* =============================================
+   SIGN-IN POPUP MODAL (for visitors)
+   ============================================= */
+.ad-signin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: adFadeIn 0.2s ease;
+  padding: 20px;
+}
 
-  .ad-right {
-    max-height: none;
-    padding: 24px 16px 60px;
-  }
+@keyframes adFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ad-signin-modal {
+  position: relative;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 48px 56px 40px;
+  width: 100%;
+  max-width: 520px;
+  animation: adPopIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes adPopIn {
+  from { opacity: 0; transform: scale(0.92) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.ad-signin-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 22px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.ad-signin-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ad-signin-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.ad-signin-logo-img {
+  width: 80px;
+  height: 80px;
+}
+
+.ad-signin-logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.ad-signin-logo-title {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.ad-signin-logo-sub {
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 1px;
+}
+
+.ad-signin-heading {
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  margin: 0 0 4px;
+}
+
+.ad-signin-subheading {
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 28px;
+  letter-spacing: 0.5px;
+}
+
+.ad-signin-error {
+  background: rgba(255, 80, 80, 0.1);
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  color: #ff8080;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+}
+
+.ad-signin-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.ad-signin-label {
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+}
+
+.ad-signin-input {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 14px 18px;
+  color: #fff;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 14px;
+  margin-bottom: 22px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ad-signin-input:focus {
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.ad-signin-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.ad-signin-forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin: -10px 0 18px;
+}
+
+.ad-signin-forgot-link {
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  color: #c0633a;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+}
+
+.ad-signin-forgot-link:hover {
+  text-decoration: underline;
+}
+
+.ad-signin-submit {
+  background: #c0633a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 16px;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ad-signin-submit:hover {
+  background: #d4764d;
+}
+
+.ad-signin-switch {
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+  margin: 24px 0 0;
+}
+
+.ad-signin-switch-link {
+  color: #c0633a;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.ad-signin-switch-link:hover {
+  text-decoration: underline;
 }
 
 /* ======== HEART POPUP MODAL ======== */
@@ -5290,7 +6434,7 @@ body:has(.admin-page) {
 /* Album grid row */
 .dash-album-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
 }
 
@@ -5301,13 +6445,42 @@ body:has(.admin-page) {
   gap: 24px;
 }
 
-.dash-album-card {
-  cursor: pointer;
-  transition: transform 0.2s;
+/* Paged-scroll viewport for Latest Albums */
+.dash-album-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  padding-top: 30px;
+  margin-top: -30px;
 }
 
-.dash-album-card:hover {
-  transform: translateY(-6px);
+.dash-album-track {
+  display: flex;
+  gap: 24px;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.dash-album-viewport .dash-album-card {
+  flex: 0 0 22%;
+  min-width: 0;
+}
+
+.dash-album-card {
+  cursor: pointer;
+  position: relative;
+  padding-bottom: 110px;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  opacity: 0.35;
+}
+
+.dash-album-card.is-active {
+  opacity: 1;
+  transform: translateY(-18px);
+}
+
+.dash-album-card.is-dim {
+  opacity: 0.35;
 }
 
 .dash-album-art {
@@ -5316,6 +6489,92 @@ body:has(.admin-page) {
   object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.5s ease;
+}
+
+.dash-album-card.is-active .dash-album-art {
+  box-shadow: 0 18px 50px rgba(var(--glow-color, 194, 115, 73), 0.55), 0 0 0 1px rgba(var(--glow-color, 194, 115, 73), 0.5);
+}
+
+.dash-album-actions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.dash-album-card.is-active .dash-album-actions {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dash-album-btn {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 30px;
+  padding: 8px 22px;
+  cursor: pointer;
+  min-width: 160px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dash-album-btn:hover {
+  background: rgba(194, 115, 73, 0.2);
+  border-color: #c27349;
+}
+
+/* Mixtape mosaic cover (4 tiles) */
+.dash-mix-mosaic {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.5s ease;
+}
+
+.dash-album-card.is-active .dash-mix-mosaic {
+  box-shadow: 0 18px 50px rgba(var(--glow-color, 194, 115, 73), 0.55), 0 0 0 1px rgba(var(--glow-color, 194, 115, 73), 0.5);
+}
+
+.dash-mix-tile {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dash-mix-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dash-mix-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 28px;
 }
 
 .dash-album-title {
@@ -5337,15 +6596,43 @@ body:has(.admin-page) {
   margin-top: 4px;
 }
 
-.dash-carousel-arrow {
-  flex-shrink: 0;
-  background: none;
+/* Round nav buttons (replaces side arrows) */
+.dash-section-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.dash-nav-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.dash-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #F36A40;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 48px;
+  color: #fff;
   cursor: pointer;
-  transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
   padding: 0;
+}
+
+.dash-nav-btn svg { display: block; }
+
+.dash-nav-btn:hover {
+  background: #ff7a4f;
+  transform: scale(1.05);
+}
+
+.dash-nav-btn:active {
+  transform: scale(0.95);
 }
 
 .dash-carousel-arrow:hover {
@@ -5373,6 +6660,161 @@ body:has(.admin-page) {
   .dash-carousel-arrow {
     font-size: 32px;
   }
+}
+
+/* ---- Dashboard: Reviews section ---- */
+.dash-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.dash-review-card {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 28px 32px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  overflow: hidden;
+}
+
+.dash-review-card:hover {
+  border-color: rgba(194, 115, 73, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dash-review-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dash-review-album-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.dash-review-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.dash-review-stars .star {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.dash-review-stars .star.filled {
+  color: #c27349;
+}
+
+.dash-review-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.dash-review-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dash-review-headline {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.dash-review-text {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+    max-width: 450px;
+  line-height: 1.6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Right side: album art stacked over a vinyl disc */
+.dash-review-cover {
+  position: relative;
+  flex-shrink: 0;
+  width: 200px;
+  height: 200px;
+  margin-right: 40px;
+}
+
+.dash-review-vinyl {
+  position: absolute;
+  right: -130px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 410px;
+  height: 410px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.dash-review-art {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.dash-reviews-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.dash-load-more-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  padding: 12px 40px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.dash-load-more-btn:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .dash-review-cover { display: none; }
+  .dash-review-card { padding: 20px; }
 }
 
 /* =====================================================
@@ -5877,15 +7319,38 @@ body:has(.admin-page) {
   width: fit-content;
   max-width: max-content;
   align-items: stretch;
+  position: relative;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   padding: 4px;
   gap: 4px;
-  cursor: pointer;
   user-select: none;
 }
+
+/* The sliding copper pill that moves beneath the active option */
+.create-mix-visibility-slider {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  /* Width = one button — keep in sync with button padding below */
+  width: calc(50% - 6px);
+  border-radius: 999px;
+  background: #DB4A1E;
+  box-shadow: 0 2px 10px rgba(219, 74, 30, 0.4);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+/* Slide right when PUBLIC is selected */
+.create-mix-visibility.is-public .create-mix-visibility-slider {
+  transform: translateX(calc(100% + 4px));
+}
+
 .create-mix-visibility-opt {
+  position: relative; /* sits above the slider via stacking order */
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -5898,15 +7363,13 @@ body:has(.admin-page) {
   padding: 8px 18px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: color 0.25s ease;
 }
 .create-mix-visibility-opt:hover {
   color: #fff;
 }
 .create-mix-visibility-opt.active {
-  background: #DB4A1E;
   color: #fff;
-  box-shadow: 0 2px 10px rgba(219, 74, 30, 0.35);
 }
 .create-mix-visibility-opt svg {
   flex-shrink: 0;
@@ -6238,4 +7701,243 @@ body:has(.admin-page) {
     width: 100%;
     text-align: center;
   }
+}
+
+/* ---- Edit Profile / Change Password (popup modal) ---- */
+.edit-profile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.edit-profile-modal {
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 28px 36px 36px;
+  width: 100%;
+  max-width: 780px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.edit-profile-modal--pw {
+  max-width: 560px;
+}
+
+.edit-profile-back {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1f1f1f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  margin-bottom: 18px;
+}
+
+.edit-profile-back:hover {
+  background: #2a2a2a;
+}
+
+.edit-profile-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 40px;
+  width: 100%;
+  align-items: start;
+}
+
+.edit-profile-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.edit-profile-right {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.edit-profile-pw-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.edit-profile-pw-row {
+  display: flex;
+  align-items: center;
+  background: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  padding: 4px 4px 4px 22px;
+}
+
+.edit-profile-pw-mask {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  letter-spacing: 3px;
+}
+
+.edit-profile-avatar {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c0633a, #e08a5e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', Arial, sans-serif;
+  font-size: 64px;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+}
+
+.edit-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.edit-profile-change-image {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: #fff;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 12px 26px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.edit-profile-change-image:hover {
+  background: #242424;
+}
+
+.edit-profile-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-profile-label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.edit-profile-input {
+  width: 100%;
+  background: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  padding: 16px 22px;
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.edit-profile-input:focus {
+  border-color: #F36A40;
+}
+
+.edit-profile-change-pw {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: #fff;
+  background: #1f1f1f;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 22px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.edit-profile-change-pw:hover {
+  background: #2a2a2a;
+}
+
+.edit-profile-error {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: #ff6b6b;
+  margin-top: 24px;
+  text-align: center;
+}
+
+.edit-profile-bottom {
+  display: flex;
+  gap: 14px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.edit-profile-cancel {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: #fff;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 28px;
+  padding: 14px 36px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.edit-profile-cancel:hover {
+  background: #242424;
+}
+
+.edit-profile-save {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: #fff;
+  background: #F36A40;
+  border: none;
+  border-radius: 28px;
+  padding: 14px 38px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.edit-profile-save:hover:not(:disabled) {
+  background: #ff7d52;
+}
+
+.edit-profile-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

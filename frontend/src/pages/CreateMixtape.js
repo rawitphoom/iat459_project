@@ -348,7 +348,6 @@ export default function CreateMixtape() {
                 role="switch"
                 aria-checked={isPublic}
                 tabIndex={0}
-                onClick={() => setIsPublic((v) => !v)}
                 onKeyDown={(e) => {
                   if (e.key === " " || e.key === "Enter") {
                     e.preventDefault();
@@ -356,6 +355,9 @@ export default function CreateMixtape() {
                   }
                 }}
               >
+                {/* Sliding pill indicator — moves left (private) or right (public) */}
+                <span className="create-mix-visibility-slider" aria-hidden="true" />
+
                 <button
                   type="button"
                   className={`create-mix-visibility-opt ${!isPublic ? "active" : ""}`}

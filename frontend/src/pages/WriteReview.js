@@ -162,6 +162,7 @@ export default function WriteReview() {
         body: JSON.stringify({
           albumId: String(album.id),
           albumTitle: album.title || "",
+          albumArt: album.cover_big || album.cover_medium || album.cover || "",
           title,
           rating,
           text,

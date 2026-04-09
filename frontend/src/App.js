@@ -1,3 +1,20 @@
+/*
+ * App.js — Root of the application.
+ *
+ * This file wires together every route in the app and wraps everything in
+ * the AuthProvider (so any component can access the logged-in user/token)
+ * and BrowserRouter (so React Router's Link/navigate work everywhere).
+ *
+ * Key behaviours:
+ *  - The app always starts at the IntroPage ("/") on a fresh load or page
+ *    refresh, even if the user typed a different URL directly.
+ *  - Once the user clicks "Enter" on the intro, sessionStorage records that
+ *    they've entered and subsequent navigations skip the intro.
+ *  - The Navbar is hidden on the IntroPage so the full-screen splash looks clean.
+ *  - Protected routes (/dashboard, /create-mixtape, etc.) require a valid JWT;
+ *    ProtectedRoute handles the redirect to /login if none is found.
+ */
+
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
@@ -23,12 +40,29 @@ import WriteReview from "./pages/WriteReview";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 
+/*
+ * AppLayout — the inner shell that sits inside BrowserRouter.
+ * We need this separate from App() because hooks like useLocation/useNavigate
+ * can only be called inside a Router context, which BrowserRouter provides.
+ */
 function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Hide the Navbar on the splash/intro page so it doesn't overlap the full-screen design.
   const showSiteChrome = location.pathname !== "/";
+
+  // The floating music toggle button only makes sense on the landing/home page.
   const hideMusicButton = location.pathname !== "/home";
 
+  /*
+   * On mount, check how this page load happened using the Navigation API.
+   * - "reload"        → user hit F5 / cmd-R, so we wipe the session flag and
+   *                     force them back through the intro.
+   * - fresh navigate  → first visit, no session flag yet, send to intro.
+   * - "back_forward"  → browser back/forward button, let them stay where they are.
+   * We use replace:true so the intro isn't stacked onto the history unnecessarily.
+   */
   useEffect(() => {
     const navigationEntry = performance.getEntriesByType("navigation")[0];
     const navigationType = navigationEntry ? navigationEntry.type : "navigate";
@@ -133,6 +167,11 @@ function AppLayout() {
   );
 }
 
+/*
+ * App — the actual default export. Wraps everything in AuthProvider so the
+ * logged-in user and token are available anywhere in the tree, then drops in
+ * BrowserRouter to enable client-side routing.
+ */
 export default function App() {
   return (
     <AuthProvider>

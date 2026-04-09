@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+/*
+ * ForgotPassword — password reset request page.
+ * Route: /forgot-password
+ *
+ * The backend returns a temporary reset token in this project setup, and this
+ * page turns that token into a reset link for the next step of the flow.
+ */
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -34,6 +41,7 @@ export default function ForgotPassword() {
   return (
     <div className="auth-page">
       <div className="auth-container">
+        {/* Brand header: shared auth shell used across sign-in / register / reset pages. */}
         <div className="auth-logo">
           <img src="/logo.svg" alt="Mixtape" className="auth-logo-img" />
           <div className="auth-logo-text">
@@ -45,8 +53,10 @@ export default function ForgotPassword() {
         <h1 className="auth-heading">FORGOT PASSWORD</h1>
         <p className="auth-subheading">Enter your email or username to reset your password.</p>
 
+        {/* Error state for invalid accounts or backend failures. */}
         {error && <div className="auth-error">{error}</div>}
 
+        {/* Swap the form for a success panel once a reset token has been issued. */}
         {resetToken ? (
           <div className="auth-success">
             <p>Reset token generated! Use the link below to reset your password.</p>
@@ -68,6 +78,7 @@ export default function ForgotPassword() {
           </form>
         )}
 
+        {/* Escape hatch back to login if the user remembers their password. */}
         <p className="auth-switch">
           Remember your password?{" "}
           <Link to="/login" className="auth-switch-link">Sign in</Link>

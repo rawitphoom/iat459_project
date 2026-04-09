@@ -2,6 +2,18 @@ import { useEffect, useState, useContext, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+/*
+ * ProfilePage — personal profile and library page.
+ * Routes: /profile and /profile/:id
+ *
+ * This page does a lot of work because it doubles as:
+ * - the signed-in user's own profile editor,
+ * - a public-facing profile viewer,
+ * - a library surface for mixtapes, reviews, favorite albums, and songs.
+ *
+ * Most of the state in this file exists to support modal editing flows and
+ * playback / save interactions directly from the profile itself.
+ */
 export default function ProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();

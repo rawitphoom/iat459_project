@@ -1,3 +1,15 @@
+/*
+ * Login.js — Sign-in page.
+ * Route: /login
+ *
+ * Submits the user's email/username + password to the Express auth endpoint.
+ * On success the backend returns a JWT; we pass it to AuthContext.login() which
+ * stores it in localStorage so the session survives a page refresh. The user is
+ * then redirected to their dashboard.
+ *
+ * The "email" field actually doubles as a username field — the backend accepts both.
+ */
+
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
@@ -7,8 +19,11 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  // login() from AuthContext stores the JWT and decodes the user payload from it.
   const { login } = useContext(AuthContext);
 
+  // POST credentials to the backend; on success store the JWT and redirect.
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -17,6 +32,7 @@ export default function Login() {
       const res = await fetch("http://localhost:5001/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // The backend accepts email OR username in the "username" field.
         body: JSON.stringify({ username: email, password }),
       });
 
@@ -27,6 +43,7 @@ export default function Login() {
         return;
       }
 
+      // Store the token via context — this also decodes the user payload.
       login(data.token);
       navigate("/dashboard");
     } catch {

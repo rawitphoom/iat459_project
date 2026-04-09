@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+/*
+ * IntroPage — full-screen entry gate into the site.
+ * Route: /
+ *
+ * The intro uses scrolling album-cover columns as a moving backdrop, then
+ * hands the user off to /home once they click Enter. A session flag prevents
+ * the splash from showing on every in-app navigation.
+ */
 export default function IntroPage() {
   const navigate = useNavigate();
   const [albums, setAlbums] = useState([]);
 
+  // If the user already entered the site during this browser session, skip the splash.
   useEffect(() => {
     if (sessionStorage.getItem("hasEnteredSite") === "true") {
       if (window.history.length > 1) {
@@ -29,6 +38,7 @@ export default function IntroPage() {
   }, []);
 
   function handleEnterSite() {
+    // Mark the intro as completed and trigger the landing page's background music hook.
     sessionStorage.setItem("hasEnteredSite", "true");
     window.dispatchEvent(new Event("start-background-music"));
     navigate("/home", { replace: true });
@@ -46,7 +56,7 @@ export default function IntroPage() {
 
   return (
     <div className="intro-page">
-      {/* Album columns background */}
+      {/* Moving cover-wall background: purely atmospheric and only rendered when covers are loaded. */}
       {albums.length > 0 && (
         <div className="intro-albums-bg">
           {columns.map((col, i) => (
@@ -67,10 +77,9 @@ export default function IntroPage() {
       {/* Dark overlay for readability */}
       <div className="intro-overlay" />
 
-      {/* Center content */}
+      {/* Center card: the actual entry point for the experience. */}
       <div className="intro-card">
         <h1 className="intro-title">MIXTAPE</h1>
-        <p className="intro-subtitle">Your music, your story.</p>
         <button className="intro-enter-btn" onClick={handleEnterSite}>
           Enter
         </button>

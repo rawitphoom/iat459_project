@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 
+/*
+ * ResetPassword — final step of the password reset flow.
+ * Route: /reset-password?token=...
+ *
+ * Reads the reset token from the URL, validates the new password client-side,
+ * sends the update to the backend, then redirects the user back to /login.
+ */
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
@@ -15,6 +22,7 @@ export default function ResetPassword() {
     e.preventDefault();
     setError("");
 
+    // Keep the local validation simple and explicit before calling the backend.
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -49,6 +57,7 @@ export default function ResetPassword() {
   return (
     <div className="auth-page">
       <div className="auth-container">
+        {/* Shared auth branding block. */}
         <div className="auth-logo">
           <img src="/logo.svg" alt="Mixtape" className="auth-logo-img" />
           <div className="auth-logo-text">
@@ -60,8 +69,10 @@ export default function ResetPassword() {
         <h1 className="auth-heading">RESET PASSWORD</h1>
         <p className="auth-subheading">Enter your new password below.</p>
 
+        {/* Inline validation / request error state. */}
         {error && <div className="auth-error">{error}</div>}
 
+        {/* Replace the form with a success message once the reset finishes. */}
         {success ? (
           <div className="auth-success">
             <p>Password reset successfully! Redirecting to login...</p>
@@ -90,6 +101,7 @@ export default function ResetPassword() {
           </form>
         )}
 
+        {/* Simple way back to login if the user changes their mind. */}
         <p className="auth-switch">
           <Link to="/login" className="auth-switch-link">Back to Sign in</Link>
         </p>

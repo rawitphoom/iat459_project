@@ -1,5 +1,13 @@
 import { useState } from "react";
 
+/*
+ * ContactPage — lightweight contact / feedback page.
+ * Route: /contact
+ *
+ * There is no backend message endpoint yet, so this page currently validates
+ * the form client-side and shows a success state locally. The layout still
+ * mirrors a real contact page so the UX feels complete.
+ */
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -10,6 +18,8 @@ export default function ContactPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Keep validation intentionally simple until a real backend mail/message flow exists.
     if (!name.trim() || !email.trim() || !message.trim()) {
       setError("Please fill in your name, email, and message.");
       return;
@@ -26,6 +36,7 @@ export default function ContactPage() {
   return (
     <div className="info-page">
       <div className="info-container">
+        {/* Page heading: frames the contact page in the same voice as the About page. */}
         <div className="info-eyebrow">[ CONTACT ]</div>
         <h1 className="info-title">
           GOT SOMETHING<br />
@@ -38,6 +49,7 @@ export default function ContactPage() {
 
         <div className="info-divider" />
 
+        {/* Two-column layout: static contact details on the left, form on the right. */}
         <div className="contact-grid">
           {/* ---------- Left: contact info ---------- */}
           <div className="contact-info">
@@ -61,6 +73,7 @@ export default function ContactPage() {
 
           {/* ---------- Right: form ---------- */}
           <form className="contact-form" onSubmit={handleSubmit}>
+            {/* Feedback states live inside the form so they stay close to the action area. */}
             {sent && (
               <div className="contact-success">
                 ✓ MESSAGE SENT — WE'LL BE IN TOUCH.

@@ -1,11 +1,19 @@
 import { useNavigate } from "react-router-dom";
 
+/*
+ * AboutPage — brand/storytelling page.
+ * Route: /about
+ *
+ * This page explains the product idea behind Mixtape, highlights the core user
+ * actions, and gives visitors a clean way to continue deeper into the app.
+ */
 export default function AboutPage() {
   const navigate = useNavigate();
 
   return (
     <div className="info-page">
       <div className="info-container">
+        {/* Intro copy: sets the tone and explains what Mixtape is about. */}
         <div className="info-eyebrow">[ ABOUT ]</div>
         <h1 className="info-title">
           MAKE IT.<br />
@@ -20,6 +28,7 @@ export default function AboutPage() {
 
         <div className="info-divider" />
 
+        {/* Core value cards: the three primary things the product lets people do. */}
         <div className="info-grid">
           <div className="info-card">
             <div className="info-card-num">01</div>
@@ -51,6 +60,7 @@ export default function AboutPage() {
 
         <div className="info-divider" />
 
+        {/* Project metadata: quick context for course, stack, and timeframe. */}
         <div className="info-meta">
           <div>
             <div className="info-meta-label">BUILT FOR</div>
@@ -66,6 +76,7 @@ export default function AboutPage() {
           </div>
         </div>
 
+        {/* Final CTA row: one button to explore, one button to reach the team. */}
         <div className="info-cta-row">
           <button className="info-cta primary" onClick={() => navigate("/discover")}>
             EXPLORE MIXTAPES →

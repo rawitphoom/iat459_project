@@ -1,3 +1,13 @@
+/*
+ * Register.js — account creation page.
+ * Route: /register
+ *
+ * This screen collects the user's basic account information, sends it to the
+ * backend auth route, and logs the user in immediately after a successful
+ * registration. That keeps the onboarding flow short: sign up once, land in
+ * the dashboard, and start using the app right away.
+ */
+
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
@@ -39,6 +49,7 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-container">
+        {/* Brand block: keeps the auth pages visually tied to the main product. */}
         <div className="auth-logo">
           <img src="/logo.svg" alt="Mixtape" className="auth-logo-img" />
           <div className="auth-logo-text">
@@ -49,8 +60,10 @@ export default function Register() {
 
         <h1 className="auth-heading">CREATE YOUR ACCOUNT</h1>
 
+        {/* Inline error surface for duplicate usernames, invalid data, or server issues. */}
         {error && <div className="auth-error">{error}</div>}
 
+        {/* Main registration form. Each field maps directly to the backend payload. */}
         <form className="auth-form" onSubmit={handleRegister}>
           <label className="auth-label">NAME</label>
           <input
@@ -89,6 +102,7 @@ export default function Register() {
           <button className="auth-submit" type="submit">SIGN UP</button>
         </form>
 
+        {/* Secondary route for returning users who already have an account. */}
         <p className="auth-switch">
           Already have an account?{" "}
           <Link to="/login" className="auth-switch-link">Sign in</Link>

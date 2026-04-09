@@ -2,6 +2,16 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+/*
+ * AdminDashboard — moderation / maintenance screen for admins only.
+ * Route: /admin
+ *
+ * The page lets an admin inspect users and public mixtapes, switch between
+ * grid/list views, and remove problematic content or accounts when needed.
+ * Real authorization still lives on the backend; the redirect here is only
+ * the first layer of protection for the UI.
+ */
+
 // Extract joined date from MongoDB ObjectId (first 4 bytes = timestamp)
 function getJoinedDate(id) {
   if (!id || id.length < 8) return "Unknown";

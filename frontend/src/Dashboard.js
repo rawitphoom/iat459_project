@@ -1,3 +1,16 @@
+/*
+ * Dashboard — signed-in user's main hub.
+ * Route: /dashboard
+ *
+ * This page mixes three jobs in one place:
+ * 1. surface trending albums,
+ * 2. surface public/community mixtapes,
+ * 3. show recent review activity.
+ *
+ * The component also contains a few small helper subcomponents so the card
+ * markup stays close to the page that owns the interaction design.
+ */
+
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";

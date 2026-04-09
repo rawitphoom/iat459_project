@@ -2,6 +2,17 @@ import { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+/*
+ * WriteReview — guided review-writing flow.
+ * Route: /write-review
+ *
+ * The flow is intentionally split into two stages:
+ * 1. search for and choose an album,
+ * 2. write and submit the actual review.
+ *
+ * That staged structure keeps the UI focused and avoids asking the user to
+ * fill out a review before the target album context has been loaded.
+ */
 export default function WriteReview() {
   const navigate = useNavigate();
   const { user, token } = useContext(AuthContext);

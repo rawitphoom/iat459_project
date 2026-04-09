@@ -2,12 +2,18 @@ import { useEffect, useState, useRef, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
 
-// =============================================
-// Discover Page — main exploration hub.
-// 3-way toggle: TRACKS / ALBUMS / MIXTAPES (sliding pill)
-// Search bar queries Deezer (tracks + albums) + filters mixtapes locally
-// Filter dropdown: A-Z, Date Released, Genre
-// =============================================
+/*
+ * PublicAlbums / Discover — the main browse-and-search page.
+ * Routes: /discover and /search
+ *
+ * The page supports three content modes:
+ * - TRACKS: Deezer search/chart tracks with preview playback + likes
+ * - ALBUMS: Deezer chart/search albums that link to album detail pages
+ * - MIXTAPES: public user playlists filtered locally in the frontend
+ *
+ * The surrounding controls let users search, sort, and filter without leaving
+ * the page, so this component acts like a compact exploration hub.
+ */
 
 const TABS = ["TRACKS", "ALBUMS", "MIXTAPES"];
 

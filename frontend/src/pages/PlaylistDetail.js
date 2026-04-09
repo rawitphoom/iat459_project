@@ -1,6 +1,14 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+/*
+ * PlaylistDetail — public/private mixtape detail page.
+ * Route: /playlist/:id
+ *
+ * This page reuses the album-detail visual language for user-made mixtapes:
+ * dynamic background glow, large cover art, creator info, metadata, and a
+ * playable track list with 30-second previews.
+ */
 export default function PlaylistDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -67,6 +75,7 @@ export default function PlaylistDetail() {
   }, [id, extractColor]);
 
   const togglePreview = (track) => {
+    // One preview at a time keeps the interaction predictable and easy to follow.
     if (!track.previewUrl) return;
     if (playingId === track.trackId) {
       audioRef.current?.pause();
@@ -117,7 +126,7 @@ export default function PlaylistDetail() {
 
   return (
     <div className="ad-wrapper ad-slide-in pd-wrapper">
-      {/* Dynamic glow */}
+      {/* Dynamic glow: tint the page using the mixtape's cover image. */}
       <div
         className="ad-glow"
         style={{
@@ -125,16 +134,16 @@ export default function PlaylistDetail() {
         }}
       />
 
-      {/* Back button */}
+      {/* Back button: returns the user to the previous screen without forcing a fixed route. */}
       <button className="ad-back-btn" onClick={() => navigate(-1)} aria-label="Go back">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
       </button>
 
-      {/* Split layout */}
+      {/* Split layout: artwork and metadata on the left, track list on the right. */}
       <div className="ad-page">
-        {/* LEFT: Cover + info */}
+        {/* LEFT: cover art, creator identity, description, and mood chips. */}
         <div className="ad-left">
           {coverSrc && (
             <img className="ad-cover" src={coverSrc} alt={playlist.name} />
@@ -177,7 +186,7 @@ export default function PlaylistDetail() {
           </div>
         </div>
 
-        {/* RIGHT: Track list */}
+        {/* RIGHT: summary stats and the playable track list. */}
         <div className="ad-right">
           <div className="ad-summary">
             {playlist.tracks?.length || 0} TRACKS

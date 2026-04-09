@@ -21,12 +21,18 @@ export default function Navbar() {
   };
 
   // Inline horizontal nav links shown on the topbar
-  const topLinks = [
-    { label: "DASHBOARD", path: "/dashboard", auth: true },
-    { label: "DISCOVER", path: "/discover", auth: false },
-    { label: "SEARCH", path: "/search", auth: false },
-    { label: "PROFILE", path: "/profile", auth: true },
-  ].filter((l) => (l.auth ? !!token : true));
+  const topLinks = token
+    ? [
+        { label: "HOME", path: "/home" },
+        { label: "DASHBOARD", path: "/dashboard" },
+        { label: "DISCOVER", path: "/discover" },
+        { label: "PROFILE", path: "/profile" },
+      ]
+    : [
+        { label: "HOME", path: "/home" },
+        { label: "DISCOVER", path: "/discover" },
+        { label: "REGISTER", path: "/register" },
+      ];
 
   const isActive = (path) =>
     location.pathname === path || location.pathname.startsWith(path + "/");
@@ -86,8 +92,8 @@ export default function Navbar() {
       {/* Full-screen overlay */}
       <div className={`nav-overlay ${menuOpen ? "open" : ""}`}>
         <div className="nav-overlay-links">
-          <button className="nav-overlay-link" onClick={() => handleNav("/search")}>
-            <span className="nav-link-text">SEARCH</span>
+          <button className="nav-overlay-link" onClick={() => handleNav("/home")}>
+            <span className="nav-link-text">HOME</span>
             <span className="nav-link-arrow"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
           </button>
           <button className="nav-overlay-link" onClick={() => handleNav("/discover")}>
@@ -97,17 +103,15 @@ export default function Navbar() {
 
           {token ? (
             <>
-              <button className="nav-overlay-link" onClick={() => handleNav("/profile")}>
-                <span className="nav-link-text">PROFILE</span>
-                <span className="nav-link-arrow"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
-              </button>
               <button className="nav-overlay-link" onClick={() => handleNav("/dashboard")}>
                 <span className="nav-link-text">DASHBOARD</span>
                 <span className="nav-link-arrow"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
               </button>
+              <button className="nav-overlay-link" onClick={() => handleNav("/profile")}>
+                <span className="nav-link-text">PROFILE</span>
+                <span className="nav-link-arrow"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
+              </button>
 
-              {/* Conditionally show Admin link — only if user.role is "admin".
-                  This is purely UX (hiding the button); the backend enforces real security. */}
               {user?.role === "admin" && (
                 <button className="nav-overlay-link" onClick={() => handleNav("/admin")}>
                   <span className="nav-link-text">ADMIN</span>

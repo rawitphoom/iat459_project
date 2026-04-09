@@ -519,6 +519,44 @@ function ExploreCarousel({ navigate, token }) {
   );
 }
 
+// =============================================
+// Popular Mixtapes — scroll-triggered reveal
+// Title fades up, then each card staggers in.
+// =============================================
+function PopularMixtapes({ mixtapes, navigate }) {
+  const sectionRef = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className={`landing-top3 ${visible ? "landing-top3--visible" : ""}`} ref={sectionRef}>
+      <h2 className="landing-top3-title">POPULAR MIXTAPES</h2>
+      <div className="landing-top3-grid">
+        {mixtapes.slice(0, 3).map((mix, i) => (
+          <div
+            key={mix._id}
+            className="landing-top3-card"
+            onClick={() => navigate(`/playlist/${mix._id}`)}
+          >
+            <CyclingMosaic tracks={mix.tracks} />
+            <div className="landing-top3-label">{mix.name}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const { token } = useContext(AuthContext);
@@ -728,7 +766,7 @@ export default function LandingPage() {
                 Scroll to explore what's new.
               </p>
               <button
-                className="landing-section-link"
+                className="landing-section-link landing-section-link-cta"
                 onClick={() => navigate("/discover")}
               >
                 View All →
@@ -767,25 +805,7 @@ export default function LandingPage() {
 
       {/* ======== POPULAR MIXTAPES ======== */}
       {mixtapes.length > 0 && (
-        <div className="landing-top3">
-          <h2 className="landing-top3-title">
-            POPULAR MIXTAPES
-          </h2>
-          <div className="landing-top3-grid">
-            {mixtapes.slice(0, 3).map((mix, i) => (
-              <div
-                key={mix._id}
-                className="landing-top3-card"
-                style={{ transitionDelay: `${i * 0.15}s` }}
-              >
-                <CyclingMosaic tracks={mix.tracks} />
-                <div className="landing-top3-label">
-                  {mix.name}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PopularMixtapes mixtapes={mixtapes} navigate={navigate} />
       )}
 
       {/* ======== EXPLORE YOUR TASTE — 3D carousel ======== */}

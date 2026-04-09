@@ -789,15 +789,48 @@ app.get("/api/profile/:id/favorite-songs", async (req, res) => {
 });
 
 // =============================================
+// SINGLE PLAYLIST BY ID (public)
+// Used by the PlaylistDetail page — also populates the creator's username + avatar.
+// =============================================
+app.get("/api/playlists/detail/:id", async (req, res) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) return res.status(404).json({ error: "Playlist not found" });
+
+    // Fetch creator info
+    const creator = await User.findById(playlist.createdBy, "username name avatar");
+    res.json({
+      ...playlist.toObject(),
+      creator: creator
+        ? { _id: creator._id, username: creator.username, name: creator.name, avatar: creator.avatar }
+        : null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load playlist" });
+  }
+});
+
+// =============================================
 // PUBLIC PLAYLISTS (Mixtapes)
 // Regular GET /api/playlists returns only the logged-in user's playlists.
 // This endpoint returns all playlists marked as "public" for the Discover page.
 // =============================================
 app.get("/api/playlists/public", async (req, res) => {
   try {
-    const playlists = await Playlist.find({ public: true })
-      .populate("createdBy", "username");
-    res.json(playlists);
+    const playlists = await Playlist.find({ public: true }).lean();
+
+    // createdBy is a string ID, not an ObjectId ref — manually look up creators
+    const creatorIds = [...new Set(playlists.map((p) => p.createdBy).filter(Boolean))];
+    const creators = await User.find({ _id: { $in: creatorIds } }, "username name avatar").lean();
+    const creatorMap = {};
+    creators.forEach((c) => { creatorMap[c._id.toString()] = c; });
+
+    const result = playlists.map((p) => ({
+      ...p,
+      creator: creatorMap[p.createdBy] || null,
+    }));
+
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: "Failed to load public playlists" });
   }

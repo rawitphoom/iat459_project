@@ -118,7 +118,7 @@ function MixtapeCard({ mix, isActive, onEnter, onLeave, onView }) {
     while (arts.length < 4) arts.push(null);
     const color = useDominantColor(arts[0]);
     const style = color ? { "--glow-color": color } : undefined;
-    const creator = mix.createdBy?.username || "Unknown";
+    const creator = mix.creator?.name || mix.creator?.username || "Unknown";
     return (
         <div
             className={`dash-album-card ${isActive ? "is-active" : "is-dim"}`}
@@ -162,7 +162,9 @@ export default function Dashboard() {
     const albumPauseTimerRef = useRef(null);
     const [trackOffset, setTrackOffset] = useState(0);
     const albumViewportRef = useRef(null);
+    const [albumsLoading, setAlbumsLoading] = useState(true);
     const [mixtapes, setMixtapes] = useState([]);
+    const [mixtapesLoading, setMixtapesLoading] = useState(true);
     const [activeMix, setActiveMix] = useState(0);
     const [hoveredMix, setHoveredMix] = useState(-1);
     const [mixPaused, setMixPaused] = useState(false);
@@ -203,7 +205,8 @@ export default function Dashboard() {
                 const list = (data?.albums || []).slice(0, 8);
                 setAlbums(list);
             })
-            .catch(console.error);
+            .catch(console.error)
+            .finally(() => setAlbumsLoading(false));
     }, []);
 
     // Load public mixtapes
@@ -213,7 +216,8 @@ export default function Dashboard() {
             .then((data) => {
                 if (Array.isArray(data)) setMixtapes(data.slice(0, 8));
             })
-            .catch(() => {});
+            .catch(() => {})
+            .finally(() => setMixtapesLoading(false));
     }, []);
 
     // Autoplay light-up cycle for albums (3s), pauses on hover or after user clicks an arrow
@@ -357,6 +361,13 @@ export default function Dashboard() {
                     </div>
                 </div>
 
+                {albumsLoading ? (
+                    <div className="discover-loader">
+                        <span className="discover-loader-dot" />
+                        <span className="discover-loader-dot" />
+                        <span className="discover-loader-dot" />
+                    </div>
+                ) : (
                 <div className="dash-album-row">
                     <div className="dash-album-viewport" ref={albumViewportRef}>
                         <div
@@ -378,10 +389,11 @@ export default function Dashboard() {
                     </div>
 
                 </div>
+                )}
             </section>
 
             {/* ---- Popular Mixtapes ---- */}
-            {mixtapes.length > 0 && (
+            {(mixtapesLoading || mixtapes.length > 0) && (
                 <section className="dash-section">
                     <div className="dash-section-header">
                         <div>
@@ -418,6 +430,13 @@ export default function Dashboard() {
                         </div>
                     </div>
 
+                    {mixtapesLoading ? (
+                        <div className="discover-loader">
+                            <span className="discover-loader-dot" />
+                            <span className="discover-loader-dot" />
+                            <span className="discover-loader-dot" />
+                        </div>
+                    ) : (
                     <div className="dash-album-row">
                         <div className="dash-album-grid">
                             {visibleMixtapes.map((mix, i) => {
@@ -435,6 +454,7 @@ export default function Dashboard() {
                             })}
                         </div>
                     </div>
+                    )}
                 </section>
             )}
 

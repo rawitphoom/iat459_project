@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AlbumDetail from "./pages/AlbumDetail";
 import ProfilePage from "./pages/ProfilePage";
 import CreateMixtape from "./pages/CreateMixtape";
+import PlaylistDetail from "./pages/PlaylistDetail";
 import WriteReview from "./pages/WriteReview";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
@@ -70,6 +71,9 @@ function AppLayout() {
 
         {/* Album detail — shows full track list from Deezer */}
         <Route path="/album/:id" element={<AlbumDetail />} />
+
+        {/* Playlist/Mixtape detail */}
+        <Route path="/playlist/:id" element={<PlaylistDetail />} />
 
         {/* Profile — own profile (requires login) or view another user */}
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

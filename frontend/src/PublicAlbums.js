@@ -337,7 +337,13 @@ export default function Discover() {
       </form>
 
       {/* Loading */}
-      {loading && <p className="discover-loading">Loading...</p>}
+      {loading && (
+        <div className="discover-loader">
+          <span className="discover-loader-dot" />
+          <span className="discover-loader-dot" />
+          <span className="discover-loader-dot" />
+        </div>
+      )}
 
       {/* Albums */}
       {activeTab === "ALBUMS" && !loading && (
@@ -406,28 +412,45 @@ export default function Discover() {
       {/* Mixtapes */}
       {activeTab === "MIXTAPES" && !loading && (
         <div className="mixtapes-grid">
-          {displayMixtapes.map((playlist) => (
-            <div
-              key={playlist._id}
-              className="mixtape-card"
-              onClick={() => navigate(`/playlist/${playlist._id}`)}
-            >
-              <div className="mixtape-card-img-wrapper">
-                {playlist.image ? (
-                  <img className="mixtape-card-img" src={playlist.image} alt={playlist.name} />
-                ) : playlist.tracks?.[0]?.albumArt ? (
-                  <img className="mixtape-card-img" src={playlist.tracks[0].albumArt} alt={playlist.name} />
-                ) : (
-                  <div className="mixtape-card-placeholder">&#9835;</div>
-                )}
+          {displayMixtapes.map((playlist) => {
+            // Collect up to 4 unique album art images for the collage
+            const arts = [];
+            const seen = new Set();
+            for (const t of playlist.tracks || []) {
+              if (t.albumArt && !seen.has(t.albumArt)) {
+                seen.add(t.albumArt);
+                arts.push(t.albumArt);
+                if (arts.length >= 4) break;
+              }
+            }
+            const creatorName = playlist.creator?.name || playlist.creator?.username || "";
+
+            return (
+              <div
+                key={playlist._id}
+                className="mixtape-card"
+                onClick={() => navigate(`/playlist/${playlist._id}`)}
+              >
+                <div className="mixtape-card-img-wrapper">
+                  {playlist.image ? (
+                    <img className="mixtape-card-img" src={playlist.image} alt={playlist.name} />
+                  ) : arts.length >= 4 ? (
+                    <div className="mixtape-card-collage">
+                      {arts.map((src, i) => (
+                        <img key={i} className="mixtape-card-collage-img" src={src} alt="" />
+                      ))}
+                    </div>
+                  ) : arts.length > 0 ? (
+                    <img className="mixtape-card-img" src={arts[0]} alt={playlist.name} />
+                  ) : (
+                    <div className="mixtape-card-placeholder">&#9835;</div>
+                  )}
+                </div>
+                <div className="mixtape-card-title">{playlist.name}</div>
+                {creatorName && <div className="mixtape-card-creator">{creatorName}</div>}
               </div>
-              <div className="album-card-title">{playlist.name}</div>
-              <div className="album-card-artist">
-                {playlist.tracks?.length || 0} tracks
-                {playlist.mood ? ` · ${playlist.mood}` : ""}
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {displayMixtapes.length === 0 && (
             <p className="discover-empty">No mixtapes found.</p>
           )}

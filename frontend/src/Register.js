@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "./context/AuthContext";
 
 export default function Register() {
+  const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -16,7 +19,7 @@ export default function Register() {
       const res = await fetch("http://localhost:5001/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ name, username, email, password }),
       });
 
       const data = await res.json();
@@ -26,7 +29,8 @@ export default function Register() {
         return;
       }
 
-      navigate("/login");
+      login(data.token);
+      navigate("/dashboard");
     } catch {
       setError("Server unavailable");
     }
@@ -48,6 +52,14 @@ export default function Register() {
         {error && <div className="auth-error">{error}</div>}
 
         <form className="auth-form" onSubmit={handleRegister}>
+          <label className="auth-label">NAME</label>
+          <input
+            className="auth-input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter name"
+          />
+
           <label className="auth-label">USERNAME</label>
           <input
             className="auth-input"

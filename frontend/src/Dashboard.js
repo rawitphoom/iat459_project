@@ -302,7 +302,7 @@ export default function Dashboard() {
                 </div>
                 <div className="dash-hero-content">
                     <h1 className="dash-welcome">
-                        WELCOME BACK {user?.username || ""}!
+                        WELCOME BACK {user?.name || user?.username || ""}!
                     </h1>
                     <p className="dash-subtitle">
                         Create mixtapes and share your thoughts on your favorite albums and songs.

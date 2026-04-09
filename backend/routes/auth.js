@@ -7,8 +7,8 @@ const User = require("../models/User");
 // POST /api/auth/register
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) return res.status(400).json({ error: "All fields are required" });
+    const { name, username, email, password } = req.body;
+    if (!name || !username || !email || !password) return res.status(400).json({ error: "All fields are required" });
 
     // Check if email is already in use
     const emailTaken = await User.findOne({ email });
@@ -23,8 +23,14 @@ router.post("/register", async (req, res) => {
     const hashed = await bcrypt.hash(password, salt);
 
     //3. Save user to DB
-    const newUser = await User.create({ username, email, password: hashed });
-    res.status(201).json({ message: "User created", id: newUser._id });
+    const newUser = await User.create({ name, username, email, password: hashed });
+    // Auto-login: return a JWT so the frontend can redirect straight to dashboard
+    const token = jwt.sign(
+      { id: newUser._id, name: newUser.name, username: newUser.username, role: newUser.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
+    );
+    res.status(201).json({ message: "User created", id: newUser._id, token });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
@@ -100,7 +106,7 @@ router.post("/login", async (req, res) => {
     // The JWT payload carries id, username, and role so the frontend
     // and backend middleware can check permissions without querying the DB again.
     const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
+      { id: user._id, name: user.name, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "2h" }
     );

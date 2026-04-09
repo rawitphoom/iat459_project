@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 // Background music — local file in public/ folder (loops)
 const BG_TRACK = process.env.PUBLIC_URL + "/bg-music.mp3";
@@ -6,6 +7,16 @@ const BG_TRACK = process.env.PUBLIC_URL + "/bg-music.mp3";
 export default function MusicToggle({ hidden = false }) {
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef(null);
+  const location = useLocation();
+
+  // Pause music when navigating away from landing/intro pages
+  useEffect(() => {
+    const musicPages = ["/", "/home"];
+    if (!musicPages.includes(location.pathname) && audioRef.current && playing) {
+      audioRef.current.pause();
+      setPlaying(false);
+    }
+  }, [location.pathname, playing]);
 
   useEffect(() => {
     const audio = new Audio(BG_TRACK);

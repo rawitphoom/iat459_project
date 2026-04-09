@@ -501,7 +501,7 @@ export default function ProfilePage() {
           {isOwn && (
             <div className="profile-header-actions">
               <button className="profile-header-btn" onClick={openEditProfile}>EDIT PROFILE</button>
-              <button className="profile-header-btn" onClick={handleSignOut}>SIGN OUT</button>
+              <button className="profile-header-btn profile-signout-btn" onClick={handleSignOut}>SIGN OUT</button>
             </div>
           )}
         </div>

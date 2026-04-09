@@ -918,13 +918,18 @@ body:has(.auth-page) {
 
 .landing-cta {
   pointer-events: auto; /* Re-enable clicks on button */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: 'DM Mono', monospace;
   font-size: 14px;
   letter-spacing: 2px;
   color: #fff;
   background: #DB4A1E;
   border: 2px solid #DB4A1E;
+  border-radius: 999px;
   padding: 14px 40px;
+  box-shadow: 0 2px 10px rgba(219, 74, 30, 0.4);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
   animation: heroRiseUp 1s cubic-bezier(0.22, 1, 0.36, 1) 1.3s both;
@@ -2566,6 +2571,16 @@ body:has(.profile-page) {
 .profile-header-btn:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.45);
+}
+
+.profile-signout-btn {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.profile-signout-btn:hover {
+  background: rgba(231, 76, 60, 0.12);
+  border-color: #e74c3c;
 }
 
 .profile-stats {

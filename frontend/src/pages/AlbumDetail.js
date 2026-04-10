@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import API_URL from "../config";
 
 // =============================================
 // Sign-In Popup — shown when a visitor (not logged in)
@@ -17,7 +18,7 @@ function SignInPopup({ onClose }) {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch("http://localhost:5001/api/auth/login", {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: email, password }),
@@ -178,7 +179,7 @@ export default function AlbumDetail() {
 
   // ---- Fetch album detail from backend ----
   useEffect(() => {
-    fetch(`http://localhost:5001/api/music/album/${id}`)
+    fetch(`${API_URL}/api/music/album/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Album not found");
         return res.json();
@@ -189,18 +190,18 @@ export default function AlbumDetail() {
           extractColor(data.coverXl || data.cover);
         }
         // Fetch reviews + average rating
-        fetch(`http://localhost:5001/api/reviews/album/${id}`)
+        fetch(`${API_URL}/api/reviews/album/${id}`)
           .then((r) => r.json())
           .then((revs) => setReviews(Array.isArray(revs) ? revs : []))
           .catch(() => {});
-        fetch(`http://localhost:5001/api/reviews/album/${id}/rating`)
+        fetch(`${API_URL}/api/reviews/album/${id}/rating`)
           .then((r) => r.json())
           .then((r) => setAvgRating(r))
           .catch(() => {});
 
         // Fetch more albums by the same artist
         if (data.artistId) {
-          fetch(`http://localhost:5001/api/music/artist/${data.artistId}/albums`)
+          fetch(`${API_URL}/api/music/artist/${data.artistId}/albums`)
             .then((r) => r.json())
             .then((albums) => {
               setMoreAlbums(
@@ -214,14 +215,14 @@ export default function AlbumDetail() {
 
         // Check if album is favorited + load liked songs
         if (token) {
-          fetch(`http://localhost:5001/api/favorites/albums/check/${id}`, {
+          fetch(`${API_URL}/api/favorites/albums/check/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
             .then((r) => r.json())
             .then((r) => setSaved(r.isFavorited))
             .catch(() => {});
 
-          fetch("http://localhost:5001/api/favorites/songs", {
+          fetch(`${API_URL}/api/favorites/songs`, {
             headers: { Authorization: `Bearer ${token}` },
           })
             .then((r) => r.json())
@@ -265,7 +266,7 @@ export default function AlbumDetail() {
 
     // Fetch user's playlists
     try {
-      const res = await fetch("http://localhost:5001/api/playlists", {
+      const res = await fetch(`${API_URL}/api/playlists`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -293,12 +294,12 @@ export default function AlbumDetail() {
 
     try {
       if (isLiked) {
-        await fetch(`http://localhost:5001/api/favorites/songs/${track.trackId}`, {
+        await fetch(`${API_URL}/api/favorites/songs/${track.trackId}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await fetch("http://localhost:5001/api/favorites/songs", {
+        await fetch(`${API_URL}/api/favorites/songs`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
@@ -336,12 +337,12 @@ export default function AlbumDetail() {
 
     try {
       if (isInPlaylist) {
-        await fetch(`http://localhost:5001/api/playlists/${playlistId}/tracks/${track.trackId}`, {
+        await fetch(`${API_URL}/api/playlists/${playlistId}/tracks/${track.trackId}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await fetch(`http://localhost:5001/api/playlists/${playlistId}/tracks`, {
+        await fetch(`${API_URL}/api/playlists/${playlistId}/tracks`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
@@ -375,12 +376,12 @@ export default function AlbumDetail() {
 
     try {
       if (wasSaved) {
-        await fetch(`http://localhost:5001/api/favorites/albums/${id}`, {
+        await fetch(`${API_URL}/api/favorites/albums/${id}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await fetch("http://localhost:5001/api/favorites/albums", {
+        await fetch(`${API_URL}/api/favorites/albums`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
@@ -429,7 +430,7 @@ export default function AlbumDetail() {
     if (!reviewForm.rating) { setReviewError("Rating is required."); return; }
 
     try {
-      const res = await fetch("http://localhost:5001/api/reviews", {
+      const res = await fetch(`${API_URL}/api/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -448,7 +449,7 @@ export default function AlbumDetail() {
       setReviewForm({ title: "", rating: 5, text: "" });
       setShowReviewForm(false);
       // Refresh average
-      fetch(`http://localhost:5001/api/reviews/album/${id}/rating`)
+      fetch(`${API_URL}/api/reviews/album/${id}/rating`)
         .then((r) => r.json())
         .then((r) => setAvgRating(r))
         .catch(() => {});
@@ -460,14 +461,14 @@ export default function AlbumDetail() {
   const handleDeleteReview = async (reviewId) => {
     if (!window.confirm("Delete this review?")) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/reviews/${reviewId}`, {
+      const res = await fetch(`${API_URL}/api/reviews/${reviewId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         setReviews((prev) => prev.filter((r) => r._id !== reviewId));
         // Refresh average
-        fetch(`http://localhost:5001/api/reviews/album/${id}/rating`)
+        fetch(`${API_URL}/api/reviews/album/${id}/rating`)
           .then((r) => r.json())
           .then((r) => setAvgRating(r))
           .catch(() => {});

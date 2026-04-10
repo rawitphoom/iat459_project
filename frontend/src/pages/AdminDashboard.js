@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import API_URL from "../config";
 
 /*
  * AdminDashboard — moderation / maintenance screen for admins only.
@@ -44,7 +45,7 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5001/api/admin/users", {
+      const res = await fetch(`${API_URL}/api/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 403) {
@@ -64,7 +65,7 @@ export default function AdminDashboard() {
 
   const fetchPlaylists = async () => {
     try {
-      const res = await fetch("http://localhost:5001/api/admin/playlists", {
+      const res = await fetch(`${API_URL}/api/admin/playlists`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 403) return;
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
     }
     if (!window.confirm(`Delete user "${username}" and all their playlists?`)) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/admin/users/${userId}`, {
+      const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -100,7 +101,7 @@ export default function AdminDashboard() {
   const handleDeletePlaylist = async (playlistId, playlistName) => {
     if (!window.confirm(`Delete mixtape "${playlistName}"?`)) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/admin/playlists/${playlistId}`, {
+      const res = await fetch(`${API_URL}/api/admin/playlists/${playlistId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

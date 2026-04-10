@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import API_URL from "../config";
 
 /*
  * PlaylistDetail — public/private mixtape detail page.
@@ -60,7 +61,7 @@ export default function PlaylistDetail() {
 
   // Fetch playlist
   useEffect(() => {
-    fetch(`http://localhost:5001/api/playlists/detail/${id}`)
+    fetch(`${API_URL}/api/playlists/detail/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Playlist not found");
         return res.json();

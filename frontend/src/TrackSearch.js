@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import API_URL from "./config";
 
 /**
  * TrackSearch — Reusable component for searching songs (powered by Deezer).
@@ -58,7 +59,7 @@ export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd, initi
     setError("");
     try {
       const res = await fetch(
-        `http://localhost:5001/api/music/search?q=${encodeURIComponent(q)}`
+        `${API_URL}/api/music/search?q=${encodeURIComponent(q)}`
       );
       const data = await res.json();
       if (!res.ok) {

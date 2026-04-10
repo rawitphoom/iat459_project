@@ -1,6 +1,7 @@
 import { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import API_URL from "../config";
 
 /*
  * WriteReview — guided review-writing flow.
@@ -64,7 +65,7 @@ export default function WriteReview() {
     debounceRef.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await fetch(`http://localhost:5001/api/music/albums?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`${API_URL}/api/music/albums?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         setResults(Array.isArray(data) ? data : []);
       } catch {
@@ -82,7 +83,7 @@ export default function WriteReview() {
 
   const selectAlbum = async (albumResult) => {
     try {
-      const res = await fetch(`http://localhost:5001/api/music/album/${albumResult.id}`);
+      const res = await fetch(`${API_URL}/api/music/album/${albumResult.id}`);
       const data = await res.json();
       setAlbum({
         ...data,
@@ -101,7 +102,7 @@ export default function WriteReview() {
     // Check if already saved
     if (token) {
       try {
-        const checkRes = await fetch(`http://localhost:5001/api/favorites/albums/check/${albumResult.id}`, {
+        const checkRes = await fetch(`${API_URL}/api/favorites/albums/check/${albumResult.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const checkData = await checkRes.json();
@@ -116,13 +117,13 @@ export default function WriteReview() {
     if (!token || !album) return;
     try {
       if (saved) {
-        await fetch(`http://localhost:5001/api/favorites/albums/${album.id}`, {
+        await fetch(`${API_URL}/api/favorites/albums/${album.id}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });
         setSaved(false);
       } else {
-        await fetch("http://localhost:5001/api/favorites/albums", {
+        await fetch(`${API_URL}/api/favorites/albums`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
@@ -167,7 +168,7 @@ export default function WriteReview() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("http://localhost:5001/api/reviews", {
+      const res = await fetch(`${API_URL}/api/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({

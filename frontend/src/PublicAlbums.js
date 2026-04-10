@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
+import API_URL from "./config";
 
 /*
  * PublicAlbums / Discover — the main browse-and-search page.
@@ -66,7 +67,7 @@ export default function Discover() {
   // Load liked songs
   useEffect(() => {
     if (!token) return;
-    fetch("http://localhost:5001/api/favorites/songs", {
+    fetch(`${API_URL}/api/favorites/songs`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -81,7 +82,7 @@ export default function Discover() {
     const isLiked = likedTracks.includes(track.trackId);
     const method = isLiked ? "DELETE" : "POST";
     try {
-      await fetch("http://localhost:5001/api/favorites/songs", {
+      await fetch(`${API_URL}/api/favorites/songs`, {
         method,
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -101,9 +102,9 @@ export default function Discover() {
   // Load chart + mixtapes + genres on mount
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:5001/api/music/chart").then((r) => r.json()),
-      fetch("http://localhost:5001/api/playlists/public").then((r) => r.json()),
-      fetch("http://localhost:5001/api/music/genres").then((r) => r.json()).catch(() => []),
+      fetch(`${API_URL}/api/music/chart`).then((r) => r.json()),
+      fetch(`${API_URL}/api/playlists/public`).then((r) => r.json()),
+      fetch(`${API_URL}/api/music/genres`).then((r) => r.json()).catch(() => []),
     ])
       .then(([chart, publicPlaylists, genreList]) => {
         setChartAlbums(chart.albums || []);
@@ -142,8 +143,8 @@ export default function Discover() {
 
     try {
       const [tracks, albums] = await Promise.all([
-        fetch(`http://localhost:5001/api/music/search?q=${encodeURIComponent(q)}`).then((r) => r.json()),
-        fetch(`http://localhost:5001/api/music/albums?q=${encodeURIComponent(q)}`).then((r) => r.json()),
+        fetch(`${API_URL}/api/music/search?q=${encodeURIComponent(q)}`).then((r) => r.json()),
+        fetch(`${API_URL}/api/music/albums?q=${encodeURIComponent(q)}`).then((r) => r.json()),
       ]);
       setSearchTracks(Array.isArray(tracks) ? tracks : []);
       setSearchAlbums(Array.isArray(albums) ? albums : []);
@@ -245,7 +246,7 @@ export default function Discover() {
     // Fetch genre-specific chart from Deezer
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5001/api/music/chart?genreId=${g.id}`);
+      const res = await fetch(`${API_URL}/api/music/chart?genreId=${g.id}`);
       const data = await res.json();
       setChartAlbums(data.albums || []);
       setChartTracks(data.tracks || []);

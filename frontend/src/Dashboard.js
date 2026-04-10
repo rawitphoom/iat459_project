@@ -14,6 +14,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
+import API_URL from "./config";
 
 // Extract dominant color from an image URL
 function useDominantColor(imgUrl) {
@@ -61,7 +62,7 @@ function AlbumCard({ album, isActive, onEnter, onLeave, onView, token }) {
 
     useEffect(() => {
         if (!token) return;
-        fetch(`http://localhost:5001/api/favorites/albums/check/${album.id}`, {
+        fetch(`${API_URL}/api/favorites/albums/check/${album.id}`, {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((r) => r.json())
@@ -79,11 +80,11 @@ function AlbumCard({ album, isActive, onEnter, onLeave, onView, token }) {
         setSaved(!wasSaved);
         try {
             const res = wasSaved
-                ? await fetch(`http://localhost:5001/api/favorites/albums/${album.id}`, {
+                ? await fetch(`${API_URL}/api/favorites/albums/${album.id}`, {
                       method: "DELETE",
                       headers: { Authorization: `Bearer ${token}` },
                   })
-                : await fetch("http://localhost:5001/api/favorites/albums", {
+                : await fetch(`${API_URL}/api/favorites/albums`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                       body: JSON.stringify({
@@ -212,7 +213,7 @@ export default function Dashboard() {
 
     // Load latest albums from chart
     useEffect(() => {
-        fetch("http://localhost:5001/api/music/chart")
+        fetch(`${API_URL}/api/music/chart`)
             .then((res) => res.json())
             .then((data) => {
                 const list = (data?.albums || []).slice(0, 8);
@@ -224,7 +225,7 @@ export default function Dashboard() {
 
     // Load public mixtapes
     useEffect(() => {
-        fetch("http://localhost:5001/api/playlists/public")
+        fetch(`${API_URL}/api/playlists/public`)
             .then((res) => res.json())
             .then((data) => {
                 if (Array.isArray(data)) setMixtapes(data.slice(0, 8));
@@ -282,7 +283,7 @@ export default function Dashboard() {
 
     // Load recent reviews and fetch missing album art
     useEffect(() => {
-        fetch("http://localhost:5001/api/reviews/recent?limit=12")
+        fetch(`${API_URL}/api/reviews/recent?limit=12`)
             .then((res) => res.json())
             .then(async (data) => {
                 if (!Array.isArray(data)) return;
@@ -290,7 +291,7 @@ export default function Dashboard() {
                     data.map(async (r) => {
                         if (r.albumArt || !r.albumId) return r;
                         try {
-                            const res = await fetch(`http://localhost:5001/api/music/album/${r.albumId}`);
+                            const res = await fetch(`${API_URL}/api/music/album/${r.albumId}`);
                             const album = await res.json();
                             return { ...r, albumArt: album.coverXl || album.cover || "" };
                         } catch { return r; }

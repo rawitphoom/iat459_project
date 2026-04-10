@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import API_URL from "../config";
 
 /*
  * ProfilePage — personal profile and library page.
@@ -91,11 +92,11 @@ export default function ProfilePage() {
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
     Promise.all([
-      fetch(`http://localhost:5001/api/profile/${profileId}`).then((r) => r.json()),
-      fetch(`http://localhost:5001/api/profile/${profileId}/playlists`, { cache: "no-store", headers }).then((r) => r.json()),
-      fetch(`http://localhost:5001/api/profile/${profileId}/reviews`).then((r) => r.json()),
-      fetch(`http://localhost:5001/api/profile/${profileId}/favorite-albums`).then((r) => r.json()),
-      fetch(`http://localhost:5001/api/profile/${profileId}/favorite-songs`).then((r) => r.json()),
+      fetch(`${API_URL}/api/profile/${profileId}`).then((r) => r.json()),
+      fetch(`${API_URL}/api/profile/${profileId}/playlists`, { cache: "no-store", headers }).then((r) => r.json()),
+      fetch(`${API_URL}/api/profile/${profileId}/reviews`).then((r) => r.json()),
+      fetch(`${API_URL}/api/profile/${profileId}/favorite-albums`).then((r) => r.json()),
+      fetch(`${API_URL}/api/profile/${profileId}/favorite-songs`).then((r) => r.json()),
     ])
       .then(([profileData, playlistData, reviewData, favAlbumData, favSongData]) => {
         setProfile(profileData);
@@ -106,7 +107,7 @@ export default function ProfilePage() {
           rawReviews.map(async (r) => {
             if ((r.albumArt && r.artistName) || !r.albumId) return r;
             try {
-              const res = await fetch(`http://localhost:5001/api/music/album/${r.albumId}`);
+              const res = await fetch(`${API_URL}/api/music/album/${r.albumId}`);
               const album = await res.json();
               return {
                 ...r,
@@ -146,7 +147,7 @@ export default function ProfilePage() {
     setEditProfileSaving(true);
     setEditProfileError("");
     try {
-      const res = await fetch("http://localhost:5001/api/profile", {
+      const res = await fetch(`${API_URL}/api/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -186,7 +187,7 @@ export default function ProfilePage() {
     setPwSaving(true);
     setPwError("");
     try {
-      const res = await fetch("http://localhost:5001/api/auth/change-password", {
+      const res = await fetch(`${API_URL}/api/auth/change-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ currentPassword: pwCurrent, newPassword: pwNew }),
@@ -213,7 +214,7 @@ export default function ProfilePage() {
   const togglePublic = async (playlistId) => {
     if (!token) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/playlists/${playlistId}/toggle-public`, {
+      const res = await fetch(`${API_URL}/api/playlists/${playlistId}/toggle-public`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -228,7 +229,7 @@ export default function ProfilePage() {
   const deletePlaylist = async (playlistId) => {
     if (!token || !window.confirm("Delete this mixtape?")) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/playlists/${playlistId}`, {
+      const res = await fetch(`${API_URL}/api/playlists/${playlistId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -267,7 +268,7 @@ export default function ProfilePage() {
     if (!editName.trim()) { alert("Name is required"); return; }
     setEditSaving(true);
     try {
-      const res = await fetch(`http://localhost:5001/api/playlists/${editPopup._id}`, {
+      const res = await fetch(`${API_URL}/api/playlists/${editPopup._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -301,7 +302,7 @@ export default function ProfilePage() {
     if (!editReviewRating) { alert("Rating is required"); return; }
     setEditReviewSaving(true);
     try {
-      const res = await fetch(`http://localhost:5001/api/reviews/${editReviewPopup._id}`, {
+      const res = await fetch(`${API_URL}/api/reviews/${editReviewPopup._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -330,7 +331,7 @@ export default function ProfilePage() {
   const handleDeleteReview = async (reviewId) => {
     if (!token || !window.confirm("Delete this review?")) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/reviews/${reviewId}`, {
+      const res = await fetch(`${API_URL}/api/reviews/${reviewId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -370,7 +371,7 @@ export default function ProfilePage() {
     setHeartPopup(song);
 
     try {
-      const res = await fetch("http://localhost:5001/api/playlists", {
+      const res = await fetch(`${API_URL}/api/playlists`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -389,7 +390,7 @@ export default function ProfilePage() {
     if (!heartPopup || !token) return;
     const song = heartPopup;
     try {
-      await fetch(`http://localhost:5001/api/favorites/songs/${song.trackId}`, {
+      await fetch(`${API_URL}/api/favorites/songs/${song.trackId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -413,12 +414,12 @@ export default function ProfilePage() {
 
     try {
       if (isIn) {
-        await fetch(`http://localhost:5001/api/playlists/${playlistId}/tracks/${song.trackId}`, {
+        await fetch(`${API_URL}/api/playlists/${playlistId}/tracks/${song.trackId}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await fetch(`http://localhost:5001/api/playlists/${playlistId}/tracks`, {
+        await fetch(`${API_URL}/api/playlists/${playlistId}/tracks`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({

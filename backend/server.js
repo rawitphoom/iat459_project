@@ -20,7 +20,14 @@ const {
 } = require("./services/deezer");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://iat459-project.vercel.app",
+    "https://iat459-project-git-main-rawitphooms-projects.vercel.app",
+  ],
+  credentials: true,
+}));
 // Raise the JSON body limit so we can accept base64-encoded mixtape cover
 // images (default Express limit is only 100kb, which is smaller than most photos).
 app.use(express.json({ limit: "10mb" }));

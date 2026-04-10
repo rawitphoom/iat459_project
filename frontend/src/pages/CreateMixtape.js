@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TrackSearch from "../TrackSearch";
+import API_URL from "../config";
 
 /**
  * CreateMixtape — full page version of the "Create New Mixtape" flow.
@@ -51,7 +52,7 @@ export default function CreateMixtape() {
   // -------- load chart tracks on mount (for the default BROWSE TRACKS list) --------
   useEffect(() => {
     let cancelled = false;
-    fetch("http://localhost:5001/api/music/chart")
+    fetch(`${API_URL}/api/music/chart`)
       .then((res) => res.json())
       .then((data) => {
         if (cancelled) return;
@@ -150,7 +151,7 @@ export default function CreateMixtape() {
 
     try {
       setIsSaving(true);
-      const res = await fetch("http://localhost:5001/api/playlists", {
+      const res = await fetch(`${API_URL}/api/playlists`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

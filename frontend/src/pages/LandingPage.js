@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, useCallback, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import API_URL from "../config";
 
 // Cycling mosaic cover — outgoing set slides out, incoming set slides in, both visible during transition
 function CyclingMosaic({ tracks }) {
@@ -247,7 +248,7 @@ function ExploreCarousel({ navigate, token }) {
 
   // Fetch chart tracks with preview URLs
   useEffect(() => {
-    fetch("http://localhost:5001/api/music/chart")
+    fetch(`${API_URL}/api/music/chart`)
       .then((r) => r.json())
       .then((data) => {
         if (data.tracks && data.tracks.length > 0) {
@@ -354,7 +355,7 @@ function ExploreCarousel({ navigate, token }) {
   // Load liked songs if logged in
   useEffect(() => {
     if (!token) return;
-    fetch("http://localhost:5001/api/favorites/songs", {
+    fetch(`${API_URL}/api/favorites/songs`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -377,14 +378,14 @@ function ExploreCarousel({ navigate, token }) {
 
     if (isLiked) {
       setLikedTracks((prev) => { const s = new Set(prev); s.delete(track.id); return s; });
-      await fetch("http://localhost:5001/api/favorites/songs", {
+      await fetch(`${API_URL}/api/favorites/songs`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ trackId: track.id }),
       }).catch(() => {});
     } else {
       setLikedTracks((prev) => new Set(prev).add(track.id));
-      await fetch("http://localhost:5001/api/favorites/songs", {
+      await fetch(`${API_URL}/api/favorites/songs`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -575,14 +576,14 @@ export default function LandingPage() {
 
   // Fetch new releases from Deezer chart + public playlists
   useEffect(() => {
-    fetch("http://localhost:5001/api/music/chart")
+    fetch(`${API_URL}/api/music/chart`)
       .then((r) => r.json())
       .then((data) => {
         if (data.albums) setNewReleases(data.albums.slice(0, 20));
       })
       .catch(() => {});
 
-    fetch("http://localhost:5001/api/playlists/public")
+    fetch(`${API_URL}/api/playlists/public`)
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) setMixtapes(data.slice(0, 10));

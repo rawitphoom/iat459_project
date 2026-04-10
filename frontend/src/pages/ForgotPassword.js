@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import API_URL from "../config";
 
 /*
  * ForgotPassword — password reset request page.
@@ -19,7 +20,7 @@ export default function ForgotPassword() {
     setResetToken("");
 
     try {
-      const res = await fetch("http://localhost:5001/api/auth/forgot-password", {
+      const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

@@ -68,7 +68,8 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST http://localhost:5001/api/auth/change-password -H \"Content-Type: application/json\" -d '{}')",
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(CI=false npm run build)"
     ]
   }
 }

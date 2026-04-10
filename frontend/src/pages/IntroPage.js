@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../config";
 
 /*
  * IntroPage — full-screen entry gate into the site.
@@ -26,7 +27,7 @@ export default function IntroPage() {
 
   // Fetch album covers for the background
   useEffect(() => {
-    fetch("http://localhost:5001/api/music/chart")
+    fetch(`${API_URL}/api/music/chart`)
       .then((r) => r.json())
       .then((data) => {
         const covers = (data?.albums || [])

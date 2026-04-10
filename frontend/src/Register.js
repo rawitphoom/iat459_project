@@ -11,6 +11,7 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
+import API_URL from "./config";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -26,7 +27,7 @@ export default function Register() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5001/api/auth/register", {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, username, email, password }),

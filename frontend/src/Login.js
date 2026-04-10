@@ -63,7 +63,7 @@ export default function Login() {
         </div>
 
         <h1 className="auth-heading">SIGN IN</h1>
-        <p className="auth-subheading">Welcome back,</p>
+        <p className="auth-subheading">Welcome back</p>
 
         {error && <div className="auth-error">{error}</div>}
 

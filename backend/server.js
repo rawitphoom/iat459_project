@@ -31,6 +31,16 @@ app.use(cors({
 // Raise the JSON body limit so we can accept base64-encoded mixtape cover
 // images (default Express limit is only 100kb, which is smaller than most photos).
 app.use(express.json({ limit: "10mb" }));
+
+// Health check endpoint — used by UptimeRobot to keep the Render free tier
+// instance warm (pinged every 5 minutes to prevent the 15-min idle spin-down).
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", service: "mixtape-api" });
+});
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
 // Auth endpoints: /api/auth/register and /api/auth/login
 app.use("/api/auth", authRoutes);
 

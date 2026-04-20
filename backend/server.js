@@ -892,5 +892,16 @@ app.delete("/api/admin/playlists/:id", verifyToken, verifyAdmin, async (req, res
   res.json({ message: "Playlist deleted" });
 });
 
+// Admin: get ALL reviews across every album, newest first
+// Used by the Admin Dashboard to moderate user reviews
+app.get("/api/admin/reviews", verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const reviews = await Review.find().sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load reviews" });
+  }
+});
+
 // Start API server
 app.listen(5001, () => console.log("Server running on port 5001"));

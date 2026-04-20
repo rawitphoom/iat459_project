@@ -4209,8 +4209,35 @@ body:has(.discover-page) {
   box-shadow: 0 2px 12px rgba(219, 74, 30, 0.4);
 }
 
-.discover-filter-label {
+.discover-filter-label-wrap {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  vertical-align: middle;
+}
+
+.discover-filter-label-sizer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
   font-weight: 600;
+}
+
+.discover-filter-label {
+  display: inline-block;
+  white-space: nowrap;
+  font-weight: 600;
+  animation: filterLabelFade 0.28s ease;
+}
+
+@keyframes filterLabelFade {
+  from { opacity: 0; transform: translateX(4px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
 .discover-filter-menu {
@@ -4224,6 +4251,26 @@ body:has(.discover-page) {
   padding: 8px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.96);
+  transform-origin: top right;
+  pointer-events: none;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    visibility 0s linear 0.22s;
+}
+
+.discover-filter-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    visibility 0s linear 0s;
 }
 
 .discover-filter-item {
@@ -4536,9 +4583,14 @@ body:has(.discover-page) {
 .songs-list {
   display: grid;
   gap: 4px;
-  max-width: 1100px;
-  margin: 0 auto;
+  width: 100%;
   padding-top: 24px;
+  font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.songs-list .track-row,
+.songs-list .track-row * {
+  font-family: inherit;
 }
 
 /* Override track-row for dark theme on Discover page */
@@ -5220,15 +5272,16 @@ body:has(.discover-page) {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #c0633a, #8a4422);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Roboto', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
+  background: #1a1a1a;
+  overflow: hidden;
   flex-shrink: 0;
+}
+
+.ad-review-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .ad-review-username {
@@ -5266,18 +5319,23 @@ body:has(.discover-page) {
   position: absolute;
   top: 0;
   right: 0;
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.25);
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #ef4444;
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 4px;
-  transition: color 0.2s, background 0.2s;
+  padding: 8px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .ad-review-delete:hover {
-  color: #ff6b6b;
-  background: rgba(176, 0, 32, 0.15);
+  color: #ffffff;
+  background: #dc2626;
+  border-color: #dc2626;
+  transform: scale(1.05);
 }
 
 /* Right side — vinyl + cover */
@@ -8173,4 +8231,232 @@ body:has(.admin-page) {
 .edit-profile-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ============================================================
+   Admin — Reviews tab (grid cards + list rows)
+   ============================================================ */
+.admin-review-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background 0.25s, border-color 0.25s, transform 0.25s;
+}
+
+.admin-review-card-clickable {
+  cursor: pointer;
+}
+
+.admin-review-card-clickable:focus-visible {
+  outline: 2px solid #DB4A1E;
+  outline-offset: 2px;
+}
+
+.admin-list-row.admin-review-card-clickable {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-list-row.admin-review-card-clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-review-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+.admin-review-header {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.admin-review-album-art {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.admin-review-album-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-review-album-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-review-album-title {
+  color: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.admin-review-meta {
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.admin-review-rating {
+  color: #f5c518;
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+
+.admin-review-title {
+  color: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.admin-review-text {
+  color: rgba(255, 255, 255, 0.75);
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.admin-review-empty {
+  grid-column: 1 / -1;
+  padding: 40px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+}
+
+/* ============================================================
+   ConfirmModal — centered confirmation dialog
+   ============================================================ */
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: confirmFadeIn 0.18s ease-out;
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+.confirm-modal {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 28px 28px 22px;
+  width: min(420px, calc(100% - 40px));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: confirmPopIn 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+.confirm-modal-title {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+.confirm-modal-message {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 22px;
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.confirm-modal-cancel,
+.confirm-modal-confirm {
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  border: none;
+  font-family: "DM Sans", system-ui, sans-serif;
+  transition: background 0.2s, transform 0.15s, color 0.2s;
+}
+
+.confirm-modal-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.confirm-modal-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.confirm-modal-confirm {
+  background: #DB4A1E;
+  color: #fff;
+}
+
+.confirm-modal-confirm:hover {
+  background: #e5562a;
+  transform: translateY(-1px);
+}
+
+.confirm-modal-confirm.is-danger {
+  background: #dc2626;
+}
+
+.confirm-modal-confirm.is-danger:hover {
+  background: #ef4444;
+}
+
+@keyframes confirmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes confirmPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }

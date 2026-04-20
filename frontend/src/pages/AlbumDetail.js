@@ -1,18 +1,21 @@
 import { useEffect, useState, useRef, useCallback, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "../context/AuthContext";
 import API_URL from "../config";
+import ConfirmModal from "../components/ConfirmModal";
 
 // =============================================
 // Sign-In Popup — shown when a visitor (not logged in)
 // tries to save an album, like a song, or write a review.
 // Mimics the standalone Login page styling.
 // =============================================
-function SignInPopup({ onClose }) {
+export function SignInPopup({ onClose }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,6 +32,18 @@ function SignInPopup({ onClose }) {
         return;
       }
       login(data.token);
+      // If an admin logs in through the popup, send them to the admin
+      // dashboard instead of leaving them on the current public page.
+      try {
+        const decoded = jwtDecode(data.token);
+        if (decoded.role === "admin") {
+          onClose();
+          navigate("/admin");
+          return;
+        }
+      } catch {
+        /* fall through to default close */
+      }
       onClose();
     } catch {
       setError("Server unavailable");
@@ -458,8 +473,17 @@ export default function AlbumDetail() {
     }
   };
 
-  const handleDeleteReview = async (reviewId) => {
-    if (!window.confirm("Delete this review?")) return;
+  // Confirm modal state for delete-review
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  const handleDeleteReview = (reviewId) => {
+    setConfirmDeleteId(reviewId);
+  };
+
+  const performDeleteReview = async () => {
+    const reviewId = confirmDeleteId;
+    setConfirmDeleteId(null);
+    if (!reviewId) return;
     try {
       const res = await fetch(`${API_URL}/api/reviews/${reviewId}`, {
         method: "DELETE",
@@ -645,8 +669,8 @@ export default function AlbumDetail() {
             onClick={() => token ? setShowReviewForm(!showReviewForm) : setShowSignInPopup(true)}
           >
             <svg width="28" height="28" viewBox="0 0 43 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="1" y="1" width="41" height="40" rx="20" stroke="#F36A40" strokeWidth="2"/>
-              <path d="M23.3877 18.3486L23.6162 18.915L24.2246 18.9707L29.1484 19.4189L25.3711 22.8633L24.9424 23.2529L25.0684 23.8184L26.1875 28.8623L22.0361 26.2285L21.501 25.8887L20.9648 26.2285L16.8125 28.8643L17.9316 23.8203L18.0576 23.2549L17.6289 22.8643L13.8506 19.4199L18.7773 18.9717L19.3848 18.917L19.6133 18.3506L21.5 13.6719L23.3877 18.3486Z" stroke="#F36A40" strokeWidth="2"/>
+              <rect x="1" y="1" width="41" height="40" rx="20" stroke="#DB4A1E" strokeWidth="2"/>
+              <path d="M23.3877 18.3486L23.6162 18.915L24.2246 18.9707L29.1484 19.4189L25.3711 22.8633L24.9424 23.2529L25.0684 23.8184L26.1875 28.8623L22.0361 26.2285L21.501 25.8887L20.9648 26.2285L16.8125 28.8643L17.9316 23.8203L18.0576 23.2549L17.6289 22.8643L13.8506 19.4199L18.7773 18.9717L19.3848 18.917L19.6133 18.3506L21.5 13.6719L23.3877 18.3486Z" stroke="#DB4A1E" strokeWidth="2"/>
             </svg>
             ADD A REVIEW
           </button>
@@ -703,7 +727,10 @@ export default function AlbumDetail() {
                 <div className="ad-review-card-artist">{album.artist}</div>
                 <div className="ad-review-userline">
                   <div className="ad-review-avatar">
-                    {review.username?.charAt(0).toUpperCase()}
+                    <img
+                      src={`https://api.dicebear.com/7.x/big-smile/svg?seed=${review.username || "user"}`}
+                      alt={review.username}
+                    />
                   </div>
                   <span className="ad-review-username">{review.username}</span>
                 </div>
@@ -718,7 +745,7 @@ export default function AlbumDetail() {
                     onClick={() => handleDeleteReview(review._id)}
                     title="Delete review"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                     </svg>
                   </button>
@@ -760,6 +787,17 @@ export default function AlbumDetail() {
       {showSignInPopup && (
         <SignInPopup onClose={() => setShowSignInPopup(false)} />
       )}
+
+      {/* ======== DELETE REVIEW CONFIRMATION ======== */}
+      <ConfirmModal
+        open={!!confirmDeleteId}
+        title="Delete this review?"
+        message="This action cannot be undone."
+        confirmText="DELETE"
+        cancelText="CANCEL"
+        onConfirm={performDeleteReview}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
 
       {/* ======== HEART POPUP MODAL ======== */}
       {heartPopup && (

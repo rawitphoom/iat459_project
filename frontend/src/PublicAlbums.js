@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef, useContext, useMemo } from "react";
+import { useEffect, useLayoutEffect, useState, useRef, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
+import { SignInPopup } from "./pages/AlbumDetail";
 import API_URL from "./config";
 
 /*
@@ -44,6 +45,7 @@ export default function Discover() {
 
   const [loading, setLoading] = useState(true);
   const [likedTracks, setLikedTracks] = useState([]);
+  const [showSignInPopup, setShowSignInPopup] = useState(false);
 
   // Filter state
   const [filterOpen, setFilterOpen] = useState(false);
@@ -53,6 +55,8 @@ export default function Discover() {
   const [genres, setGenres] = useState([]);
   const [genreMenuOpen, setGenreMenuOpen] = useState(false);
   const filterRef = useRef(null);
+  const filterSizerRef = useRef(null);
+  const filterLabelWrapRef = useRef(null);
 
   // Stop audio on unmount
   useEffect(() => {
@@ -78,7 +82,10 @@ export default function Discover() {
   }, [token]);
 
   const toggleLike = async (track) => {
-    if (!token) return navigate("/login");
+    if (!token) {
+      setShowSignInPopup(true);
+      return;
+    }
     const isLiked = likedTracks.includes(track.trackId);
     const method = isLiked ? "DELETE" : "POST";
     try {
@@ -223,12 +230,23 @@ export default function Discover() {
     [baseMixtapes, sortBy]
   );
 
-  // Filter button label
+  // Measure the new label's width and set it explicitly so CSS can
+  // transition from the old width to the new — gives a pure horizontal
+  // morph without any vertical shift/fade.
+  useLayoutEffect(() => {
+    const wrap = filterLabelWrapRef.current;
+    const sizer = filterSizerRef.current;
+    if (!wrap || !sizer) return;
+    const newWidth = sizer.getBoundingClientRect().width;
+    wrap.style.width = `${newWidth}px`;
+  });
+
+  // Filter button label — always show something (defaults to DEFAULT)
   const filterLabel = useMemo(() => {
     if (sortBy === "az") return "A-Z";
     if (sortBy === "date") return "DATE RELEASED";
     if (sortBy === "genre" && genreName) return genreName.toUpperCase();
-    return "";
+    return "DEFAULT";
   }, [sortBy, genreName]);
 
   const handlePickSort = (mode) => {
@@ -288,43 +306,44 @@ export default function Discover() {
 
         <div className="discover-filter-wrap" ref={filterRef}>
           <button
-            className={`discover-filter-btn ${filterLabel ? "has-value" : ""}`}
+            className={`discover-filter-btn ${sortBy !== "default" ? "has-value" : ""} ${filterOpen ? "open" : ""}`}
             onClick={() => setFilterOpen((o) => !o)}
             type="button"
           >
-            {filterLabel && <span className="discover-filter-label">{filterLabel}</span>}
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="11" y2="6"/><line x1="15" y1="6" x2="20" y2="6"/><circle cx="13" cy="6" r="2"/><line x1="4" y1="12" x2="7" y2="12"/><line x1="11" y1="12" x2="20" y2="12"/><circle cx="9" cy="12" r="2"/><line x1="4" y1="18" x2="14" y2="18"/><line x1="18" y1="18" x2="20" y2="18"/><circle cx="16" cy="18" r="2"/></svg>
+            <span className="discover-filter-label-wrap" ref={filterLabelWrapRef}>
+              <span className="discover-filter-label-sizer" ref={filterSizerRef} aria-hidden="true">{filterLabel}</span>
+              <span className="discover-filter-label" key={filterLabel}>{filterLabel}</span>
+            </span>
+            <svg className="discover-filter-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="11" y2="6"/><line x1="15" y1="6" x2="20" y2="6"/><circle cx="13" cy="6" r="2"/><line x1="4" y1="12" x2="7" y2="12"/><line x1="11" y1="12" x2="20" y2="12"/><circle cx="9" cy="12" r="2"/><line x1="4" y1="18" x2="14" y2="18"/><line x1="18" y1="18" x2="20" y2="18"/><circle cx="16" cy="18" r="2"/></svg>
           </button>
 
-          {filterOpen && (
-            <div className="discover-filter-menu">
-              <button className={`discover-filter-item ${sortBy === "default" ? "active" : ""}`} onClick={() => handlePickSort("default")}>DEFAULT</button>
-              <button className={`discover-filter-item ${sortBy === "az" ? "active" : ""}`} onClick={() => handlePickSort("az")}>A-Z</button>
-              <button className={`discover-filter-item ${sortBy === "date" ? "active" : ""}`} onClick={() => handlePickSort("date")}>DATE RELEASED</button>
-              <button
-                className={`discover-filter-item discover-filter-item-parent ${sortBy === "genre" ? "active" : ""}`}
-                onClick={() => setGenreMenuOpen((o) => !o)}
-                type="button"
-              >
-                GENRE
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
-              {genreMenuOpen && (
-                <div className="discover-filter-genre-list">
-                  {genres.length === 0 && <div className="discover-filter-empty">No genres</div>}
-                  {genres.map((g) => (
-                    <button
-                      key={g.id}
-                      className={`discover-filter-item ${genreId === g.id ? "active" : ""}`}
-                      onClick={() => handlePickGenre(g)}
-                    >
-                      {g.name.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <div className={`discover-filter-menu ${filterOpen ? "open" : ""}`}>
+            <button className={`discover-filter-item ${sortBy === "default" ? "active" : ""}`} onClick={() => handlePickSort("default")}>DEFAULT</button>
+            <button className={`discover-filter-item ${sortBy === "az" ? "active" : ""}`} onClick={() => handlePickSort("az")}>A-Z</button>
+            <button className={`discover-filter-item ${sortBy === "date" ? "active" : ""}`} onClick={() => handlePickSort("date")}>DATE RELEASED</button>
+            <button
+              className={`discover-filter-item discover-filter-item-parent ${sortBy === "genre" ? "active" : ""}`}
+              onClick={() => setGenreMenuOpen((o) => !o)}
+              type="button"
+            >
+              GENRE
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            {genreMenuOpen && (
+              <div className="discover-filter-genre-list">
+                {genres.length === 0 && <div className="discover-filter-empty">No genres</div>}
+                {genres.map((g) => (
+                  <button
+                    key={g.id}
+                    className={`discover-filter-item ${genreId === g.id ? "active" : ""}`}
+                    onClick={() => handlePickGenre(g)}
+                  >
+                    {g.name.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -354,7 +373,7 @@ export default function Discover() {
 
       {/* Albums */}
       {activeTab === "ALBUMS" && !loading && (
-        <div className="album-grid">
+        <div className="album-grid discover-fade-in" key={`albums-${sortBy}-${genreId}-${searchedQuery}`}>
           {displayAlbums.map((album) => (
             <div
               key={album.id}
@@ -378,7 +397,7 @@ export default function Discover() {
 
       {/* Tracks */}
       {activeTab === "TRACKS" && !loading && (
-        <div className="songs-list">
+        <div className="songs-list discover-fade-in" key={`tracks-${sortBy}-${genreId}-${searchedQuery}`}>
           {displayTracks.map((track, i) => (
             <div key={track.trackId || i} className="track-row">
               <span className="track-number">{i + 1}</span>
@@ -418,7 +437,7 @@ export default function Discover() {
 
       {/* Mixtapes */}
       {activeTab === "MIXTAPES" && !loading && (
-        <div className="mixtapes-grid">
+        <div className="mixtapes-grid discover-fade-in" key={`mixtapes-${sortBy}-${genreId}-${searchedQuery}`}>
           {displayMixtapes.map((playlist) => {
             // Collect up to 4 unique album art images for the collage
             const arts = [];
@@ -463,6 +482,8 @@ export default function Discover() {
           )}
         </div>
       )}
+
+      {showSignInPopup && <SignInPopup onClose={() => setShowSignInPopup(false)} />}
     </div>
   );
 }

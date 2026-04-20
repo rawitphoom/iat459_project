@@ -12,6 +12,7 @@
 
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "./context/AuthContext";
 import API_URL from "./config";
 
@@ -46,7 +47,14 @@ export default function Login() {
 
       // Store the token via context — this also decodes the user payload.
       login(data.token);
-      navigate("/dashboard");
+      // Redirect admins straight to the admin dashboard;
+      // everyone else lands on their user dashboard.
+      try {
+        const decoded = jwtDecode(data.token);
+        navigate(decoded.role === "admin" ? "/admin" : "/dashboard");
+      } catch {
+        navigate("/dashboard");
+      }
     } catch {
       setError("Server unavailable");
     }

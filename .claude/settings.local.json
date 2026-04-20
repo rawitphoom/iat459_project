@@ -69,7 +69,10 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
-      "Bash(CI=false npm run build)"
+      "Bash(CI=false npm run build)",
+      "Bash(npm start *)",
+      "Bash(cp /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css /tmp/style.css.session)",
+      "Bash(git checkout *)"
     ]
   }
 }

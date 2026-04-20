@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import API_URL from "../config";
+import ConfirmModal from "../components/ConfirmModal";
 
 /*
  * AdminDashboard — moderation / maintenance screen for admins only.
@@ -30,8 +31,13 @@ export default function AdminDashboard() {
 
   const [users, setUsers] = useState([]);
   const [playlists, setPlaylists] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState("users"); // "users" | "mixtapes"
+  const [tab, setTab] = useState("users"); // "users" | "mixtapes" | "reviews"
+
+  // Centralized confirm-modal state. Set `confirm` to { title, message, onConfirm }
+  // to show the modal; clear it to dismiss.
+  const [confirm, setConfirm] = useState(null);
   const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
 
   useEffect(() => {
@@ -41,6 +47,7 @@ export default function AdminDashboard() {
     }
     fetchUsers();
     fetchPlaylists();
+    fetchReviews();
   }, [user, token, navigate]);
 
   const fetchUsers = async () => {
@@ -79,42 +86,103 @@ export default function AdminDashboard() {
       alert("You cannot delete your own admin account.");
       return;
     }
-    if (!window.confirm(`Delete user "${username}" and all their playlists?`)) return;
-    try {
-      const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 403) {
-        alert("403 Forbidden — the server blocked this action.");
-        return;
-      }
-      if (res.ok) {
-        setUsers((prev) => prev.filter((u) => u._id !== userId));
-        setPlaylists((prev) => prev.filter((p) => p.createdBy !== userId));
-      }
-    } catch {
-      alert("Server unavailable");
-    }
+    setConfirm({
+      title: "Delete user?",
+      message: `Delete "${username}" and all their playlists? This cannot be undone.`,
+      confirmText: "DELETE",
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.status === 403) {
+            alert("403 Forbidden — the server blocked this action.");
+            return;
+          }
+          if (res.ok) {
+            setUsers((prev) => prev.filter((u) => u._id !== userId));
+            setPlaylists((prev) => prev.filter((p) => p.createdBy !== userId));
+          }
+        } catch {
+          alert("Server unavailable");
+        }
+      },
+    });
   };
 
-  const handleDeletePlaylist = async (playlistId, playlistName) => {
-    if (!window.confirm(`Delete mixtape "${playlistName}"?`)) return;
+  const fetchReviews = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/playlists/${playlistId}`, {
-        method: "DELETE",
+      const res = await fetch(`${API_URL}/api/admin/reviews`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.status === 403) {
-        alert("403 Forbidden — the server blocked this action.");
-        return;
-      }
-      if (res.ok) {
-        setPlaylists((prev) => prev.filter((p) => p._id !== playlistId));
-      }
-    } catch {
-      alert("Server unavailable");
-    }
+      if (res.status === 403) return;
+      const data = await res.json();
+      if (res.ok) setReviews(data);
+    } catch {}
+  };
+
+  const handleDeleteReview = (reviewId, albumTitle) => {
+    setConfirm({
+      title: "Remove review?",
+      message: `Remove this review for "${albumTitle || "this album"}"?`,
+      confirmText: "REMOVE",
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          const res = await fetch(`${API_URL}/api/reviews/${reviewId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.status === 403) {
+            alert("403 Forbidden — the server blocked this action.");
+            return;
+          }
+          if (res.ok) {
+            setReviews((prev) => prev.filter((r) => r._id !== reviewId));
+          }
+        } catch {
+          alert("Server unavailable");
+        }
+      },
+    });
+  };
+
+  // Format a review's date similar to user JOINED format
+  const formatReviewDate = (createdAt) => {
+    if (!createdAt) return "Unknown";
+    const d = new Date(createdAt);
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  };
+
+  const handleDeletePlaylist = (playlistId, playlistName) => {
+    setConfirm({
+      title: "Delete mixtape?",
+      message: `Delete mixtape "${playlistName}"? This cannot be undone.`,
+      confirmText: "DELETE",
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          const res = await fetch(`${API_URL}/api/admin/playlists/${playlistId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.status === 403) {
+            alert("403 Forbidden — the server blocked this action.");
+            return;
+          }
+          if (res.ok) {
+            setPlaylists((prev) => prev.filter((p) => p._id !== playlistId));
+          }
+        } catch {
+          alert("Server unavailable");
+        }
+      },
+    });
   };
 
   const getUsernameById = (id) => {
@@ -157,6 +225,15 @@ export default function AdminDashboard() {
               <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
             </svg>
             ALL MIXTAPES ({playlists.length})
+          </button>
+          <button
+            className={`admin-tab ${tab === "reviews" ? "active" : ""}`}
+            onClick={() => setTab("reviews")}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 6 }}>
+              <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/>
+            </svg>
+            ALL REVIEWS ({reviews.length})
           </button>
         </div>
         <div className="admin-view-toggle">
@@ -303,6 +380,118 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* Reviews Tab — grid */}
+      {tab === "reviews" && viewMode === "grid" && (
+        <div className="admin-grid">
+          {reviews.map((r) => (
+            <div
+              key={r._id}
+              className="admin-review-card admin-review-card-clickable"
+              onClick={() => r.albumId && navigate(`/album/${r.albumId}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && r.albumId) {
+                  e.preventDefault();
+                  navigate(`/album/${r.albumId}`);
+                }
+              }}
+            >
+              <div className="admin-review-header">
+                <div className="admin-review-album-art">
+                  {r.albumArt ? (
+                    <img src={r.albumArt} alt={r.albumTitle} />
+                  ) : (
+                    <div className="admin-mixtape-empty-sm">-</div>
+                  )}
+                </div>
+                <div className="admin-review-album-info">
+                  <div className="admin-review-album-title">{r.albumTitle || "Unknown album"}</div>
+                  <div className="admin-review-meta">
+                    BY {r.username?.toUpperCase()} · {formatReviewDate(r.createdAt)}
+                  </div>
+                </div>
+              </div>
+              <div className="admin-review-rating">
+                {"\u2605".repeat(r.rating || 0)}
+                {"\u2606".repeat(5 - (r.rating || 0))}
+              </div>
+              {r.title && <div className="admin-review-title">{r.title}</div>}
+              {r.text && <div className="admin-review-text">{r.text}</div>}
+              <button
+                className="admin-remove-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteReview(r._id, r.albumTitle);
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 6 }}>
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+                REMOVE REVIEW
+              </button>
+            </div>
+          ))}
+          {reviews.length === 0 && <div className="admin-review-empty">No reviews yet.</div>}
+        </div>
+      )}
+
+      {/* Reviews Tab — list */}
+      {tab === "reviews" && viewMode === "list" && (
+        <div className="admin-list">
+          <div className="admin-list-header">
+            <div className="admin-list-col admin-list-col-avatar" />
+            <div className="admin-list-col admin-list-col-name">ALBUM</div>
+            <div className="admin-list-col admin-list-col-username">USER</div>
+            <div className="admin-list-col admin-list-col-joined">RATING</div>
+            <div className="admin-list-col admin-list-col-action">REMOVE</div>
+          </div>
+          {reviews.map((r) => (
+            <div
+              key={r._id}
+              className="admin-list-row admin-review-card-clickable"
+              onClick={() => r.albumId && navigate(`/album/${r.albumId}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && r.albumId) {
+                  e.preventDefault();
+                  navigate(`/album/${r.albumId}`);
+                }
+              }}
+            >
+              <div className="admin-list-col admin-list-col-avatar">
+                <div className="admin-list-mixtape-thumb">
+                  {r.albumArt ? (
+                    <img src={r.albumArt} alt={r.albumTitle} />
+                  ) : (
+                    <div className="admin-mixtape-empty-sm">-</div>
+                  )}
+                </div>
+              </div>
+              <div className="admin-list-col admin-list-col-name">{r.albumTitle || "Unknown album"}</div>
+              <div className="admin-list-col admin-list-col-username">{r.username}</div>
+              <div className="admin-list-col admin-list-col-joined">{r.rating || 0}/5</div>
+              <div className="admin-list-col admin-list-col-action">
+                <button
+                  className="admin-remove-icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteReview(r._id, r.albumTitle);
+                  }}
+                  title="Remove review"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+          {reviews.length === 0 && <div className="admin-review-empty">No reviews yet.</div>}
+        </div>
+      )}
+
       {tab === "mixtapes" && viewMode === "list" && (
         <div className="admin-list">
           <div className="admin-list-header">
@@ -343,6 +532,16 @@ export default function AdminDashboard() {
           ))}
         </div>
       )}
+
+      {/* Shared confirmation modal for delete actions */}
+      <ConfirmModal
+        open={!!confirm}
+        title={confirm?.title}
+        message={confirm?.message}
+        confirmText={confirm?.confirmText || "CONFIRM"}
+        onConfirm={confirm?.onConfirm}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   );
 }

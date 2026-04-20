@@ -2,6 +2,7 @@ import { useEffect, useState, useContext, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import API_URL from "../config";
+import ConfirmModal from "../components/ConfirmModal";
 
 /*
  * ProfilePage — personal profile and library page.
@@ -15,6 +16,12 @@ import API_URL from "../config";
  * Most of the state in this file exists to support modal editing flows and
  * playback / save interactions directly from the profile itself.
  */
+
+// Module-level cache keyed by profileId. Survives navigation within the SPA
+// so returning to a profile shows last-seen data instantly while a fresh
+// fetch runs in the background (stale-while-revalidate).
+const profileCache = new Map();
+
 export default function ProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,6 +31,7 @@ export default function ProfilePage() {
   const isOwn = !id || id === user?.id;
 
   // Edit profile / change password popups
+  const [confirm, setConfirm] = useState(null);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [changePwOpen, setChangePwOpen] = useState(false);
   const [editProfileName, setEditProfileName] = useState("");
@@ -40,12 +48,15 @@ export default function ProfilePage() {
   const [pwSaving, setPwSaving] = useState(false);
   const [pwError, setPwError] = useState("");
 
-  const [profile, setProfile] = useState(null);
-  const [playlists, setPlaylists] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [favAlbums, setFavAlbums] = useState([]);
-  const [favSongs, setFavSongs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Seed state from the module-level cache so a revisit shows data instantly.
+  const cached = profileCache.get(id || user?.id);
+  const [profile, setProfile] = useState(cached?.profile || null);
+  const [playlists, setPlaylists] = useState(cached?.playlists || []);
+  const [reviews, setReviews] = useState(cached?.reviews || []);
+  const [favAlbums, setFavAlbums] = useState(cached?.favAlbums || []);
+  const [favSongs, setFavSongs] = useState(cached?.favSongs || []);
+  // Only show the blocking loader if we have no cached data for this profile.
+  const [loading, setLoading] = useState(!cached);
   const [activeTab, setActiveTab] = useState("mixtapes");
 
   // Audio preview
@@ -84,10 +95,12 @@ export default function ProfilePage() {
     };
   }, []);
 
-  // Fetch profile data
+  // Fetch profile data. If we already have cached data we skip the blocking
+  // loader and just refresh in the background (stale-while-revalidate).
   useEffect(() => {
     if (!profileId) return;
-    setLoading(true);
+    const hasCache = profileCache.has(profileId);
+    if (!hasCache) setLoading(true);
 
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -99,8 +112,14 @@ export default function ProfilePage() {
       fetch(`${API_URL}/api/profile/${profileId}/favorite-songs`).then((r) => r.json()),
     ])
       .then(([profileData, playlistData, reviewData, favAlbumData, favSongData]) => {
+        const nextPlaylists = Array.isArray(playlistData) ? playlistData : [];
+        const nextFavAlbums = Array.isArray(favAlbumData) ? favAlbumData : [];
+        const nextFavSongs = Array.isArray(favSongData) ? favSongData : [];
         setProfile(profileData);
-        setPlaylists(Array.isArray(playlistData) ? playlistData : []);
+        setPlaylists(nextPlaylists);
+        setFavAlbums(nextFavAlbums);
+        setFavSongs(nextFavSongs);
+
         const rawReviews = Array.isArray(reviewData) ? reviewData : [];
         // Enrich reviews with album art from Deezer API
         Promise.all(
@@ -116,9 +135,16 @@ export default function ProfilePage() {
               };
             } catch { return r; }
           })
-        ).then(setReviews);
-        setFavAlbums(Array.isArray(favAlbumData) ? favAlbumData : []);
-        setFavSongs(Array.isArray(favSongData) ? favSongData : []);
+        ).then((enrichedReviews) => {
+          setReviews(enrichedReviews);
+          profileCache.set(profileId, {
+            profile: profileData,
+            playlists: nextPlaylists,
+            reviews: enrichedReviews,
+            favAlbums: nextFavAlbums,
+            favSongs: nextFavSongs,
+          });
+        });
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -163,6 +189,7 @@ export default function ProfilePage() {
         return;
       }
       setProfile((p) => ({ ...p, ...data }));
+      profileCache.delete(profileId);
       setEditProfileOpen(false);
     } catch {
       setEditProfileError("Network error");
@@ -226,17 +253,26 @@ export default function ProfilePage() {
   };
 
   // Delete playlist
-  const deletePlaylist = async (playlistId) => {
-    if (!token || !window.confirm("Delete this mixtape?")) return;
-    try {
-      const res = await fetch(`${API_URL}/api/playlists/${playlistId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setPlaylists((prev) => prev.filter((p) => p._id !== playlistId));
-      }
-    } catch {}
+  const deletePlaylist = (playlistId) => {
+    if (!token) return;
+    setConfirm({
+      title: "Delete this mixtape?",
+      message: "This action cannot be undone.",
+      confirmText: "DELETE",
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          const res = await fetch(`${API_URL}/api/playlists/${playlistId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            setPlaylists((prev) => prev.filter((p) => p._id !== playlistId));
+            profileCache.delete(profileId);
+          }
+        } catch {}
+      },
+    });
   };
 
   // ---- Edit mixtape popup handlers ----
@@ -328,17 +364,26 @@ export default function ProfilePage() {
     setEditReviewSaving(false);
   };
 
-  const handleDeleteReview = async (reviewId) => {
-    if (!token || !window.confirm("Delete this review?")) return;
-    try {
-      const res = await fetch(`${API_URL}/api/reviews/${reviewId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setReviews((prev) => prev.filter((r) => r._id !== reviewId));
-      }
-    } catch {}
+  const handleDeleteReview = (reviewId) => {
+    if (!token) return;
+    setConfirm({
+      title: "Delete this review?",
+      message: "This action cannot be undone.",
+      confirmText: "DELETE",
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          const res = await fetch(`${API_URL}/api/reviews/${reviewId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            setReviews((prev) => prev.filter((r) => r._id !== reviewId));
+            profileCache.delete(profileId);
+          }
+        } catch {}
+      },
+    });
   };
 
   useEffect(() => {
@@ -463,7 +508,11 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="profile-page">
-        <p className="profile-loading">Loading profile...</p>
+        <div className="discover-loader">
+          <span className="discover-loader-dot" />
+          <span className="discover-loader-dot" />
+          <span className="discover-loader-dot" />
+        </div>
       </div>
     );
   }
@@ -483,11 +532,11 @@ export default function ProfilePage() {
       <div className="profile-header">
         <div className="profile-header-left">
           <div className="profile-avatar">
-            {profile.avatar ? (
-              <img src={profile.avatar} alt={profile.username} className="profile-avatar-img" />
-            ) : (
-              profile.username?.charAt(0).toUpperCase()
-            )}
+            <img
+              src={profile.avatar || `https://api.dicebear.com/7.x/big-smile/svg?seed=${profile.username || "user"}`}
+              alt={profile.username}
+              className="profile-avatar-img"
+            />
           </div>
           <h1 className="profile-name">{profile.name || profile.username}</h1>
           <div className="profile-handle">{profile.username}</div>
@@ -784,7 +833,7 @@ export default function ProfilePage() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
               </button>
               <button className="edit-mixtape-delete" onClick={async () => { await deletePlaylist(editPopup._id); closeEditPopup(); }}>
-                <svg width="24" height="24" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.26949 11.82C5.26949 10.9383 5.93074 10.2215 6.74724 10.2215H11.8552C12.8691 10.1928 13.7642 9.497 14.1092 8.46583L14.1667 8.28375L14.3871 7.57075C14.5212 7.13375 14.6382 6.75234 14.803 6.41117C15.4508 5.06567 16.6507 4.13225 18.0364 3.89267C18.3891 3.83325 18.759 3.83325 19.1864 3.83325H25.8526C26.28 3.83325 26.6518 3.83325 27.0026 3.89267C28.3883 4.13225 29.5901 5.06567 30.236 6.41117C30.4008 6.75234 30.5177 7.13375 30.6519 7.57075L30.8723 8.28375L30.9298 8.46583C31.2748 9.497 32.3482 10.1947 33.364 10.2215H38.2898C39.1082 10.2215 39.7695 10.9364 39.7695 11.82C39.7695 12.7036 39.1082 13.4166 38.2917 13.4166H6.74533C5.92883 13.4166 5.26949 12.7017 5.26949 11.82Z" fill="#F36A40"/><path opacity="0.5" d="M22.2462 42.1667H23.7546C28.943 42.1667 31.5363 42.1667 33.2249 40.5126C34.9115 38.8566 35.084 36.1426 35.429 30.7165L35.9274 22.8946C36.1152 19.9487 36.2091 18.4767 35.3619 17.5433C34.5148 16.6099 33.0869 16.6099 30.2272 16.6099H15.7736C12.9159 16.6099 11.486 16.6099 10.6389 17.5433C9.79169 18.4767 9.88753 19.9487 10.0734 22.8946L10.5718 30.7146C10.9168 36.1445 11.0893 38.8566 12.7759 40.5126C14.4626 42.1686 17.0578 42.1667 22.2462 42.1667Z" fill="#F36A40"/></svg>
+                <svg width="24" height="24" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.26949 11.82C5.26949 10.9383 5.93074 10.2215 6.74724 10.2215H11.8552C12.8691 10.1928 13.7642 9.497 14.1092 8.46583L14.1667 8.28375L14.3871 7.57075C14.5212 7.13375 14.6382 6.75234 14.803 6.41117C15.4508 5.06567 16.6507 4.13225 18.0364 3.89267C18.3891 3.83325 18.759 3.83325 19.1864 3.83325H25.8526C26.28 3.83325 26.6518 3.83325 27.0026 3.89267C28.3883 4.13225 29.5901 5.06567 30.236 6.41117C30.4008 6.75234 30.5177 7.13375 30.6519 7.57075L30.8723 8.28375L30.9298 8.46583C31.2748 9.497 32.3482 10.1947 33.364 10.2215H38.2898C39.1082 10.2215 39.7695 10.9364 39.7695 11.82C39.7695 12.7036 39.1082 13.4166 38.2917 13.4166H6.74533C5.92883 13.4166 5.26949 12.7017 5.26949 11.82Z" fill="#DB4A1E"/><path opacity="0.5" d="M22.2462 42.1667H23.7546C28.943 42.1667 31.5363 42.1667 33.2249 40.5126C34.9115 38.8566 35.084 36.1426 35.429 30.7165L35.9274 22.8946C36.1152 19.9487 36.2091 18.4767 35.3619 17.5433C34.5148 16.6099 33.0869 16.6099 30.2272 16.6099H15.7736C12.9159 16.6099 11.486 16.6099 10.6389 17.5433C9.79169 18.4767 9.88753 19.9487 10.0734 22.8946L10.5718 30.7146C10.9168 36.1445 11.0893 38.8566 12.7759 40.5126C14.4626 42.1686 17.0578 42.1667 22.2462 42.1667Z" fill="#DB4A1E"/></svg>
               </button>
             </div>
 
@@ -871,7 +920,7 @@ export default function ProfilePage() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
               </button>
               <button className="edit-mixtape-delete" onClick={async () => { await handleDeleteReview(editReviewPopup._id); closeEditReview(); }}>
-                <svg width="24" height="24" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.26949 11.82C5.26949 10.9383 5.93074 10.2215 6.74724 10.2215H11.8552C12.8691 10.1928 13.7642 9.497 14.1092 8.46583L14.1667 8.28375L14.3871 7.57075C14.5212 7.13375 14.6382 6.75234 14.803 6.41117C15.4508 5.06567 16.6507 4.13225 18.0364 3.89267C18.3891 3.83325 18.759 3.83325 19.1864 3.83325H25.8526C26.28 3.83325 26.6518 3.83325 27.0026 3.89267C28.3883 4.13225 29.5901 5.06567 30.236 6.41117C30.4008 6.75234 30.5177 7.13375 30.6519 7.57075L30.8723 8.28375L30.9298 8.46583C31.2748 9.497 32.3482 10.1947 33.364 10.2215H38.2898C39.1082 10.2215 39.7695 10.9364 39.7695 11.82C39.7695 12.7036 39.1082 13.4166 38.2917 13.4166H6.74533C5.92883 13.4166 5.26949 12.7017 5.26949 11.82Z" fill="#F36A40"/><path opacity="0.5" d="M22.2462 42.1667H23.7546C28.943 42.1667 31.5363 42.1667 33.2249 40.5126C34.9115 38.8566 35.084 36.1426 35.429 30.7165L35.9274 22.8946C36.1152 19.9487 36.2091 18.4767 35.3619 17.5433C34.5148 16.6099 33.0869 16.6099 30.2272 16.6099H15.7736C12.9159 16.6099 11.486 16.6099 10.6389 17.5433C9.79169 18.4767 9.88753 19.9487 10.0734 22.8946L10.5718 30.7146C10.9168 36.1445 11.0893 38.8566 12.7759 40.5126C14.4626 42.1686 17.0578 42.1667 22.2462 42.1667Z" fill="#F36A40"/></svg>
+                <svg width="24" height="24" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.26949 11.82C5.26949 10.9383 5.93074 10.2215 6.74724 10.2215H11.8552C12.8691 10.1928 13.7642 9.497 14.1092 8.46583L14.1667 8.28375L14.3871 7.57075C14.5212 7.13375 14.6382 6.75234 14.803 6.41117C15.4508 5.06567 16.6507 4.13225 18.0364 3.89267C18.3891 3.83325 18.759 3.83325 19.1864 3.83325H25.8526C26.28 3.83325 26.6518 3.83325 27.0026 3.89267C28.3883 4.13225 29.5901 5.06567 30.236 6.41117C30.4008 6.75234 30.5177 7.13375 30.6519 7.57075L30.8723 8.28375L30.9298 8.46583C31.2748 9.497 32.3482 10.1947 33.364 10.2215H38.2898C39.1082 10.2215 39.7695 10.9364 39.7695 11.82C39.7695 12.7036 39.1082 13.4166 38.2917 13.4166H6.74533C5.92883 13.4166 5.26949 12.7017 5.26949 11.82Z" fill="#DB4A1E"/><path opacity="0.5" d="M22.2462 42.1667H23.7546C28.943 42.1667 31.5363 42.1667 33.2249 40.5126C34.9115 38.8566 35.084 36.1426 35.429 30.7165L35.9274 22.8946C36.1152 19.9487 36.2091 18.4767 35.3619 17.5433C34.5148 16.6099 33.0869 16.6099 30.2272 16.6099H15.7736C12.9159 16.6099 11.486 16.6099 10.6389 17.5433C9.79169 18.4767 9.88753 19.9487 10.0734 22.8946L10.5718 30.7146C10.9168 36.1445 11.0893 38.8566 12.7759 40.5126C14.4626 42.1686 17.0578 42.1667 22.2462 42.1667Z" fill="#DB4A1E"/></svg>
               </button>
             </div>
 
@@ -1028,6 +1077,16 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Shared confirmation modal for delete actions */}
+      <ConfirmModal
+        open={!!confirm}
+        title={confirm?.title}
+        message={confirm?.message}
+        confirmText={confirm?.confirmText || "CONFIRM"}
+        onConfirm={confirm?.onConfirm}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   );
 }

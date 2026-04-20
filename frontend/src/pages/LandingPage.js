@@ -722,7 +722,7 @@ export default function LandingPage() {
             className="landing-cta"
             onClick={() => navigate("/register")}
           >
-            GET STARTED <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            GET STARTED <svg className="cta-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
           </button>
         </div>
       </div>
@@ -770,7 +770,7 @@ export default function LandingPage() {
                 className="landing-section-link landing-section-link-cta"
                 onClick={() => navigate("/discover")}
               >
-                View All →
+                View All <svg className="cta-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
               </button>
             </div>
             <div className="landing-releases-scroll" ref={releasesScrollRef}>

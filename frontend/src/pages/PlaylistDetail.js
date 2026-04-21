@@ -107,8 +107,12 @@ export default function PlaylistDetail() {
 
   if (loading) {
     return (
-      <div className="ad-wrapper ad-slide-in pd-wrapper">
-        <p className="discover-loading">Loading mixtape...</p>
+      <div className="ad-wrapper ad-loading pd-wrapper">
+        <div className="discover-loader ad-loader-center">
+          <span className="discover-loader-dot" />
+          <span className="discover-loader-dot" />
+          <span className="discover-loader-dot" />
+        </div>
       </div>
     );
   }

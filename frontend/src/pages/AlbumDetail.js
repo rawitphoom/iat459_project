@@ -111,8 +111,11 @@ export default function AlbumDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Dynamic background color extracted from the album cover image
+  // Dynamic background color extracted from the album cover image.
+  // `colorReady` stays false until extractColor() finishes so the glow can
+  // fade in smoothly instead of snapping from gray to the album color.
   const [bgColor, setBgColor] = useState("40, 40, 40");
+  const [colorReady, setColorReady] = useState(false);
 
   // Audio preview state
   const [playingId, setPlayingId] = useState(null);
@@ -178,7 +181,9 @@ export default function AlbumDetail() {
         b = Math.round(b / count);
         setBgColor(`${r}, ${g}, ${b}`);
       }
+      setColorReady(true);
     };
+    img.onerror = () => setColorReady(true);
     img.src = imgUrl;
   }, []);
 
@@ -505,8 +510,12 @@ export default function AlbumDetail() {
 
   if (loading) {
     return (
-      <div className="ad-wrapper ad-slide-in">
-        <p className="discover-loading">Loading album...</p>
+      <div className="ad-wrapper ad-loading">
+        <div className="discover-loader ad-loader-center">
+          <span className="discover-loader-dot" />
+          <span className="discover-loader-dot" />
+          <span className="discover-loader-dot" />
+        </div>
       </div>
     );
   }
@@ -533,12 +542,14 @@ export default function AlbumDetail() {
   return (
     <div className="ad-wrapper ad-slide-in">
       {/* ---- Dynamic glow background ---- */}
-      <div
-        className="ad-glow"
-        style={{
-          background: `radial-gradient(ellipse at 50% 30%, rgb(${bgColor}) 0%, rgba(${bgColor}, 0.6) 30%, rgba(${bgColor}, 0.2) 60%, transparent 100%)`,
-        }}
-      />
+      {colorReady && (
+        <div
+          className="ad-glow ad-glow-fade-in"
+          style={{
+            background: `radial-gradient(ellipse at 50% 30%, rgb(${bgColor}) 0%, rgba(${bgColor}, 0.6) 30%, rgba(${bgColor}, 0.2) 60%, transparent 100%)`,
+          }}
+        />
+      )}
 
       {/* ---- Back button (top-left) ---- */}
       <button className="ad-back-btn" onClick={() => navigate(-1)} aria-label="Go back">

@@ -957,6 +957,14 @@ body:has(.landing-page) {
   background: #111;
 }
 
+body:has(.ad-wrapper),
+body:has(.discover-page),
+body:has(.dash-page),
+body:has(.profile-page),
+body:has(.admin-page) {
+  background: #111;
+}
+
 .landing-page {
   background: #111;
 }
@@ -4089,6 +4097,18 @@ body:has(.discover-page) {
   margin: 20px 0 48px 0;
   text-transform: uppercase;
   letter-spacing: 1px;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.landing-main-title,
+.landing-tagline,
+.landing-top3-title,
+.features-title {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
 }
 
 .discover-hero-line {
@@ -4443,6 +4463,15 @@ body:has(.discover-page) {
   width: 100%;
   margin: 0;
   padding-top: 24px;
+  font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.album-grid .album-card-title,
+.album-grid .album-card-artist,
+.mixtapes-grid .mixtape-card-title,
+.mixtapes-grid .mixtape-card-artist,
+.mixtapes-grid .mixtape-card-meta {
+  font-family: inherit;
 }
 
 .discover-page .album-card-img-wrapper,
@@ -4676,6 +4705,20 @@ body:has(.discover-page) {
   padding: 64px 64px 64px;
 }
 
+/* Full-viewport dark loading state — covers the space under the navbar
+   so there's no white strip while data is fetching. */
+.ad-loading {
+  min-height: 100vh;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-loader-center {
+  padding: 0;
+}
+
 /* Slide in from right to left when navigating to album */
 .ad-slide-in {
   animation: adSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
@@ -4683,11 +4726,9 @@ body:has(.discover-page) {
 
 @keyframes adSlideIn {
   from {
-    opacity: 0;
     transform: translateX(60px);
   }
   to {
-    opacity: 1;
     transform: translateX(0);
   }
 }
@@ -4749,6 +4790,16 @@ body:has(.discover-page) {
   pointer-events: none;
   opacity: 0.18;
   transition: background 1.4s ease, opacity 1.4s ease;
+}
+
+.ad-glow-fade-in {
+  opacity: 0;
+  animation: adGlowFadeIn 2.2s ease-out forwards;
+}
+
+@keyframes adGlowFadeIn {
+  from { opacity: 0; }
+  to { opacity: 0.18; }
 }
 
 /* ======== LEFT SIDE: cover image + info ======== */
@@ -4990,6 +5041,14 @@ body:has(.discover-page) {
 }
 
 /* ---- More by Artist section ---- */
+.ad-more,
+.ad-more-grid,
+.ad-more-grid *,
+.ad-more-name,
+.ad-more-year {
+  font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important;
+}
+
 .ad-more {
   position: relative;
   z-index: 1;

@@ -8539,6 +8539,11 @@ body:has(.admin-page) {
    Centered, single-focus prompts. Spotify-inspired but
    wider and more modern.
    ===================================================== */
+html:has(.cm-wiz-page),
+body:has(.cm-wiz-page) {
+  background: #0d0d0d;
+}
+
 .cm-wiz-page {
   min-height: 100vh;
   background: #0d0d0d;

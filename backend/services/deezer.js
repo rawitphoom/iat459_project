@@ -237,11 +237,34 @@ async function getArtistAlbums(artistId, limit = 10) {
   }));
 }
 
+/**
+ * Get top tracks for a specific Deezer genre.
+ * Used by the Create Mixtape genre filter pills.
+ */
+async function getGenreTracks(genreId, limit = 25) {
+  const res = await axios.get(`https://api.deezer.com/chart/${genreId}/tracks`, {
+    params: { limit },
+  });
+  return (res.data.data || []).map((track) => ({
+    trackId: String(track.id),
+    name: track.title,
+    artist: track.artist.name,
+    artistId: track.artist.id,
+    album: track.album.title,
+    albumId: track.album.id,
+    albumArt: track.album.cover_medium,
+    previewUrl: track.preview,
+    externalUrl: track.link,
+    durationSec: track.duration,
+  }));
+}
+
 module.exports = {
   searchTracks,
   searchAlbums,
   getChart,
   getGenres,
+  getGenreTracks,
   getAlbumDetail,
   getArtistDetail,
   getArtistAlbums,

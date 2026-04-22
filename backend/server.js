@@ -14,6 +14,7 @@ const {
   searchAlbums,
   getChart,
   getGenres,
+  getGenreTracks,
   getAlbumDetail,
   getArtistDetail,
   getArtistAlbums,
@@ -424,6 +425,17 @@ app.get("/api/music/albums", async (req, res) => {
   } catch (err) {
     console.error("Album search error:", err.message);
     res.status(502).json({ error: "Failed to search albums" });
+  }
+});
+
+// Top tracks for a specific Deezer genre — used by Create Mixtape filter pills
+app.get("/api/music/genre/:id/tracks", async (req, res) => {
+  try {
+    const tracks = await getGenreTracks(req.params.id);
+    res.json(tracks);
+  } catch (err) {
+    console.error("Genre tracks error:", err.message);
+    res.status(502).json({ error: "Failed to load genre tracks" });
   }
 });
 

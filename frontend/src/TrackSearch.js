@@ -21,7 +21,7 @@ import API_URL from "./config";
  *                        (e.g., chart/popular tracks). Restored if the user
  *                        clears the search box.
  */
-export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd, initialTracks }) {
+export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd, initialTracks, presetQuery }) {
   // The text the user typed into the search box
   const [query, setQuery] = useState("");
   // Array of track objects returned from our backend's /api/music/search.
@@ -48,6 +48,13 @@ export default function TrackSearch({ onAddTrack, selectedTracks, hideAdd, initi
       setResults(initialTracks);
     }
   }, [initialTracks, hasSearched]);
+
+  // External (parent-driven) query — e.g. genre pill clicked in CreateMixtape
+  useEffect(() => {
+    if (presetQuery !== undefined && presetQuery !== null) {
+      setQuery(presetQuery);
+    }
+  }, [presetQuery]);
 
   /**
    * Actual search request to our backend.

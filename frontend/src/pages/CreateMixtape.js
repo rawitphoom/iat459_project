@@ -419,17 +419,18 @@ export default function CreateMixtape() {
           ))}
         </div>
 
-        <div className="create-mix-track-search">
-          <TrackSearch
-            onAddTrack={handleAddTrack}
-            selectedTracks={selectedTracks}
-            initialTracks={genreFilter ? genreTracks : chartTracks}
-          />
-          {loadingGenre && <p className="cm-wiz-sub" style={{ marginTop: 12 }}>Loading…</p>}
-        </div>
+        <div className="cm-wiz-tracks-scroll">
+          <div className="create-mix-track-search">
+            <TrackSearch
+              onAddTrack={handleAddTrack}
+              selectedTracks={selectedTracks}
+              initialTracks={genreFilter ? genreTracks : chartTracks}
+            />
+            {loadingGenre && <p className="cm-wiz-sub" style={{ marginTop: 12 }}>Loading…</p>}
+          </div>
 
-        {selectedTracks.length > 0 && (
-          <div className="create-mix-selected">
+          {selectedTracks.length > 0 && (
+            <div className="create-mix-selected">
             <div className="create-mix-selected-header">
               YOUR MIXTAPE · {selectedTracks.length} TRACK
               {selectedTracks.length === 1 ? "" : "S"}
@@ -456,8 +457,9 @@ export default function CreateMixtape() {
                 </button>
               </div>
             ))}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     );
   };

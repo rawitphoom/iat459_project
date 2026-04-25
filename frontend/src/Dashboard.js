@@ -310,7 +310,7 @@ export default function Dashboard() {
     }, []);
 
     return (
-        <div className={`dash-page${launchingMix ? " dash-page--exiting" : ""}`}>
+        <>
             {launchingMix && (
                 <div className="dash-launch-overlay" aria-hidden="true">
                     <div className="dash-launch-overlay__inner">
@@ -321,6 +321,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             )}
+        <div className={`dash-page${launchingMix ? " dash-page--exiting" : ""}`}>
             {/* ---- Hero with vinyl ---- */}
             <div className="dash-hero">
                 <div className="dash-vinyl-wrapper">
@@ -569,5 +570,6 @@ export default function Dashboard() {
                 </section>
             )}
         </div>
+        </>
     );
 }

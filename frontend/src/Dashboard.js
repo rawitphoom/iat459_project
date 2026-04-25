@@ -183,13 +183,6 @@ export default function Dashboard() {
     const [hoveredMix, setHoveredMix] = useState(-1);
     const [mixPaused, setMixPaused] = useState(false);
     const mixPauseTimerRef = useRef(null);
-    const [launchingMix, setLaunchingMix] = useState(false);
-
-    const handleCreateMixtape = () => {
-        if (launchingMix) return;
-        setLaunchingMix(true);
-        setTimeout(() => navigate("/create-mixtape"), 700);
-    };
 
     const pauseAlbumAutoplay = () => {
         setAlbumPaused(true);
@@ -310,18 +303,7 @@ export default function Dashboard() {
     }, []);
 
     return (
-        <>
-            {launchingMix && (
-                <div className="dash-launch-overlay" aria-hidden="true">
-                    <div className="dash-launch-overlay__inner">
-                        <div className="dash-launch-overlay__plus">
-                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </div>
-                        <div className="dash-launch-overlay__label">CREATING MIXTAPE</div>
-                    </div>
-                </div>
-            )}
-        <div className={`dash-page${launchingMix ? " dash-page--exiting" : ""}`}>
+        <div className="dash-page">
             {/* ---- Hero with vinyl ---- */}
             <div className="dash-hero">
                 <div className="dash-vinyl-wrapper">
@@ -344,16 +326,11 @@ export default function Dashboard() {
                         Create mixtapes and share your thoughts on your favorite albums and songs.
                     </p>
                     <div className="dash-hero-actions">
-                        <button
-                            className={`dash-action-btn${launchingMix ? " dash-action-btn--launching" : ""}`}
-                            onClick={handleCreateMixtape}
-                            disabled={launchingMix}
-                        >
+                        <button className="dash-action-btn" onClick={() => navigate("/create-mixtape")}>
                             <span className="dash-action-btn-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             </span>
-                            <span className="dash-action-btn-label">CREATE NEW MIXTAPE</span>
-                            <span className="dash-action-btn-ripple" aria-hidden="true" />
+                            CREATE NEW MIXTAPE
                         </button>
                         <button className="dash-action-btn" onClick={() => navigate("/write-review")}>
                             <span className="dash-action-btn-icon">
@@ -570,6 +547,5 @@ export default function Dashboard() {
                 </section>
             )}
         </div>
-        </>
     );
 }

@@ -6602,6 +6602,80 @@ body:has(.admin-page) {
   color: #DB4A1E;
   width: 16px;
   height: 16px;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dash-action-btn {
+  overflow: hidden;
+}
+
+.dash-action-btn-label {
+  position: relative;
+  z-index: 2;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), letter-spacing 0.45s ease;
+}
+
+.dash-action-btn-icon {
+  position: relative;
+  z-index: 2;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease, background 0.3s ease;
+}
+
+.dash-action-btn-ripple {
+  position: absolute;
+  top: 50%;
+  left: 25px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(219, 74, 30, 0.85) 0%, rgba(219, 74, 30, 0) 70%);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dash-action-btn--launching {
+  animation: dashBtnPress 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  cursor: progress;
+}
+
+.dash-action-btn--launching .dash-action-btn-icon {
+  transform: scale(1.18) rotate(90deg);
+  border-color: #ff6a3a;
+  background: rgba(219, 74, 30, 0.18);
+  box-shadow: 0 0 18px rgba(219, 74, 30, 0.7);
+}
+
+.dash-action-btn--launching .dash-action-btn-icon svg {
+  transform: rotate(90deg);
+}
+
+.dash-action-btn--launching .dash-action-btn-label {
+  animation: dashBtnLabelShift 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.dash-action-btn--launching .dash-action-btn-ripple {
+  animation: dashBtnRipple 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes dashBtnPress {
+  0%   { transform: translateY(-2px) scale(1); box-shadow: 0 6px 22px rgba(219, 74, 30, 0.3); }
+  25%  { transform: translateY(1px) scale(0.97); box-shadow: 0 2px 10px rgba(219, 74, 30, 0.2); }
+  60%  { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 30px rgba(219, 74, 30, 0.55); }
+  100% { transform: translateY(-2px) scale(1); box-shadow: 0 6px 22px rgba(219, 74, 30, 0.45); }
+}
+
+@keyframes dashBtnLabelShift {
+  0%   { transform: translateX(0); letter-spacing: 1.8px; opacity: 1; }
+  40%  { transform: translateX(6px); letter-spacing: 3px; opacity: 0.85; }
+  100% { transform: translateX(0); letter-spacing: 2.2px; opacity: 1; }
+}
+
+@keyframes dashBtnRipple {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 0.9; }
+  60%  { opacity: 0.55; }
+  100% { transform: translate(-50%, -50%) scale(40); opacity: 0; }
 }
 
 /* Modal */

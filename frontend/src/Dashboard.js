@@ -183,6 +183,13 @@ export default function Dashboard() {
     const [hoveredMix, setHoveredMix] = useState(-1);
     const [mixPaused, setMixPaused] = useState(false);
     const mixPauseTimerRef = useRef(null);
+    const [launchingMix, setLaunchingMix] = useState(false);
+
+    const handleCreateMixtape = () => {
+        if (launchingMix) return;
+        setLaunchingMix(true);
+        setTimeout(() => navigate("/create-mixtape"), 620);
+    };
 
     const pauseAlbumAutoplay = () => {
         setAlbumPaused(true);
@@ -326,11 +333,16 @@ export default function Dashboard() {
                         Create mixtapes and share your thoughts on your favorite albums and songs.
                     </p>
                     <div className="dash-hero-actions">
-                        <button className="dash-action-btn" onClick={() => navigate("/create-mixtape")}>
+                        <button
+                            className={`dash-action-btn${launchingMix ? " dash-action-btn--launching" : ""}`}
+                            onClick={handleCreateMixtape}
+                            disabled={launchingMix}
+                        >
                             <span className="dash-action-btn-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             </span>
-                            CREATE NEW MIXTAPE
+                            <span className="dash-action-btn-label">CREATE NEW MIXTAPE</span>
+                            <span className="dash-action-btn-ripple" aria-hidden="true" />
                         </button>
                         <button className="dash-action-btn" onClick={() => navigate("/write-review")}>
                             <span className="dash-action-btn-icon">

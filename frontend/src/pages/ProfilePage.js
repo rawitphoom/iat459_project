@@ -34,6 +34,8 @@ export default function ProfilePage() {
   const [confirm, setConfirm] = useState(null);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [changePwOpen, setChangePwOpen] = useState(false);
+  // Drives the pop-out animation when the edit-profile modal is dismissed
+  const [editProfileClosing, setEditProfileClosing] = useState(false);
   const [editProfileName, setEditProfileName] = useState("");
   const [editUsername, setEditUsername] = useState("");
   const [editEmail, setEditEmail] = useState("");
@@ -205,6 +207,15 @@ export default function ProfilePage() {
     setPwError("");
     setEditProfileOpen(false);
     setChangePwOpen(true);
+  };
+
+  // Plays the pop-out exit animation, then unmounts the edit-profile modal.
+  const closeEditProfile = () => {
+    setEditProfileClosing(true);
+    setTimeout(() => {
+      setEditProfileOpen(false);
+      setEditProfileClosing(false);
+    }, 220);
   };
 
   const savePassword = async () => {
@@ -984,12 +995,14 @@ export default function ProfilePage() {
 
       {/* ======== EDIT PROFILE POPUP ======== */}
       {editProfileOpen && (
-        <div className="edit-profile-overlay" onClick={() => setEditProfileOpen(false)}>
-          <div className="edit-profile-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="edit-profile-back" onClick={() => setEditProfileOpen(false)} aria-label="Back">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
-            </button>
-
+        <div
+          className={`edit-profile-overlay ${editProfileClosing ? "is-closing" : ""}`}
+          onClick={closeEditProfile}
+        >
+          <div
+            className={`edit-profile-modal ${editProfileClosing ? "is-closing" : ""}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="edit-profile-grid">
               <div className="edit-profile-left">
                 <div className="edit-profile-avatar">
@@ -1033,7 +1046,7 @@ export default function ProfilePage() {
                 {editProfileError && <div className="edit-profile-error">{editProfileError}</div>}
 
                 <div className="edit-profile-bottom">
-                  <button className="edit-profile-cancel" onClick={() => setEditProfileOpen(false)}>CANCEL</button>
+                  <button className="edit-profile-cancel" onClick={closeEditProfile}>CANCEL</button>
                   <button className="edit-profile-save" onClick={saveProfile} disabled={editProfileSaving}>
                     {editProfileSaving ? "SAVING..." : "SAVE CHANGES"}
                   </button>

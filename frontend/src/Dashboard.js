@@ -320,18 +320,22 @@ export default function Dashboard() {
                 </div>
                 <div className="dash-hero-content">
                     <h1 className="dash-welcome">
-                        WELCOME BACK {user?.name || user?.username || ""}!
+                        WELCOME BACK <span className="dash-welcome-name">{user?.name || user?.username || ""}</span>!
                     </h1>
                     <p className="dash-subtitle">
                         Create mixtapes and share your thoughts on your favorite albums and songs.
                     </p>
                     <div className="dash-hero-actions">
                         <button className="dash-action-btn" onClick={() => navigate("/create-mixtape")}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                            <span className="dash-action-btn-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </span>
                             CREATE NEW MIXTAPE
                         </button>
                         <button className="dash-action-btn" onClick={() => navigate("/write-review")}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            <span className="dash-action-btn-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            </span>
                             WRITE A REVIEW
                         </button>
                     </div>

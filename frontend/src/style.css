@@ -6499,7 +6499,7 @@ body:has(.admin-page) {
 
 .dash-welcome {
   font-family: 'Oswald', Arial, sans-serif;
-  font-size: clamp(56px, 7vw, 100px);
+  font-size: clamp(36px, 4.5vw, 64px);
   font-weight: 900;
   color: #fff;
   margin: 0 0 20px 0;
@@ -6508,13 +6508,18 @@ body:has(.admin-page) {
   animation: dashFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
 }
 
+.dash-welcome-name {
+  color: #DB4A1E;
+}
+
 .dash-subtitle {
   font-family: 'Roboto Mono', monospace;
   font-size: 17px;
   color: rgba(255, 255, 255, 0.55);
   margin: 0 0 48px 0;
   line-height: 1.6;
-  max-width: 600px;
+  max-width: none;
+  white-space: nowrap;
   animation: dashFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
 }
 
@@ -6538,19 +6543,20 @@ body:has(.admin-page) {
 
 .dash-action-btn {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 14px;
-  padding: 20px 36px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 60px;
-  background: rgba(255, 255, 255, 0.04);
+  padding: 12px 40px 12px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #2a2826, #1d1b1a);
   color: #fff;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
   font-size: 14px;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.8px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
   cursor: pointer;
-  transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   backdrop-filter: blur(10px);
   animation: dashBtnSlideUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -6570,13 +6576,32 @@ body:has(.admin-page) {
 }
 
 .dash-action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(180deg, #36322f, #25221f);
+  border-color: rgba(219, 74, 30, 0.5);
   transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(219, 74, 30, 0.3);
 }
 
 .dash-action-btn svg {
-  color: #c27349;
+  color: #DB4A1E;
+}
+
+/* Round orange-bordered icon chip on the left of each action button */
+.dash-action-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #DB4A1E;
+  background: transparent;
+  flex-shrink: 0;
+}
+.dash-action-btn-icon svg {
+  color: #DB4A1E;
+  width: 16px;
+  height: 16px;
 }
 
 /* Modal */
@@ -8102,6 +8127,38 @@ body:has(.admin-page) {
   overflow-y: auto;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   position: relative;
+}
+
+/* Pop animation only on the main edit-profile modal — not the change-password sub-modal */
+.edit-profile-modal:not(.edit-profile-modal--pw) {
+  animation: editProfilePop 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Pop-out on close (Cancel / overlay click). Overrides the entry animation. */
+.edit-profile-modal:not(.edit-profile-modal--pw).is-closing {
+  animation: editProfilePopOut 0.22s cubic-bezier(0.4, 0, 1, 1) both;
+}
+.edit-profile-overlay.is-closing {
+  animation: editProfileFadeOut 0.22s ease both;
+}
+
+@keyframes editProfilePopOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(12px) scale(0.96); }
+}
+@keyframes editProfileFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes editProfileFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes editProfilePop {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .edit-profile-modal--pw {

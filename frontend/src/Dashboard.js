@@ -188,7 +188,7 @@ export default function Dashboard() {
     const handleCreateMixtape = () => {
         if (launchingMix) return;
         setLaunchingMix(true);
-        setTimeout(() => navigate("/create-mixtape"), 620);
+        setTimeout(() => navigate("/create-mixtape"), 700);
     };
 
     const pauseAlbumAutoplay = () => {
@@ -310,7 +310,17 @@ export default function Dashboard() {
     }, []);
 
     return (
-        <div className="dash-page">
+        <div className={`dash-page${launchingMix ? " dash-page--exiting" : ""}`}>
+            {launchingMix && (
+                <div className="dash-launch-overlay" aria-hidden="true">
+                    <div className="dash-launch-overlay__inner">
+                        <div className="dash-launch-overlay__plus">
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </div>
+                        <div className="dash-launch-overlay__label">CREATING MIXTAPE</div>
+                    </div>
+                </div>
+            )}
             {/* ---- Hero with vinyl ---- */}
             <div className="dash-hero">
                 <div className="dash-vinyl-wrapper">

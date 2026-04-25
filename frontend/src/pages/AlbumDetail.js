@@ -6,18 +6,24 @@ import API_URL from "../config";
 import ConfirmModal from "../components/ConfirmModal";
 
 // =============================================
-// Sign-In Popup — shown when a visitor (not logged in)
+// Sign-In / Sign-Up Popup — shown when a visitor (not logged in)
 // tries to save an album, like a song, or write a review.
-// Mimics the standalone Login page styling.
+// Internally toggles between "signin" and "signup" views so the
+// user can switch without leaving the page.
 // =============================================
-export function SignInPopup({ onClose }) {
+export function SignInPopup({ onClose, initialMode = "signin" }) {
+  const [mode, setMode] = useState(initialMode);
+  // Shared fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Sign-up-only fields
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
     setError("");
     try {
@@ -32,8 +38,6 @@ export function SignInPopup({ onClose }) {
         return;
       }
       login(data.token);
-      // If an admin logs in through the popup, send them to the admin
-      // dashboard instead of leaving them on the current public page.
       try {
         const decoded = jwtDecode(data.token);
         if (decoded.role === "admin") {
@@ -42,12 +46,38 @@ export function SignInPopup({ onClose }) {
           return;
         }
       } catch {
-        /* fall through to default close */
+        /* fall through */
       }
       onClose();
     } catch {
       setError("Server unavailable");
     }
+  };
+
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, username, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.token) {
+        setError(data.error || "Registration failed");
+        return;
+      }
+      login(data.token);
+      onClose();
+    } catch {
+      setError("Server unavailable");
+    }
+  };
+
+  const switchMode = (next) => {
+    setMode(next);
+    setError("");
   };
 
   return (
@@ -61,35 +91,82 @@ export function SignInPopup({ onClose }) {
             <span className="ad-signin-logo-sub">Your music collection</span>
           </div>
         </div>
-        <h2 className="ad-signin-heading">SIGN IN</h2>
-        <p className="ad-signin-subheading">welcome back,</p>
+        <h2 className="ad-signin-heading">
+          {mode === "signin" ? "SIGN IN" : "CREATE YOUR ACCOUNT"}
+        </h2>
 
         {error && <div className="ad-signin-error">{error}</div>}
 
-        <form className="ad-signin-form" onSubmit={handleSubmit}>
-          <label className="ad-signin-label">EMAIL</label>
-          <input
-            className="ad-signin-input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter email"
-          />
-          <label className="ad-signin-label">PASSWORD</label>
-          <input
-            className="ad-signin-input"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter password"
-          />
-          <div className="ad-signin-forgot">
-            <Link to="/forgot-password" className="ad-signin-forgot-link" onClick={onClose}>Forgot password?</Link>
-          </div>
-          <button className="ad-signin-submit" type="submit">SIGN IN</button>
-        </form>
+        {mode === "signin" ? (
+          <form className="ad-signin-form" onSubmit={handleSignIn}>
+            <label className="ad-signin-label">EMAIL</label>
+            <input
+              className="ad-signin-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email"
+            />
+            <label className="ad-signin-label">PASSWORD</label>
+            <input
+              className="ad-signin-input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+            />
+            <div className="ad-signin-forgot">
+              <Link to="/forgot-password" className="ad-signin-forgot-link" onClick={onClose}>Forgot password?</Link>
+            </div>
+            <button className="ad-signin-submit" type="submit">SIGN IN</button>
+          </form>
+        ) : (
+          <form className="ad-signin-form" onSubmit={handleSignUp}>
+            <label className="ad-signin-label">NAME</label>
+            <input
+              className="ad-signin-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter name"
+            />
+            <label className="ad-signin-label">USERNAME</label>
+            <input
+              className="ad-signin-input"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter username"
+            />
+            <label className="ad-signin-label">EMAIL</label>
+            <input
+              className="ad-signin-input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email"
+            />
+            <label className="ad-signin-label">PASSWORD</label>
+            <input
+              className="ad-signin-input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+            />
+            <button className="ad-signin-submit" type="submit">SIGN UP</button>
+          </form>
+        )}
+
         <p className="ad-signin-switch">
-          Don't have an account?{" "}
-          <Link to="/register" className="ad-signin-switch-link" onClick={onClose}>Sign up</Link>
+          {mode === "signin" ? (
+            <>
+              Don't have an account?{" "}
+              <button type="button" className="ad-signin-switch-link ad-signin-switch-btn" onClick={() => switchMode("signup")}>Sign up</button>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <button type="button" className="ad-signin-switch-link ad-signin-switch-btn" onClick={() => switchMode("signin")}>Sign in</button>
+            </>
+          )}
         </p>
       </div>
     </div>

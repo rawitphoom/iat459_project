@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, useCallback, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import API_URL from "../config";
+import { SignInPopup } from "./AlbumDetail";
 
 // Cycling mosaic cover — outgoing set slides out, incoming set slides in, both visible during transition
 function CyclingMosaic({ tracks }) {
@@ -239,6 +240,7 @@ function ExploreCarousel({ navigate, token }) {
   const [volume, setVolume] = useState(0.5);
   const [tiltClass, setTiltClass] = useState("");
   const [likedTracks, setLikedTracks] = useState(new Set());
+  const [authOpen, setAuthOpen] = useState(false);
   const audioRef = useRef(null);
   const audioCtxRef = useRef(null);
   const analyserRef = useRef(null);
@@ -369,7 +371,9 @@ function ExploreCarousel({ navigate, token }) {
 
   const handleHeart = async () => {
     if (!token) {
-      navigate("/login");
+      // Open inline auth modal instead of leaving the page so the user
+      // keeps their place in Explore Your Taste.
+      setAuthOpen(true);
       return;
     }
     const track = tracks[center];
@@ -516,6 +520,9 @@ function ExploreCarousel({ navigate, token }) {
       </div>
 
       <EqualizerBars analyser={analyser} playing={isPlaying} color={eqColor} />
+
+      {/* Inline auth gate — reuses the same SignInPopup as Album Detail */}
+      {authOpen && <SignInPopup onClose={() => setAuthOpen(false)} />}
     </div>
   );
 }

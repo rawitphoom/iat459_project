@@ -5604,6 +5604,7 @@ body:has(.discover-page) {
   padding: 48px 56px 40px;
   width: 100%;
   max-width: 520px;
+  text-align: left;
   animation: adPopIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -5640,7 +5641,7 @@ body:has(.discover-page) {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 36px;
+  margin-bottom: 20px;
 }
 
 .ad-signin-logo-img {
@@ -5674,7 +5675,8 @@ body:has(.discover-page) {
   font-weight: 700;
   color: #fff;
   letter-spacing: 1px;
-  margin: 0 0 4px;
+  margin: 0 0 14px;
+  text-align: left;
 }
 
 .ad-signin-subheading {
@@ -5708,6 +5710,7 @@ body:has(.discover-page) {
   color: #fff;
   letter-spacing: 1.5px;
   margin-bottom: 10px;
+  text-align: left;
 }
 
 .ad-signin-input {
@@ -5740,7 +5743,7 @@ body:has(.discover-page) {
 .ad-signin-forgot-link {
   font-family: 'DM Mono', 'Roboto Mono', monospace;
   font-size: 12px;
-  color: #c0633a;
+  color: #DB4A1E;
   text-decoration: none;
   letter-spacing: 0.5px;
 }
@@ -5750,7 +5753,7 @@ body:has(.discover-page) {
 }
 
 .ad-signin-submit {
-  background: #c0633a;
+  background: #DB4A1E;
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -5764,7 +5767,7 @@ body:has(.discover-page) {
 }
 
 .ad-signin-submit:hover {
-  background: #d4764d;
+  background: #e5562a;
 }
 
 .ad-signin-switch {
@@ -5776,13 +5779,21 @@ body:has(.discover-page) {
 }
 
 .ad-signin-switch-link {
-  color: #c0633a;
+  color: #DB4A1E;
   text-decoration: none;
   margin-left: 4px;
 }
 
 .ad-signin-switch-link:hover {
   text-decoration: underline;
+}
+
+.ad-signin-switch-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
 }
 
 /* ======== HEART POPUP MODAL ======== */
@@ -6928,7 +6939,7 @@ body:has(.admin-page) {
 }
 
 .dash-album-title {
-  font-family: 'Oswald', Arial, sans-serif;
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 15px;
   font-weight: 700;
   color: #fff;
@@ -6940,7 +6951,7 @@ body:has(.admin-page) {
 }
 
 .dash-album-artist {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.5);
   margin-top: 4px;
@@ -7047,7 +7058,7 @@ body:has(.admin-page) {
 }
 
 .dash-review-album-title {
-  font-family: 'Oswald', sans-serif;
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: #fff;
@@ -7072,7 +7083,7 @@ body:has(.admin-page) {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.65);
 }
@@ -7086,14 +7097,14 @@ body:has(.admin-page) {
 }
 
 .dash-review-headline {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: #fff;
 }
 
 .dash-review-text {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.55);
     max-width: 450px;
@@ -8167,7 +8178,8 @@ body:has(.admin-page) {
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #c0633a, #e08a5e);
+  overflow: hidden;
+  background: #DB4A1E;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8289,7 +8301,7 @@ body:has(.admin-page) {
   font-size: 13px;
   letter-spacing: 1.5px;
   color: #fff;
-  background: #F36A40;
+  background: #DB4A1E;
   border: none;
   border-radius: 28px;
   padding: 14px 38px;
@@ -8298,7 +8310,7 @@ body:has(.admin-page) {
 }
 
 .edit-profile-save:hover:not(:disabled) {
-  background: #ff7d52;
+  background: #e5562a;
 }
 
 .edit-profile-save:disabled {

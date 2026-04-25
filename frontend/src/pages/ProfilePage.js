@@ -996,7 +996,10 @@ export default function ProfilePage() {
                   {editAvatar ? (
                     <img src={editAvatar} alt="" />
                   ) : (
-                    <span>{(editUsername || "?").charAt(0).toUpperCase()}</span>
+                    <img
+                      src={`https://api.dicebear.com/7.x/big-smile/svg?seed=${encodeURIComponent(editUsername || "user")}`}
+                      alt=""
+                    />
                   )}
                 </div>
                 <button className="edit-profile-change-image" onClick={() => editAvatarFileRef.current?.click()}>CHANGE IMAGE</button>

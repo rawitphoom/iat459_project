@@ -577,9 +577,21 @@ export default function LandingPage() {
   const releasesTrackRef = useRef(null);
   const releasesWrapRef = useRef(null);
 
+  const [radius, setRadius] = useState(460);
   const count = ALBUMS.length;
   const angleStep = 360 / count;
-  const radius = 460;
+
+  useEffect(() => {
+    const updateRadius = () => {
+      const w = window.innerWidth;
+      if (w <= 480) setRadius(180);
+      else if (w <= 768) setRadius(240);
+      else setRadius(460);
+    };
+    updateRadius();
+    window.addEventListener("resize", updateRadius);
+    return () => window.removeEventListener("resize", updateRadius);
+  }, []);
 
   // Fetch new releases from Deezer chart + public playlists
   useEffect(() => {

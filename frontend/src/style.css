@@ -955,17 +955,16 @@ body:has(.auth-page) {
 /* ---- Landing Hero — Mobile responsive ---- */
 @media (max-width: 768px) {
   .landing-ring-wrapper {
-    scale: 0.5;
-    margin-top: 60px;
+    margin-top: 50px;
     margin-bottom: 10px;
-    height: 160px;
+    height: 140px;
   }
 
   .landing-ring-item {
-    width: 120px;
-    height: 120px;
-    left: -60px;
-    top: -60px;
+    width: 100px;
+    height: 100px;
+    left: -50px;
+    top: -50px;
   }
 
   .landing-main-title {
@@ -992,10 +991,16 @@ body:has(.auth-page) {
 
 @media (max-width: 480px) {
   .landing-ring-wrapper {
-    scale: 0.38;
-    margin-top: 40px;
+    margin-top: 30px;
     margin-bottom: 0;
-    height: 130px;
+    height: 110px;
+  }
+
+  .landing-ring-item {
+    width: 80px;
+    height: 80px;
+    left: -40px;
+    top: -40px;
   }
 
   .landing-main-title {

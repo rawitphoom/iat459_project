@@ -577,21 +577,8 @@ export default function LandingPage() {
   const releasesTrackRef = useRef(null);
   const releasesWrapRef = useRef(null);
 
-  const [radius, setRadius] = useState(460);
   const count = ALBUMS.length;
   const angleStep = 360 / count;
-
-  useEffect(() => {
-    const updateRadius = () => {
-      const w = window.innerWidth;
-      if (w <= 480) setRadius(120);
-      else if (w <= 768) setRadius(160);
-      else setRadius(460);
-    };
-    updateRadius();
-    window.addEventListener("resize", updateRadius);
-    return () => window.removeEventListener("resize", updateRadius);
-  }, []);
 
   // Fetch new releases from Deezer chart + public playlists
   useEffect(() => {
@@ -721,7 +708,7 @@ export default function LandingPage() {
                 key={album.id}
                 className="landing-ring-item"
                 style={{
-                  transform: `rotateY(${i * angleStep}deg) translateZ(${radius}px)`,
+                  transform: `rotateY(${i * angleStep}deg) translateZ(var(--ring-radius, 460px))`,
                 }}
                 onClick={() => navigate(`/album/${album.id}`)}
               >

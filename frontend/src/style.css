@@ -836,6 +836,7 @@ body:has(.auth-page) {
 }
 
 .landing-ring {
+  --ring-radius: 460px;
   transform-style: preserve-3d;
   /* Tilt the ring toward the viewer so all albums are visible */
   transform: rotateX(-15deg);
@@ -954,6 +955,10 @@ body:has(.auth-page) {
 
 /* ---- Landing Hero — Mobile responsive ---- */
 @media (max-width: 768px) {
+  .landing-ring {
+    --ring-radius: 160px;
+  }
+
   .landing-ring-wrapper {
     margin-top: 50px;
     margin-bottom: 10px;
@@ -990,6 +995,10 @@ body:has(.auth-page) {
 }
 
 @media (max-width: 480px) {
+  .landing-ring {
+    --ring-radius: 120px;
+  }
+
   .landing-ring-wrapper {
     margin-top: 30px;
     margin-bottom: 0;

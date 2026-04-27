@@ -584,8 +584,8 @@ export default function LandingPage() {
   useEffect(() => {
     const updateRadius = () => {
       const w = window.innerWidth;
-      if (w <= 480) setRadius(180);
-      else if (w <= 768) setRadius(240);
+      if (w <= 480) setRadius(120);
+      else if (w <= 768) setRadius(160);
       else setRadius(460);
     };
     updateRadius();

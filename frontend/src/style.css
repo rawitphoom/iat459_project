@@ -4618,6 +4618,43 @@ body:has(.discover-page) {
   text-overflow: ellipsis;
 }
 
+/* Album card artist row: avatar + (title / artist) */
+.album-card-creator-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  min-width: 0;
+}
+
+.album-card-artist-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #2a2a2a;
+}
+
+.album-card-artist-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.album-card-creator-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.album-card-creator-info .album-card-title,
+.album-card-creator-info .album-card-artist {
+  margin-top: 0;
+}
+
 /* =============================================
    SONGS LIST — track rows on dark background
    ============================================= */
@@ -5036,12 +5073,15 @@ body:has(.discover-page) {
 
 /* Heart / like button */
 .ad-track-heart {
-  background: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(192, 99, 58, 0.15);
   border: none;
-  color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  padding: 4px;
-  transition: color 0.2s, transform 0.2s;
+  padding: 0;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -5049,22 +5089,27 @@ body:has(.discover-page) {
 }
 
 .ad-track-heart:hover {
-  color: rgba(255, 255, 255, 0.6);
-  transform: scale(1.15);
+  background: rgba(192, 99, 58, 0.28);
+  color: #fff;
+  transform: scale(1.05);
 }
 
 .ad-track-heart.liked {
   color: #c0633a;
 }
 
+.ad-track-heart.liked:hover {
+  color: #d97a48;
+}
+
 /* Play/pause circle button */
 .ad-track-play {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  border: none;
+  background: rgba(192, 99, 58, 0.15);
+  color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -5075,15 +5120,15 @@ body:has(.discover-page) {
 }
 
 .ad-track-play:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(192, 99, 58, 0.28);
   color: #fff;
-  background: rgba(255, 255, 255, 0.08);
 }
 
 .ad-track-play.active {
-  background: #c0633a;
-  border-color: #c0633a;
+  background: #DB4A1E;
+  border-color: #DB4A1E;
   color: #fff;
+  box-shadow: 0 2px 10px rgba(219, 74, 30, 0.4);
 }
 
 /* ---- More by Artist section ---- */
@@ -6934,7 +6979,7 @@ body:has(.admin-page) {
 }
 
 .dash-album-actions {
-  margin-top: 14px;
+  margin-top: 28px;
   display: flex;
   flex-direction: column;
   align-items: stretch;

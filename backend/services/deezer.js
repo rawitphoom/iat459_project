@@ -45,6 +45,7 @@ async function searchAlbums(query, limit = 20) {
     title: album.title,
     artist: album.artist.name,
     artistId: album.artist.id,
+    artistPicture: album.artist.picture_medium || album.artist.picture || "",
     cover: album.cover_big || album.cover_medium,   // 500x500 for grid cards
     coverXl: album.cover_xl,                         // 1000x1000 for detail page
     link: album.link,
@@ -83,6 +84,7 @@ async function getChart() {
     title: album.title,
     artist: album.artist.name,
     artistId: album.artist.id,
+    artistPicture: album.artist.picture_medium || album.artist.picture || "",
     cover: album.cover_big || album.cover_medium,   // 500x500 for grid cards
     coverXl: album.cover_xl,                         // 1000x1000 for detail page
     link: album.link,

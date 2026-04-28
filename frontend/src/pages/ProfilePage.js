@@ -402,21 +402,41 @@ export default function ProfilePage() {
     return () => { document.body.style.overflow = ""; };
   }, [editPopup, editReviewPopup]);
 
-  // Audio preview toggle
-  const togglePreview = (track) => {
-    if (!track.previewUrl) return;
+  // Audio preview toggle. Saved Deezer preview URLs can expire, so on failure
+  // we refetch a fresh URL by track ID and retry once.
+  const playWithUrl = (trackId, url) => {
+    if (audioRef.current) audioRef.current.pause();
+    const audio = new Audio(url);
+    audio.volume = 0.5;
+    audio.onended = () => setPlayingId(null);
+    audioRef.current = audio;
+    setPlayingId(trackId);
+    return audio.play();
+  };
+
+  const togglePreview = async (track) => {
     if (playingId === track.trackId) {
       audioRef.current?.pause();
       setPlayingId(null);
       return;
     }
-    if (audioRef.current) audioRef.current.pause();
-    const audio = new Audio(track.previewUrl);
-    audio.volume = 0.5;
-    audio.play();
-    audio.onended = () => setPlayingId(null);
-    audioRef.current = audio;
-    setPlayingId(track.trackId);
+    try {
+      if (track.previewUrl) {
+        await playWithUrl(track.trackId, track.previewUrl);
+        return;
+      }
+      throw new Error("no url");
+    } catch {
+      try {
+        const r = await fetch(`${API_URL}/api/music/track/${track.trackId}/preview`);
+        const { previewUrl } = await r.json();
+        if (!previewUrl) throw new Error("no preview");
+        setFavSongs((prev) => prev.map((s) => s.trackId === track.trackId ? { ...s, previewUrl } : s));
+        await playWithUrl(track.trackId, previewUrl);
+      } catch {
+        setPlayingId(null);
+      }
+    }
   };
 
   // ---- Heart popup ----
@@ -605,8 +625,17 @@ export default function ProfilePage() {
             </p>
           ) : (
             <div className="profile-mixtapes-grid">
-              {playlists.map((pl) => (
-                <div key={pl._id} className="profile-mixtape-card">
+              {playlists.map((pl) => {
+                const clickable = pl.public || isOwn;
+                return (
+                <div
+                  key={pl._id}
+                  className={`profile-mixtape-card ${clickable ? "clickable" : ""}`}
+                  onClick={clickable ? () => navigate(`/playlist/${pl._id}`) : undefined}
+                  role={clickable ? "button" : undefined}
+                  tabIndex={clickable ? 0 : undefined}
+                  onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/playlist/${pl._id}`); } } : undefined}
+                >
                   {isOwn && (
                     <button className="profile-mixtape-edit-btn" onClick={(e) => { e.stopPropagation(); openEditPopup(pl); }}>EDIT</button>
                   )}
@@ -640,7 +669,8 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -717,14 +747,12 @@ export default function ProfilePage() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037.033l.034-.03a6 6 0 0 1 4.733-1.44l.246.036a6 6 0 0 1 3.364 10.008l-.18.185l-.048.041l-7.45 7.379a1 1 0 0 1-1.313.082l-.094-.082l-7.493-7.422A6 6 0 0 1 6.979 3.074"/></svg>
                     </button>
                   )}
-                  {song.previewUrl && (
-                    <button
-                      className={`profile-track-play ${playingId === song.trackId ? "active" : ""}`}
-                      onClick={() => togglePreview(song)}
-                    >
-                      {playingId === song.trackId ? "❚❚" : "▶"}
-                    </button>
-                  )}
+                  <button
+                    className={`profile-track-play ${playingId === song.trackId ? "active" : ""}`}
+                    onClick={() => togglePreview(song)}
+                  >
+                    {playingId === song.trackId ? "❚❚" : "▶"}
+                  </button>
                 </div>
               ))}
             </div>

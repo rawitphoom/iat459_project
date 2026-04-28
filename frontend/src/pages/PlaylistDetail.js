@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API_URL from "../config";
+import { AuthContext } from "../context/AuthContext";
 
 /*
  * PlaylistDetail — public/private mixtape detail page.
@@ -13,11 +14,13 @@ import API_URL from "../config";
 export default function PlaylistDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { token } = useContext(AuthContext);
   const [playlist, setPlaylist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [bgColor, setBgColor] = useState("40, 40, 40");
   const [playingId, setPlayingId] = useState(null);
+  const [likedTracks, setLikedTracks] = useState([]);
   const audioRef = useRef(null);
 
   // Extract dominant color from cover image
@@ -75,21 +78,88 @@ export default function PlaylistDetail() {
       .finally(() => setLoading(false));
   }, [id, extractColor]);
 
-  const togglePreview = (track) => {
-    // One preview at a time keeps the interaction predictable and easy to follow.
-    if (!track.previewUrl) return;
+  // Load user's liked tracks
+  useEffect(() => {
+    if (!token) { setLikedTracks([]); return; }
+    fetch(`${API_URL}/api/favorites/songs`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((favs) => {
+        if (Array.isArray(favs)) setLikedTracks(favs.map((f) => f.trackId));
+      })
+      .catch(() => {});
+  }, [token]);
+
+  const toggleLike = async (track) => {
+    if (!token) return;
+    const isLiked = likedTracks.includes(track.trackId);
+    setLikedTracks((prev) =>
+      isLiked ? prev.filter((id) => id !== track.trackId) : [...prev, track.trackId]
+    );
+    try {
+      if (isLiked) {
+        await fetch(`${API_URL}/api/favorites/songs/${track.trackId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await fetch(`${API_URL}/api/favorites/songs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            trackId: track.trackId,
+            name: track.name,
+            artist: track.artist,
+            album: track.album || "",
+            albumArt: track.albumArt || "",
+            previewUrl: track.previewUrl,
+            durationSec: track.durationSec,
+          }),
+        });
+      }
+    } catch {
+      setLikedTracks((prev) =>
+        isLiked ? [...prev, track.trackId] : prev.filter((id) => id !== track.trackId)
+      );
+    }
+  };
+
+  // One preview at a time. Saved Deezer preview URLs can expire, so on failure
+  // we refetch a fresh URL by track ID and retry once.
+  const playWithUrl = (trackId, url) => {
+    if (audioRef.current) audioRef.current.pause();
+    const audio = new Audio(url);
+    audio.volume = 0.5;
+    audio.onended = () => setPlayingId(null);
+    audioRef.current = audio;
+    setPlayingId(trackId);
+    return audio.play();
+  };
+
+  const togglePreview = async (track) => {
     if (playingId === track.trackId) {
       audioRef.current?.pause();
       setPlayingId(null);
       return;
     }
-    if (audioRef.current) audioRef.current.pause();
-    const audio = new Audio(track.previewUrl);
-    audio.volume = 0.5;
-    audio.play();
-    audio.onended = () => setPlayingId(null);
-    audioRef.current = audio;
-    setPlayingId(track.trackId);
+    try {
+      if (track.previewUrl) {
+        await playWithUrl(track.trackId, track.previewUrl);
+        return;
+      }
+      throw new Error("no url");
+    } catch {
+      try {
+        const r = await fetch(`${API_URL}/api/music/track/${track.trackId}/preview`);
+        const { previewUrl } = await r.json();
+        if (!previewUrl) throw new Error("no preview");
+        setPlaylist((p) => p ? { ...p, tracks: p.tracks.map((t) => t.trackId === track.trackId ? { ...t, previewUrl } : t) } : p);
+        await playWithUrl(track.trackId, previewUrl);
+      } catch {
+        setPlayingId(null);
+      }
+    }
   };
 
   const formatDuration = (sec) => {
@@ -156,19 +226,31 @@ export default function PlaylistDetail() {
           <div className="ad-left-info">
             <h1 className="ad-title">{playlist.name}</h1>
 
+            <div className={`pd-visibility ${playlist.public ? "public" : "private"}`}>
+              {playlist.public ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  PUBLIC
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  PRIVATE
+                </>
+              )}
+            </div>
+
             {/* Creator info */}
             {playlist.creator && (
               <div
                 className="pd-creator"
                 onClick={() => navigate(`/profile/${playlist.creator._id}`)}
               >
-                {playlist.creator.avatar ? (
-                  <img src={playlist.creator.avatar} alt="" className="pd-creator-avatar" />
-                ) : (
-                  <div className="pd-creator-avatar pd-creator-avatar-fallback">
-                    {(playlist.creator.name || playlist.creator.username || "?").charAt(0).toUpperCase()}
-                  </div>
-                )}
+                <img
+                  src={playlist.creator.avatar || `https://api.dicebear.com/7.x/big-smile/svg?seed=${playlist.creator.username || playlist.creator._id}`}
+                  alt=""
+                  className="pd-creator-avatar"
+                />
                 <span className="pd-creator-name">
                   {playlist.creator.name || playlist.creator.username}
                 </span>
@@ -204,12 +286,29 @@ export default function PlaylistDetail() {
                 key={track.trackId || i}
                 className={`ad-track ${playingId === track.trackId ? "playing" : ""}`}
               >
-                <span className="ad-track-num">{i + 1}</span>
+                {track.albumArt ? (
+                  <img src={track.albumArt} alt="" className="pd-track-art" />
+                ) : (
+                  <span className="ad-track-num">{i + 1}</span>
+                )}
                 <div className="ad-track-info">
                   <div className="ad-track-name">{track.name}</div>
                   <div className="ad-track-artist">{track.artist}</div>
                 </div>
                 <span className="ad-track-dur">{formatDuration(track.durationSec)}</span>
+                {token && (
+                  <button
+                    className={`ad-track-heart ${likedTracks.includes(track.trackId) ? "liked" : ""}`}
+                    onClick={() => toggleLike(track)}
+                    title={likedTracks.includes(track.trackId) ? "Unlike" : "Like"}
+                  >
+                    {likedTracks.includes(track.trackId) ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037.033l.034-.03a6 6 0 0 1 4.733-1.44l.246.036a6 6 0 0 1 3.364 10.008l-.18.185l-.048.041l-7.45 7.379a1 1 0 0 1-1.313.082l-.094-.082l-7.493-7.422A6 6 0 0 1 6.979 3.074"/></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.5 12.572L12 20l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572"/></svg>
+                    )}
+                  </button>
+                )}
                 <button
                   className={`ad-track-play ${playingId === track.trackId ? "active" : ""}`}
                   onClick={() => togglePreview(track)}

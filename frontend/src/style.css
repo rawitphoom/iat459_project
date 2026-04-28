@@ -2750,6 +2750,10 @@ body:has(.profile-page) {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+.profile-mixtape-card.clickable {
+  cursor: pointer;
+}
+
 .profile-mixtape-cover {
   width: 200px;
   height: 200px;
@@ -2796,7 +2800,7 @@ body:has(.profile-page) {
 }
 
 .profile-mixtape-name {
-  font-family: 'Oswald', Arial, sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: #fff;
@@ -2858,7 +2862,7 @@ body:has(.profile-page) {
 }
 
 .profile-track-name {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   color: #fff;
   white-space: nowrap;
@@ -2867,7 +2871,7 @@ body:has(.profile-page) {
 }
 
 .profile-track-artist {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.35);
 }
@@ -3063,42 +3067,22 @@ body:has(.profile-page) {
   position: absolute;
   top: 20px;
   right: 20px;
-  font-family: 'Oswald', Arial, sans-serif;
+  font-family: "DM Mono", "Roboto Mono", monospace;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.7);
-  background: linear-gradient(135deg,
-    rgba(221, 183, 168, 0.50) 0%,
-    rgba(221, 183, 168, 0.37) 20%,
-    rgba(221, 183, 168, 0.29) 28%,
-    rgba(221, 183, 168, 0.21) 40%,
-    rgba(221, 183, 168, 0.18) 48%,
-    rgba(221, 183, 168, 0.14) 54%,
-    rgba(221, 183, 168, 0.13) 59%,
-    rgba(221, 183, 168, 0.10) 67%
-  );
-  border: 1.5px solid rgba(236, 236, 236, 0.4);
-  padding: 10px 24px;
-  border-radius: 14px;
+  letter-spacing: 2px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 9px 22px;
+  border-radius: 999px;
   cursor: pointer;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.2s;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
   z-index: 2;
-  transition: all 0.2s;
 }
 
 .profile-mixtape-edit-btn:hover {
-  color: #fff;
-  border-color: rgba(236, 236, 236, 0.6);
-  background: linear-gradient(135deg,
-    rgba(221, 183, 168, 0.60) 0%,
-    rgba(221, 183, 168, 0.45) 20%,
-    rgba(221, 183, 168, 0.35) 40%,
-    rgba(221, 183, 168, 0.25) 60%,
-    rgba(221, 183, 168, 0.18) 80%
-  );
+  background: #DB4A1E;
+  border-color: #DB4A1E;
 }
 
 .profile-mixtape-actions {
@@ -3265,13 +3249,13 @@ body:has(.profile-page) {
 }
 
 .profile-fav-songs-list .profile-track-name {
-  font-family: 'Oswald', Arial, sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
 }
 
 .profile-fav-songs-list .profile-track-artist {
-  font-family: 'DM Mono', monospace;
+  font-family: 'DM Sans', sans-serif;
   font-size: 12px;
   letter-spacing: 0.5px;
 }
@@ -3517,32 +3501,21 @@ body:has(.profile-page) {
 }
 
 .edit-mixtape-add-tracks {
-  font-family: 'Oswald', Arial, sans-serif;
+  font-family: "DM Mono", "Roboto Mono", monospace;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.7);
-  background: linear-gradient(135deg,
-    rgba(221, 183, 168, 0.50) 0%,
-    rgba(221, 183, 168, 0.37) 20%,
-    rgba(221, 183, 168, 0.29) 28%,
-    rgba(221, 183, 168, 0.21) 40%,
-    rgba(221, 183, 168, 0.18) 48%,
-    rgba(221, 183, 168, 0.14) 54%,
-    rgba(221, 183, 168, 0.13) 59%,
-    rgba(221, 183, 168, 0.10) 67%
-  );
-  border: 1.5px solid rgba(236, 236, 236, 0.4);
+  letter-spacing: 2px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   padding: 10px 24px;
-  border-radius: 14px;
+  border-radius: 999px;
   cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
 }
 
 .edit-mixtape-add-tracks:hover {
-  color: #fff;
-  border-color: rgba(236, 236, 236, 0.6);
+  background: #DB4A1E;
+  border-color: #DB4A1E;
 }
 
 .edit-mixtape-tracks-section {
@@ -3595,7 +3568,7 @@ body:has(.profile-page) {
 }
 
 .edit-mixtape-track-name {
-  font-family: 'Oswald', Arial, sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: #fff;
@@ -3605,14 +3578,14 @@ body:has(.profile-page) {
 }
 
 .edit-mixtape-track-artist {
-  font-family: 'DM Mono', monospace;
+  font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.35);
 }
 
 .edit-mixtape-track-remove {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 28px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3648,7 +3621,7 @@ body:has(.profile-page) {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   color: rgba(255, 255, 255, 0.5);
-  font-family: 'Oswald', Arial, sans-serif;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -3668,7 +3641,7 @@ body:has(.profile-page) {
   border: none;
   border-radius: 12px;
   color: #fff;
-  font-family: 'Oswald', Arial, sans-serif;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -4587,6 +4560,46 @@ body:has(.discover-page) {
   text-overflow: ellipsis;
 }
 
+/* Mixtape card creator row: avatar + (mixtape name / username) */
+.mixtape-card-creator-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  min-width: 0;
+}
+
+.mixtape-card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #3a2f28;
+}
+
+.mixtape-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.mixtape-card-creator-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.mixtape-card-creator-info .mixtape-card-title {
+  margin-top: 0;
+}
+
+.mixtape-card-creator-info .mixtape-card-creator {
+  margin-top: 2px;
+}
+
 /* Album/mixtape card text */
 .album-card-title {
   color: #fff;
@@ -4954,6 +4967,39 @@ body:has(.discover-page) {
   color: rgba(255, 255, 255, 0.4);
   font-weight: 500;
   flex-shrink: 0;
+}
+
+/* PlaylistDetail — album art thumbnail in place of track number */
+.pd-track-art {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.pd-visibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  margin: 15px 0 0;
+  width: fit-content;
+}
+
+.pd-visibility.public {
+  color: #DB4A1E;
+  border-color: rgba(219, 74, 30, 0.5);
+  background: rgba(219, 74, 30, 0.08);
+}
+
+.pd-visibility.private {
+  color: rgba(255, 255, 255, 0.55);
 }
 
 /* Track name + artist */
@@ -5527,8 +5573,8 @@ body:has(.discover-page) {
 .pd-creator:hover { opacity: 0.8; }
 
 .pd-creator-avatar {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -5545,8 +5591,8 @@ body:has(.discover-page) {
 
 .pd-creator-name {
   font-family: 'Roboto', sans-serif;
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .pd-description {
@@ -6262,6 +6308,9 @@ body:has(.admin-page) {
   border-radius: 14px;
   padding: 0 0 20px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   transition: background 0.25s, border-color 0.25s, transform 0.25s;
 }
 
@@ -6353,6 +6402,7 @@ body:has(.admin-page) {
 
 .admin-mixtape-card .admin-remove-btn {
   margin: 12px 16px 0;
+  margin-top: auto;
   width: calc(100% - 32px);
 }
 
@@ -6515,8 +6565,8 @@ body:has(.admin-page) {
 .dash-subtitle {
   font-family: 'Roboto Mono', monospace;
   font-size: 17px;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 0 0 48px 0;
+  color: #fff;
+  margin: 0 0 42px 0;
   line-height: 1.6;
   max-width: none;
   white-space: nowrap;
@@ -6827,7 +6877,7 @@ body:has(.admin-page) {
 .dash-album-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -6855,7 +6905,8 @@ body:has(.admin-page) {
 .dash-album-card {
   cursor: pointer;
   position: relative;
-  padding-bottom: 110px;
+  min-width: 0;
+  padding-bottom: 60px;
   transition: transform 0.5s ease, opacity 0.5s ease;
   opacity: 0.35;
 }
@@ -6883,13 +6934,10 @@ body:has(.admin-page) {
 }
 
 .dash-album-actions {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 8px;
   opacity: 0;
   transform: translateY(8px);
@@ -6904,6 +6952,10 @@ body:has(.admin-page) {
 }
 
 .dash-album-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-family: 'Roboto Mono', monospace;
   font-size: 12px;
   letter-spacing: 0.5px;
@@ -6913,13 +6965,19 @@ body:has(.admin-page) {
   border-radius: 30px;
   padding: 8px 22px;
   cursor: pointer;
-  min-width: 160px;
-  transition: background 0.2s, border-color 0.2s;
+  width: 100%;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.dash-album-btn svg {
+  flex-shrink: 0;
 }
 
 .dash-album-btn:hover {
-  background: rgba(194, 115, 73, 0.2);
-  border-color: #c27349;
+  background: #DB4A1E;
+  border-color: #DB4A1E;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(219, 74, 30, 0.4);
 }
 
 /* Mixtape mosaic cover (4 tiles) */
@@ -6931,6 +6989,7 @@ body:has(.admin-page) {
   grid-template-rows: 1fr 1fr;
   border-radius: 8px;
   overflow: hidden;
+  cursor: pointer;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
   transition: box-shadow 0.5s ease;
 }
@@ -6982,6 +7041,53 @@ body:has(.admin-page) {
   margin-top: 4px;
 }
 
+/* Mixtape creator row: avatar circle + (mixtape name / username) */
+.dash-mix-creator-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  min-width: 0;
+}
+
+.dash-mix-creator-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #3a2f28;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.dash-mix-creator-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dash-mix-creator-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.dash-mix-creator-info .dash-album-title,
+.dash-mix-creator-info .dash-album-artist {
+  margin-top: 0;
+}
+
+.dash-mix-creator-info .dash-album-artist {
+  margin-top: 2px;
+}
+
 /* Round nav buttons (replaces side arrows) */
 .dash-section-controls {
   display: flex;
@@ -6999,7 +7105,7 @@ body:has(.admin-page) {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #F36A40;
+  background: #DB4A1E;
   border: none;
   color: #fff;
   cursor: pointer;
@@ -7013,7 +7119,7 @@ body:has(.admin-page) {
 .dash-nav-btn svg { display: block; }
 
 .dash-nav-btn:hover {
-  background: #ff7a4f;
+  background: #e5562a;
   transform: scale(1.05);
 }
 
@@ -8386,7 +8492,12 @@ body:has(.admin-page) {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: 100%;
   transition: background 0.25s, border-color 0.25s, transform 0.25s;
+}
+
+.admin-review-card .admin-remove-btn {
+  margin-top: auto;
 }
 
 .admin-review-card-clickable {

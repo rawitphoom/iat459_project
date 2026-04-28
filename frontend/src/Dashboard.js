@@ -112,7 +112,7 @@ function AlbumCard({ album, isActive, onEnter, onLeave, onView, token }) {
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
         >
-            <img src={album.coverXl || album.cover} alt={album.title} className="dash-album-art" crossOrigin="anonymous" />
+            <img src={album.coverXl || album.cover} alt={album.title} className="dash-album-art" crossOrigin="anonymous" onClick={(e) => { e.stopPropagation(); onView(); }} style={{ cursor: "pointer" }} />
             <div className="dash-album-title">{album.title?.toUpperCase()}</div>
             <div className="dash-album-artist">{album.artist}</div>
             <div className="dash-album-actions">
@@ -127,12 +127,14 @@ function AlbumCard({ album, isActive, onEnter, onLeave, onView, token }) {
     );
 }
 
-function MixtapeCard({ mix, isActive, onEnter, onLeave, onView }) {
+function MixtapeCard({ mix, isActive, onEnter, onLeave, onView, onViewProfile }) {
     const arts = (mix.tracks || []).map(t => t.albumArt).filter(Boolean).slice(0, 4);
     while (arts.length < 4) arts.push(null);
     const color = useDominantColor(arts[0]);
     const style = color ? { "--glow-color": color } : undefined;
-    const creator = mix.creator?.name || mix.creator?.username || "Unknown";
+    const creatorName = mix.creator?.name || mix.creator?.username || "Unknown";
+    const creatorUsername = mix.creator?.username || "";
+    const creatorAvatar = mix.creator?.avatar;
     return (
         <div
             className={`dash-album-card ${isActive ? "is-active" : "is-dim"}`}
@@ -140,19 +142,36 @@ function MixtapeCard({ mix, isActive, onEnter, onLeave, onView }) {
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
         >
-            <div className="dash-mix-mosaic">
+            <div className="dash-mix-mosaic" onClick={(e) => { e.stopPropagation(); onView(); }}>
                 {arts.map((art, j) => (
                     <div key={j} className="dash-mix-tile">
                         {art ? <img src={art} alt="" crossOrigin="anonymous" /> : <div className="dash-mix-empty">♪</div>}
                     </div>
                 ))}
             </div>
-            <div className="dash-album-title">{mix.name}</div>
-            <div className="dash-album-artist">{creator}</div>
+            <div className="dash-mix-creator-row">
+                <div className="dash-mix-creator-avatar">
+                    <img
+                        src={creatorAvatar || `https://api.dicebear.com/7.x/big-smile/svg?seed=${encodeURIComponent(creatorUsername || creatorName)}`}
+                        alt={creatorName}
+                    />
+                </div>
+                <div className="dash-mix-creator-info">
+                    <div className="dash-album-title">{mix.name}</div>
+                    <div className="dash-album-artist">{creatorName}</div>
+                </div>
+            </div>
             <div className="dash-album-actions">
                 <button className="dash-album-btn" onClick={(e) => { e.stopPropagation(); onView(); }}>
-                    View Mixtape ▶
+                    <span>View Mixtape</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4"/></svg>
                 </button>
+                {mix.creator?._id && (
+                    <button className="dash-album-btn" onClick={(e) => { e.stopPropagation(); onViewProfile?.(); }}>
+                        <span>View Profile</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -326,13 +345,27 @@ export default function Dashboard() {
                         Create mixtapes and share your thoughts on your favorite albums and songs.
                     </p>
                     <div className="dash-hero-actions">
-                        <button className="dash-action-btn" onClick={() => navigate("/create-mixtape")}>
+                        <button
+                            className="dash-action-btn"
+                            onClick={(e) => {
+                                // Brief tactile press + glow before routing.
+                                // The CSS animation runs ~280ms, so navigate after it completes.
+                                e.currentTarget.classList.add("is-pressed");
+                                setTimeout(() => navigate("/create-mixtape"), 280);
+                            }}
+                        >
                             <span className="dash-action-btn-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             </span>
                             CREATE NEW MIXTAPE
                         </button>
-                        <button className="dash-action-btn" onClick={() => navigate("/write-review")}>
+                        <button
+                            className="dash-action-btn"
+                            onClick={(e) => {
+                                e.currentTarget.classList.add("is-pressed");
+                                setTimeout(() => navigate("/write-review"), 280);
+                            }}
+                        >
                             <span className="dash-action-btn-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                             </span>
@@ -467,6 +500,7 @@ export default function Dashboard() {
                                         onEnter={() => setHoveredMix(globalIdx)}
                                         onLeave={() => setHoveredMix(-1)}
                                         onView={() => navigate(`/playlist/${mix._id}`)}
+                                        onViewProfile={() => mix.creator?._id && navigate(`/profile/${mix.creator._id}`)}
                                     />
                                 );
                             })}

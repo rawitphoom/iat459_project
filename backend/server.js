@@ -18,6 +18,7 @@ const {
   getAlbumDetail,
   getArtistDetail,
   getArtistAlbums,
+  getTrackPreview,
 } = require("./services/deezer");
 
 const app = express();
@@ -452,6 +453,15 @@ app.get("/api/music/genres", async (req, res) => {
 
 // Get a single album's full details + track list
 // Used on the Album Detail page when user clicks an album card
+app.get("/api/music/track/:id/preview", async (req, res) => {
+  try {
+    const data = await getTrackPreview(req.params.id);
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: "Failed to load track preview" });
+  }
+});
+
 app.get("/api/music/album/:id", async (req, res) => {
   try {
     const album = await getAlbumDetail(req.params.id);

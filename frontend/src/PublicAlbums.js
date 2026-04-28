@@ -450,6 +450,8 @@ export default function Discover() {
               }
             }
             const creatorName = playlist.creator?.name || playlist.creator?.username || "";
+            const creatorUsername = playlist.creator?.username || "";
+            const creatorAvatar = playlist.creator?.avatar;
 
             return (
               <div
@@ -472,8 +474,18 @@ export default function Discover() {
                     <div className="mixtape-card-placeholder">&#9835;</div>
                   )}
                 </div>
-                <div className="mixtape-card-title">{playlist.name}</div>
-                {creatorName && <div className="mixtape-card-creator">{creatorName}</div>}
+                <div className="mixtape-card-creator-row">
+                  <div className="mixtape-card-avatar">
+                    <img
+                      src={creatorAvatar || `https://api.dicebear.com/7.x/big-smile/svg?seed=${encodeURIComponent(creatorUsername || creatorName || "user")}`}
+                      alt={creatorName}
+                    />
+                  </div>
+                  <div className="mixtape-card-creator-info">
+                    <div className="mixtape-card-title">{playlist.name}</div>
+                    {creatorUsername && <div className="mixtape-card-creator">{creatorUsername}</div>}
+                  </div>
+                </div>
               </div>
             );
           })}

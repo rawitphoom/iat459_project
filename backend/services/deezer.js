@@ -259,6 +259,11 @@ async function getGenreTracks(genreId, limit = 25) {
   }));
 }
 
+async function getTrackPreview(trackId) {
+  const res = await axios.get(`https://api.deezer.com/track/${trackId}`);
+  return { previewUrl: res.data?.preview || "" };
+}
+
 module.exports = {
   searchTracks,
   searchAlbums,
@@ -268,4 +273,5 @@ module.exports = {
   getAlbumDetail,
   getArtistDetail,
   getArtistAlbums,
+  getTrackPreview,
 };

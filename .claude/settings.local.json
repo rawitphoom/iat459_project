@@ -72,7 +72,9 @@
       "Bash(CI=false npm run build)",
       "Bash(npm start *)",
       "Bash(cp /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css /tmp/style.css.session)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(awk 'NR>=6450 && NR<=6515 && /@media/' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
+      "Bash(awk 'NR>=6400 && /@media/{print NR\": \"$0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)"
     ]
   }
 }

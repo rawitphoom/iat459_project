@@ -6506,10 +6506,16 @@ body:has(.admin-page) {
   }
 
   .landing-ring-item {
-    width: 100px;
-    height: 100px;
-    left: -50px;
-    top: -50px;
+    width: 80px;
+    height: 80px;
+    left: -40px;
+    top: -40px;
+  }
+
+  .landing-ring-wrapper {
+    height: 120px;
+    margin-top: 60px;
+    margin-bottom: 20px;
   }
 
   .album-grid,
@@ -6520,6 +6526,36 @@ body:has(.admin-page) {
 
   .discover-search {
     flex-direction: column;
+  }
+}
+
+/* Small phones — even smaller ring items */
+@media (max-width: 480px) {
+  .landing-ring-item {
+    width: 60px;
+    height: 60px;
+    left: -30px;
+    top: -30px;
+  }
+
+  .landing-ring-wrapper {
+    height: 90px;
+    margin-top: 40px;
+  }
+}
+
+/* Tablet / small laptop sizes */
+@media (min-width: 721px) and (max-width: 1024px) {
+  .landing-ring-item {
+    width: 100px;
+    height: 100px;
+    left: -50px;
+    top: -50px;
+  }
+
+  .landing-ring-wrapper {
+    height: 150px;
+    margin-top: 80px;
   }
 }
 

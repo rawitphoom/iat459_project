@@ -579,7 +579,20 @@ export default function LandingPage() {
 
   const count = ALBUMS.length;
   const angleStep = 360 / count;
-  const radius = 460;
+  const [radius, setRadius] = useState(typeof window !== "undefined" && window.innerWidth < 768 ? 220 : 460);
+
+  useEffect(() => {
+    const onResize = () => {
+      const w = window.innerWidth;
+      if (w < 480) setRadius(80);
+      else if (w < 768) setRadius(110);
+      else if (w < 1024) setRadius(180);
+      else setRadius(460);
+    };
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // Fetch new releases from Deezer chart + public playlists
   useEffect(() => {

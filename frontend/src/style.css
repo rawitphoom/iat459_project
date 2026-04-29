@@ -1481,6 +1481,11 @@ body::-webkit-scrollbar {
   margin: 0 auto;
 }
 
+/* Desktop: hide the 4th mixtape (only render 3) */
+.landing-top3-grid > .landing-top3-card:nth-child(4) {
+  display: none;
+}
+
 .landing-top3-card {
   cursor: pointer;
   opacity: 0;
@@ -1588,13 +1593,18 @@ body::-webkit-scrollbar {
 
 @media (max-width: 900px) {
   .landing-top3 {
-    padding: 60px 24px 40px;
+    padding: 140px 24px 100px;
   }
 
   .landing-top3-grid {
-    grid-template-columns: 1fr;
-    gap: 40px;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
     max-width: 400px;
+  }
+
+  /* Mobile: show all 4 mixtapes in a 2x2 grid */
+  .landing-top3-grid > .landing-top3-card:nth-child(4) {
+    display: block;
   }
 }
 
@@ -1859,7 +1869,9 @@ body::-webkit-scrollbar {
 
 @media (max-width: 900px) {
   .explore-section {
-    padding: 80px 24px 60px;
+    padding: 140px 24px 100px;
+    height: auto;
+    min-height: 100vh;
   }
 
   .explore-card-img {
@@ -3961,6 +3973,30 @@ body:has(.profile-page) {
 .intro-enter-arrow {
   font-size: 20px;
   line-height: 1;
+}
+
+/* "Enter without audio" link at the bottom of the intro page */
+.intro-skip-audio {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  padding: 8px 16px;
+  z-index: 10;
+  transition: color 0.2s;
+}
+
+.intro-skip-audio:hover {
+  color: #DB4A1E;
 }
 
 /* ---- Music toggle button ---- */

@@ -45,6 +45,12 @@ export default function IntroPage() {
     navigate("/home", { replace: true });
   }
 
+  function handleEnterWithoutAudio() {
+    // Same as Enter but skip dispatching the music start event.
+    sessionStorage.setItem("hasEnteredSite", "true");
+    navigate("/home", { replace: true });
+  }
+
   // Build columns — duplicate covers so animation loops seamlessly
   const columnCount = Math.ceil(window.innerWidth / 160);
   const columns = [];
@@ -85,6 +91,11 @@ export default function IntroPage() {
           Enter
         </button>
       </div>
+
+      {/* Skip-audio escape hatch at the bottom of the page. */}
+      <button className="intro-skip-audio" onClick={handleEnterWithoutAudio}>
+        ENTER WITHOUT AUDIO
+      </button>
     </div>
   );
 }

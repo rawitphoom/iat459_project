@@ -550,7 +550,7 @@ function PopularMixtapes({ mixtapes, navigate }) {
     <div className={`landing-top3 ${visible ? "landing-top3--visible" : ""}`} ref={sectionRef}>
       <h2 className="landing-top3-title">POPULAR MIXTAPES</h2>
       <div className="landing-top3-grid">
-        {mixtapes.slice(0, 3).map((mix, i) => (
+        {mixtapes.slice(0, 4).map((mix, i) => (
           <div
             key={mix._id}
             className="landing-top3-card"

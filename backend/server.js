@@ -419,6 +419,41 @@ app.get("/api/music/chart", async (req, res) => {
   }
 });
 
+// "Infinite" album feed: cycles through Deezer genre charts so users can
+// keep scrolling past the ~200 limit of the global chart. Each `page` pulls
+// from the next genre in a curated list.
+const GENRE_FALLBACK_IDS = [
+  132, // Pop
+  116, // Rap/Hip Hop
+  152, // Rock
+  113, // Dance
+  165, // R&B
+  85,  // Alternative
+  153, // Blues
+  98,  // Classical
+  129, // Jazz
+  464, // Metal
+  466, // Folk
+  144, // Reggae
+  169, // Soul & Funk
+];
+
+app.get("/api/music/more-albums", async (req, res) => {
+  try {
+    const page = req.query.page ? Number(req.query.page) : 0;
+    const limit = req.query.limit ? Math.min(Number(req.query.limit), 100) : 50;
+    // Pick a genre based on page index (loops back to the start when exhausted)
+    const genreId = GENRE_FALLBACK_IDS[page % GENRE_FALLBACK_IDS.length];
+    // Offset within this genre: 0 first time, 50 second time, etc.
+    const indexWithinGenre = Math.floor(page / GENRE_FALLBACK_IDS.length) * limit;
+    const chart = await getChart(genreId, indexWithinGenre, limit);
+    res.json(chart);
+  } catch (err) {
+    console.error("More albums error:", err.message);
+    res.status(502).json({ error: "Failed to load more albums" });
+  }
+});
+
 // Search albums by query string
 app.get("/api/music/albums", async (req, res) => {
   const { q } = req.query;

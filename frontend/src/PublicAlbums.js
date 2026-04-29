@@ -59,6 +59,9 @@ export default function Discover() {
   // Infinite-scroll state for the chart (only used when not searching/genre-locked)
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [chartExhausted, setChartExhausted] = useState(false);
+  const [fallbackPage, setFallbackPage] = useState(0);
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const sentinelRef = useRef(null);
   const filterRef = useRef(null);
   const filterSizerRef = useRef(null);
@@ -130,20 +133,33 @@ export default function Discover() {
   }, []);
 
   // ---- Infinite scroll: fetch next page of chart albums/tracks ----
+  // Phase 1: paginate the global chart. Phase 2 (after exhaustion): cycle
+  // through genre charts via /api/music/more-albums so the feed stays "infinite".
   const loadMoreChart = async () => {
     if (loadingMore || !hasMore) return;
-    if (searchedQuery || sortBy === "genre") return; // pagination disabled in those modes
+    if (searchedQuery || sortBy === "genre") return;
     setLoadingMore(true);
     try {
-      const params = new URLSearchParams({
-        index: String(chartAlbums.length),
-        limit: "50",
-      });
-      const res = await fetch(`${API_URL}/api/music/chart?${params.toString()}`);
+      let url;
+      if (!chartExhausted) {
+        url = `${API_URL}/api/music/chart?index=${chartAlbums.length}&limit=50`;
+      } else {
+        url = `${API_URL}/api/music/more-albums?page=${fallbackPage}&limit=50`;
+      }
+      const res = await fetch(url);
       const data = await res.json();
       const newAlbums = data.albums || [];
       const newTracks = data.tracks || [];
-      if (newAlbums.length === 0 && newTracks.length === 0) {
+
+      if (!chartExhausted && newAlbums.length === 0 && newTracks.length === 0) {
+        // Global chart ran out — switch to genre-fallback mode and let the next tick load
+        setChartExhausted(true);
+        setLoadingMore(false);
+        return;
+      }
+
+      if (chartExhausted && newAlbums.length === 0 && newTracks.length === 0) {
+        // Even the fallback returned nothing — give up
         setHasMore(false);
       } else {
         // De-duplicate by id in case Deezer returns overlapping items
@@ -155,12 +171,25 @@ export default function Discover() {
           const seen = new Set(prev.map((t) => t.trackId));
           return [...prev, ...newTracks.filter((t) => !seen.has(t.trackId))];
         });
+        if (chartExhausted) setFallbackPage((p) => p + 1);
       }
     } catch (err) {
       console.error("Load more failed", err);
     } finally {
       setLoadingMore(false);
     }
+  };
+
+  // Back-to-top button: show after user scrolls down 600px
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 600);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // IntersectionObserver: trigger loadMore when sentinel is near viewport
@@ -506,7 +535,7 @@ export default function Discover() {
       {!loading && !searchedQuery && sortBy !== "genre" && (activeTab === "ALBUMS" || activeTab === "TRACKS") && (
         <div ref={sentinelRef} className="discover-load-more">
           {loadingMore && <span className="discover-loading">Loading more...</span>}
-          {!hasMore && <span className="discover-loading">You've reached the end</span>}
+          {!loadingMore && !hasMore && <span className="discover-loading">You've explored every corner — that's everything we have.</span>}
         </div>
       )}
 
@@ -611,6 +640,17 @@ export default function Discover() {
       )}
 
       {showSignInPopup && <SignInPopup onClose={() => setShowSignInPopup(false)} />}
+
+      {/* Back-to-top floating button */}
+      <button
+        className={`discover-back-to-top ${showBackToTop ? "visible" : ""}`}
+        onClick={scrollToTop}
+        aria-label="Back to top"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+      </button>
     </div>
   );
 }

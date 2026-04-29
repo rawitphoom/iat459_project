@@ -4689,6 +4689,39 @@ body:has(.discover-page) {
   letter-spacing: 1px;
 }
 
+/* Back-to-top floating button (fixed bottom-right) */
+.discover-back-to-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #DB4A1E;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(219, 74, 30, 0.4);
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s;
+  z-index: 50;
+}
+
+.discover-back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.discover-back-to-top:hover {
+  background: #ff5722;
+}
+
 /* Album card artist row: avatar + (title / artist) */
 .album-card-creator-row {
   display: flex;

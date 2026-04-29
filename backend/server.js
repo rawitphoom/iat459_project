@@ -409,7 +409,9 @@ app.get("/api/music/search", async (req, res) => {
 app.get("/api/music/chart", async (req, res) => {
   try {
     const genreId = req.query.genreId ? Number(req.query.genreId) : 0;
-    const chart = await getChart(genreId);
+    const index = req.query.index ? Number(req.query.index) : 0;
+    const limit = req.query.limit ? Math.min(Number(req.query.limit), 100) : 50;
+    const chart = await getChart(genreId, index, limit);
     res.json(chart);
   } catch (err) {
     console.error("Chart error:", err.message);

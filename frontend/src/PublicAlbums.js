@@ -56,6 +56,10 @@ export default function Discover() {
   const [genreMenuOpen, setGenreMenuOpen] = useState(false);
   const [dateMenuOpen, setDateMenuOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState(null);
+  // Infinite-scroll state for the chart (only used when not searching/genre-locked)
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef(null);
   const filterRef = useRef(null);
   const filterSizerRef = useRef(null);
   const filterLabelWrapRef = useRef(null);
@@ -111,7 +115,7 @@ export default function Discover() {
   // Load chart + mixtapes + genres on mount
   useEffect(() => {
     Promise.all([
-      fetch(`${API_URL}/api/music/chart`).then((r) => r.json()),
+      fetch(`${API_URL}/api/music/chart?limit=50`).then((r) => r.json()),
       fetch(`${API_URL}/api/playlists/public`).then((r) => r.json()),
       fetch(`${API_URL}/api/music/genres`).then((r) => r.json()).catch(() => []),
     ])
@@ -124,6 +128,54 @@ export default function Discover() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  // ---- Infinite scroll: fetch next page of chart albums/tracks ----
+  const loadMoreChart = async () => {
+    if (loadingMore || !hasMore) return;
+    if (searchedQuery || sortBy === "genre") return; // pagination disabled in those modes
+    setLoadingMore(true);
+    try {
+      const params = new URLSearchParams({
+        index: String(chartAlbums.length),
+        limit: "50",
+      });
+      const res = await fetch(`${API_URL}/api/music/chart?${params.toString()}`);
+      const data = await res.json();
+      const newAlbums = data.albums || [];
+      const newTracks = data.tracks || [];
+      if (newAlbums.length === 0 && newTracks.length === 0) {
+        setHasMore(false);
+      } else {
+        // De-duplicate by id in case Deezer returns overlapping items
+        setChartAlbums((prev) => {
+          const seen = new Set(prev.map((a) => a.id));
+          return [...prev, ...newAlbums.filter((a) => !seen.has(a.id))];
+        });
+        setChartTracks((prev) => {
+          const seen = new Set(prev.map((t) => t.trackId));
+          return [...prev, ...newTracks.filter((t) => !seen.has(t.trackId))];
+        });
+      }
+    } catch (err) {
+      console.error("Load more failed", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // IntersectionObserver: trigger loadMore when sentinel is near viewport
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMoreChart();
+      },
+      { rootMargin: "400px" }
+    );
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, [chartAlbums.length, chartTracks.length, loadingMore, hasMore, searchedQuery, sortBy]);
 
   // Close filter dropdown on outside click
   useEffect(() => {
@@ -294,6 +346,7 @@ export default function Discover() {
     setGenreName(g.name);
     setFilterOpen(false);
     setGenreMenuOpen(false);
+    setHasMore(false); // disable infinite scroll for genre-locked chart
     // Fetch genre-specific chart from Deezer
     setLoading(true);
     try {
@@ -446,6 +499,14 @@ export default function Discover() {
             </div>
           ))}
           {displayAlbums.length === 0 && <p className="discover-empty">No albums found.</p>}
+        </div>
+      )}
+
+      {/* Infinite-scroll sentinel + status (only shown on chart browse) */}
+      {!loading && !searchedQuery && sortBy !== "genre" && (activeTab === "ALBUMS" || activeTab === "TRACKS") && (
+        <div ref={sentinelRef} className="discover-load-more">
+          {loadingMore && <span className="discover-loading">Loading more...</span>}
+          {!hasMore && <span className="discover-loading">You've reached the end</span>}
         </div>
       )}
 

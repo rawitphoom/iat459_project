@@ -408,7 +408,8 @@ app.get("/api/music/search", async (req, res) => {
 // Used as the default content on the Discover page
 app.get("/api/music/chart", async (req, res) => {
   try {
-    const chart = await getChart();
+    const genreId = req.query.genreId ? Number(req.query.genreId) : 0;
+    const chart = await getChart(genreId);
     res.json(chart);
   } catch (err) {
     console.error("Chart error:", err.message);

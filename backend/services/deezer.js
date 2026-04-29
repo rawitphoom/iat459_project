@@ -57,16 +57,16 @@ async function searchAlbums(query, limit = 20) {
  * Get the current chart — top/popular albums, tracks, and artists.
  * This is what loads by default on the Discover page.
  */
-async function getChart() {
+async function getChart(genreId = 0) {
   // Deezer chart returns only 10 by default.
-  // We fetch additional popular albums by querying top genres in parallel.
-  const res = await axios.get("https://api.deezer.com/chart/0/albums", {
+  // genreId === 0 = global chart; otherwise = genre-specific top.
+  const res = await axios.get(`https://api.deezer.com/chart/${genreId}/albums`, {
     params: { limit: 50 },
   });
-  const tracksRes = await axios.get("https://api.deezer.com/chart/0/tracks", {
+  const tracksRes = await axios.get(`https://api.deezer.com/chart/${genreId}/tracks`, {
     params: { limit: 50 },
   });
-  const artistsRes = await axios.get("https://api.deezer.com/chart/0/artists", {
+  const artistsRes = await axios.get(`https://api.deezer.com/chart/${genreId}/artists`, {
     params: { limit: 50 },
   });
 

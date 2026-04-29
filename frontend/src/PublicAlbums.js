@@ -214,6 +214,15 @@ export default function Discover() {
         return new Date(db) - new Date(da);
       });
     }
+    if (sortBy === "default") {
+      // Random shuffle (Fisher-Yates) — re-shuffles only when source list changes
+      const shuffled = [...list];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
     return list;
   };
 

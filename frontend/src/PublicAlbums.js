@@ -283,7 +283,16 @@ export default function Discover() {
     ? mixtapes.filter((m) => m.name?.toLowerCase().includes(searchedQuery.toLowerCase()))
     : mixtapes;
 
-  const sortList = (list, getName, getDate) => {
+  // Stable shuffle key per item id — assigned the first time we see an item
+  // and reused on every render so newly-loaded items don't reshuffle existing ones.
+  const shuffleKeyRef = useRef(new Map());
+  const getShuffleKey = (id) => {
+    const map = shuffleKeyRef.current;
+    if (!map.has(id)) map.set(id, Math.random());
+    return map.get(id);
+  };
+
+  const sortList = (list, getName, getDate, getId) => {
     if (sortBy === "az") {
       return [...list].sort((a, b) => (getName(a) || "").localeCompare(getName(b) || ""));
     }
@@ -298,19 +307,16 @@ export default function Discover() {
       });
     }
     if (sortBy === "default") {
-      // Random shuffle (Fisher-Yates) — re-shuffles only when source list changes
-      const shuffled = [...list];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
+      // Stable random sort — each item's shuffle key is cached by id, so
+      // new pages get inserted into random positions without disturbing
+      // the already-rendered items (no scroll jump on infinite scroll).
+      return [...list].sort((a, b) => getShuffleKey(getId(a)) - getShuffleKey(getId(b)));
     }
     return list;
   };
 
   const displayAlbums = useMemo(() => {
-    let list = sortList(baseAlbums, (a) => a.title, (a) => a.releaseDate);
+    let list = sortList(baseAlbums, (a) => a.title, (a) => a.releaseDate, (a) => a.id);
     if (sortBy === "date" && selectedYear != null) {
       // selectedYear stores a decade (e.g., 2020) — match any year within 2020-2029
       const decadeStart = Number(selectedYear);
@@ -322,11 +328,11 @@ export default function Discover() {
     return list;
   }, [baseAlbums, sortBy, selectedYear]);
   const displayTracks = useMemo(
-    () => sortList(baseTracks, (t) => t.name),
+    () => sortList(baseTracks, (t) => t.name, undefined, (t) => t.trackId),
     [baseTracks, sortBy]
   );
   const displayMixtapes = useMemo(
-    () => sortList(baseMixtapes, (m) => m.name, (m) => m.createdAt),
+    () => sortList(baseMixtapes, (m) => m.name, (m) => m.createdAt, (m) => m._id),
     [baseMixtapes, sortBy]
   );
 

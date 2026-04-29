@@ -1260,7 +1260,7 @@ body::-webkit-scrollbar {
 /* ---- Releases responsive: keep 2 rows but align straight (no scatter) ---- */
 @media (max-width: 900px) {
   .releases-scroll-wrap {
-    height: 280vh;             /* longer scroll distance = slower horizontal scroll on mobile */
+    height: 220vh;             /* shorter so popular mixtapes appears sooner */
   }
 
   .landing-releases-track {
@@ -1611,7 +1611,7 @@ body::-webkit-scrollbar {
 
 @media (max-width: 900px) {
   .landing-top3 {
-    padding: 60px 24px 80px;
+    padding: 20px 24px 60px;
   }
 
   .landing-top3-grid {

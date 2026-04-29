@@ -1593,7 +1593,7 @@ body::-webkit-scrollbar {
 
 @media (max-width: 900px) {
   .landing-top3 {
-    padding: 140px 24px 100px;
+    padding: 60px 24px 80px;
   }
 
   .landing-top3-grid {

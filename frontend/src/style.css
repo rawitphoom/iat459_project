@@ -1257,6 +1257,23 @@ body::-webkit-scrollbar {
   margin-top: 2px;
 }
 
+/* ---- Releases responsive: keep 2 rows but align straight (no scatter) ---- */
+@media (max-width: 900px) {
+  .releases-scroll-wrap {
+    height: 150vh;             /* was 300vh — shorter scroll distance on mobile */
+  }
+
+  .landing-releases-track {
+    grid-template-rows: auto auto;
+    gap: 24px;                  /* tight, even gap between rows + columns */
+  }
+
+  /* JS sets inline translateY(...) on each card to scatter them — override on mobile */
+  .landing-releases-card {
+    transform: none !important;
+  }
+}
+
 @media (max-width: 900px) {
   .landing-releases {
     flex-direction: column;

@@ -54,6 +54,8 @@ export default function Discover() {
   const [genreName, setGenreName] = useState("");
   const [genres, setGenres] = useState([]);
   const [genreMenuOpen, setGenreMenuOpen] = useState(false);
+  const [dateMenuOpen, setDateMenuOpen] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(null);
   const filterRef = useRef(null);
   const filterSizerRef = useRef(null);
   const filterLabelWrapRef = useRef(null);
@@ -226,10 +228,18 @@ export default function Discover() {
     return list;
   };
 
-  const displayAlbums = useMemo(
-    () => sortList(baseAlbums, (a) => a.title, (a) => a.releaseDate),
-    [baseAlbums, sortBy]
-  );
+  const displayAlbums = useMemo(() => {
+    let list = sortList(baseAlbums, (a) => a.title, (a) => a.releaseDate);
+    if (sortBy === "date" && selectedYear != null) {
+      // selectedYear stores a decade (e.g., 2020) — match any year within 2020-2029
+      const decadeStart = Number(selectedYear);
+      list = list.filter((a) => {
+        const y = parseInt((a.releaseDate || "").slice(0, 4), 10);
+        return !isNaN(y) && y >= decadeStart && y < decadeStart + 10;
+      });
+    }
+    return list;
+  }, [baseAlbums, sortBy, selectedYear]);
   const displayTracks = useMemo(
     () => sortList(baseTracks, (t) => t.name),
     [baseTracks, sortBy]
@@ -250,6 +260,16 @@ export default function Discover() {
     wrap.style.width = `${newWidth}px`;
   });
 
+  // Unique decades (e.g., "2020s", "2010s") available across the current album list
+  const availableDecades = useMemo(() => {
+    const set = new Set();
+    baseAlbums.forEach((a) => {
+      const y = parseInt((a.releaseDate || "").slice(0, 4), 10);
+      if (!isNaN(y)) set.add(Math.floor(y / 10) * 10);
+    });
+    return [...set].sort((a, b) => b - a);
+  }, [baseAlbums]);
+
   // Filter button label — always show something (defaults to DEFAULT)
   const filterLabel = useMemo(() => {
     if (sortBy === "az") return "A-Z";
@@ -260,7 +280,11 @@ export default function Discover() {
 
   const handlePickSort = (mode) => {
     setSortBy(mode);
-    setFilterOpen(false);
+    if (mode !== "date") {
+      setSelectedYear(null);
+      setDateMenuOpen(false);
+      setFilterOpen(false);
+    }
     setGenreMenuOpen(false);
   };
 
@@ -329,7 +353,28 @@ export default function Discover() {
           <div className={`discover-filter-menu ${filterOpen ? "open" : ""}`}>
             <button className={`discover-filter-item ${sortBy === "default" ? "active" : ""}`} onClick={() => handlePickSort("default")}>DEFAULT</button>
             <button className={`discover-filter-item ${sortBy === "az" ? "active" : ""}`} onClick={() => handlePickSort("az")}>A-Z</button>
-            <button className={`discover-filter-item ${sortBy === "date" ? "active" : ""}`} onClick={() => handlePickSort("date")}>DATE RELEASED</button>
+            <button
+              className={`discover-filter-item discover-filter-item-parent ${sortBy === "date" ? "active" : ""}`}
+              onClick={() => { handlePickSort("date"); setDateMenuOpen((o) => !o); }}
+              type="button"
+            >
+              DATE RELEASED
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            {dateMenuOpen && (
+              <div className="discover-filter-genre-list">
+                {availableDecades.length === 0 && <div className="discover-filter-empty">No decades</div>}
+                {availableDecades.map((d) => (
+                  <button
+                    key={d}
+                    className={`discover-filter-item ${selectedYear === d ? "active" : ""}`}
+                    onClick={() => setSelectedYear((cur) => (cur === d ? null : d))}
+                  >
+                    {selectedYear === d ? "✓ " : ""}{d}s
+                  </button>
+                ))}
+              </div>
+            )}
             <button
               className={`discover-filter-item discover-filter-item-parent ${sortBy === "genre" ? "active" : ""}`}
               onClick={() => setGenreMenuOpen((o) => !o)}
@@ -397,12 +442,7 @@ export default function Discover() {
                 </div>
               </div>
               <div className="album-card-title">{album.title}</div>
-              <div className="album-card-artist">
-                {album.artist}
-                {sortBy === "date" && album.releaseDate && (
-                  <span className="album-card-year"> · {album.releaseDate.slice(0, 4)}</span>
-                )}
-              </div>
+              <div className="album-card-artist">{album.artist}</div>
             </div>
           ))}
           {displayAlbums.length === 0 && <p className="discover-empty">No albums found.</p>}

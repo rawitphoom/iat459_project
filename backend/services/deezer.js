@@ -73,14 +73,15 @@ async function searchAlbums(query, limit = 20) {
 async function getChart(genreId = 0) {
   // Deezer chart returns only 10 by default.
   // genreId === 0 = global chart; otherwise = genre-specific top.
+  // Bumped limit to 100 so we get a wider spread of release decades.
   const res = await axios.get(`https://api.deezer.com/chart/${genreId}/albums`, {
-    params: { limit: 50 },
+    params: { limit: 100 },
   });
   const tracksRes = await axios.get(`https://api.deezer.com/chart/${genreId}/tracks`, {
-    params: { limit: 50 },
+    params: { limit: 100 },
   });
   const artistsRes = await axios.get(`https://api.deezer.com/chart/${genreId}/artists`, {
-    params: { limit: 50 },
+    params: { limit: 100 },
   });
 
   // Combine into the same format as before

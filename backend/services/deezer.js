@@ -40,17 +40,30 @@ async function searchAlbums(query, limit = 20) {
     params: { q: query, limit },
   });
 
-  return res.data.data.map((album) => ({
-    id: album.id,
-    title: album.title,
-    artist: album.artist.name,
-    artistId: album.artist.id,
-    artistPicture: album.artist.picture_medium || album.artist.picture || "",
-    cover: album.cover_big || album.cover_medium,   // 500x500 for grid cards
-    coverXl: album.cover_xl,                         // 1000x1000 for detail page
-    link: album.link,
-    recordType: album.record_type,       // "album", "single", "ep"
-  }));
+  // Enrich each search result with release_date (search endpoint usually omits it)
+  return Promise.all(
+    res.data.data.map(async (album) => {
+      let releaseDate = album.release_date || "";
+      if (!releaseDate) {
+        try {
+          const detail = await axios.get(`https://api.deezer.com/album/${album.id}`);
+          releaseDate = detail.data?.release_date || "";
+        } catch {}
+      }
+      return {
+        id: album.id,
+        title: album.title,
+        artist: album.artist.name,
+        artistId: album.artist.id,
+        artistPicture: album.artist.picture_medium || album.artist.picture || "",
+        cover: album.cover_big || album.cover_medium,   // 500x500 for grid cards
+        coverXl: album.cover_xl,                         // 1000x1000 for detail page
+        releaseDate,
+        link: album.link,
+        recordType: album.record_type,       // "album", "single", "ep"
+      };
+    })
+  );
 }
 
 /**
@@ -78,18 +91,31 @@ async function getChart(genreId = 0) {
   };
   const resData = chartData;
 
-  // Transform chart albums
-  const albums = (resData.albums?.data || []).map((album) => ({
-    id: album.id,
-    title: album.title,
-    artist: album.artist.name,
-    artistId: album.artist.id,
-    artistPicture: album.artist.picture_medium || album.artist.picture || "",
-    cover: album.cover_big || album.cover_medium,   // 500x500 for grid cards
-    coverXl: album.cover_xl,                         // 1000x1000 for detail page
-    link: album.link,
-    position: album.position,            // Chart position (1, 2, 3...)
-  }));
+  // Transform chart albums + enrich each with release_date (chart endpoint omits it)
+  const albumsRaw = resData.albums?.data || [];
+  const albums = await Promise.all(
+    albumsRaw.map(async (album) => {
+      let releaseDate = album.release_date || "";
+      if (!releaseDate) {
+        try {
+          const detail = await axios.get(`https://api.deezer.com/album/${album.id}`);
+          releaseDate = detail.data?.release_date || "";
+        } catch {}
+      }
+      return {
+        id: album.id,
+        title: album.title,
+        artist: album.artist.name,
+        artistId: album.artist.id,
+        artistPicture: album.artist.picture_medium || album.artist.picture || "",
+        cover: album.cover_big || album.cover_medium,   // 500x500 for grid cards
+        coverXl: album.cover_xl,                         // 1000x1000 for detail page
+        releaseDate,
+        link: album.link,
+        position: album.position,            // Chart position (1, 2, 3...)
+      };
+    })
+  );
 
   // Transform chart tracks
   const tracks = (resData.tracks?.data || []).map((track) => ({

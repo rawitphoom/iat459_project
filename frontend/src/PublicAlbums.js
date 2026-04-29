@@ -397,7 +397,12 @@ export default function Discover() {
                 </div>
               </div>
               <div className="album-card-title">{album.title}</div>
-              <div className="album-card-artist">{album.artist}</div>
+              <div className="album-card-artist">
+                {album.artist}
+                {sortBy === "date" && album.releaseDate && (
+                  <span className="album-card-year"> · {album.releaseDate.slice(0, 4)}</span>
+                )}
+              </div>
             </div>
           ))}
           {displayAlbums.length === 0 && <p className="discover-empty">No albums found.</p>}

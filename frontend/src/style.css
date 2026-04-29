@@ -4672,6 +4672,11 @@ body:has(.discover-page) {
   text-overflow: ellipsis;
 }
 
+.album-card-year {
+  color: #DB4A1E;
+  font-weight: 600;
+}
+
 /* Album card artist row: avatar + (title / artist) */
 .album-card-creator-row {
   display: flex;

@@ -436,6 +436,20 @@ const GENRE_FALLBACK_IDS = [
   466, // Folk
   144, // Reggae
   169, // Soul & Funk
+  106, // Electro
+  75,  // Latin Music
+  81,  // African Music
+  95,  // Brazilian Music
+  197, // Asian Music
+  173, // Films/Games (soundtracks)
+  16,  // Jazz / Easy Listening
+  84,  // Country
+  52,  // Indian
+  514, // Indie Rock / Rock Indé
+  515, // Indie Pop
+  219, // Holidays
+  2,   // R&B / Soul (alt)
+  79,  // Variety
 ];
 
 app.get("/api/music/more-albums", async (req, res) => {

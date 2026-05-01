@@ -65,10 +65,6 @@ export default function ContactPage() {
               <div className="info-meta-label">COURSE</div>
               <div className="info-meta-value">IAT 459</div>
             </div>
-            <div className="contact-info-block">
-              <div className="info-meta-label">RESPONSE TIME</div>
-              <div className="info-meta-value">~24 HOURS</div>
-            </div>
           </div>
 
           {/* ---------- Right: form ---------- */}

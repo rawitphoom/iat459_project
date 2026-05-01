@@ -220,10 +220,8 @@ export default function Dashboard() {
 
     const effectiveIdx = hoveredIdx >= 0 ? hoveredIdx : activeIdx;
 
-    const mixPerPage = 4;
-    const totalMixPages = Math.ceil(mixtapes.length / mixPerPage);
-    const [mixPage, setMixPage] = useState(0);
-    const visibleMixtapes = mixtapes.slice(mixPage * mixPerPage, mixPage * mixPerPage + mixPerPage);
+    const [mixTrackOffset, setMixTrackOffset] = useState(0);
+    const mixViewportRef = useRef(null);
     const effectiveMixIdx = hoveredMix >= 0 ? hoveredMix : activeMix;
 
     const reviewsPerPage = 3;
@@ -263,10 +261,9 @@ export default function Dashboard() {
         return () => clearInterval(id);
     }, [albums.length, hoveredIdx, albumPaused]);
 
-// Smooth-scroll page: only advances when active crosses a 4-card boundary
+// Smooth-scroll: scroll by one card on mobile, by full page on desktop, so the active card always stays in view.
     useEffect(() => {
         if (!albumViewportRef.current || albums.length === 0) return;
-        const perPage = 4;
         const compute = () => {
             const vp = albumViewportRef.current;
             if (!vp) return;
@@ -276,8 +273,17 @@ export default function Dashboard() {
             const styles = getComputedStyle(vp.querySelector(".dash-album-track"));
             const gap = parseFloat(styles.columnGap || styles.gap || "24") || 24;
             const slot = cardW + gap;
-            const page = Math.floor(effectiveIdx / perPage);
-            setTrackOffset(-slot * perPage * page);
+            const vpW = vp.offsetWidth;
+            const visible = Math.max(1, Math.round(vpW / slot));
+            // On mobile (1–2 visible cards) advance one card at a time so the active card never goes off-screen.
+            // On desktop (3+ visible) page in chunks of `visible`.
+            if (visible <= 2) {
+                const maxOffset = -slot * Math.max(0, albums.length - visible);
+                setTrackOffset(Math.max(maxOffset, -slot * effectiveIdx));
+            } else {
+                const page = Math.floor(effectiveIdx / visible);
+                setTrackOffset(-slot * visible * page);
+            }
         };
         compute();
         window.addEventListener("resize", compute);
@@ -294,11 +300,32 @@ export default function Dashboard() {
         return () => clearInterval(id);
     }, [mixtapes.length, hoveredMix, mixPaused]);
 
+    // Smooth-scroll mixtape carousel: one card on mobile, full page on desktop.
     useEffect(() => {
-        if (mixtapes.length === 0) return;
-        const target = Math.floor(activeMix / mixPerPage);
-        if (target !== mixPage) setMixPage(target);
-    }, [activeMix, mixtapes.length]); // eslint-disable-line
+        if (!mixViewportRef.current || mixtapes.length === 0) return;
+        const compute = () => {
+            const vp = mixViewportRef.current;
+            if (!vp) return;
+            const card = vp.querySelector(".dash-album-card");
+            if (!card) return;
+            const cardW = card.offsetWidth;
+            const styles = getComputedStyle(vp.querySelector(".dash-album-track"));
+            const gap = parseFloat(styles.columnGap || styles.gap || "24") || 24;
+            const slot = cardW + gap;
+            const vpW = vp.offsetWidth;
+            const visible = Math.max(1, Math.round(vpW / slot));
+            if (visible <= 2) {
+                const maxOffset = -slot * Math.max(0, mixtapes.length - visible);
+                setMixTrackOffset(Math.max(maxOffset, -slot * effectiveMixIdx));
+            } else {
+                const page = Math.floor(effectiveMixIdx / visible);
+                setMixTrackOffset(-slot * visible * page);
+            }
+        };
+        compute();
+        window.addEventListener("resize", compute);
+        return () => window.removeEventListener("resize", compute);
+    }, [effectiveMixIdx, mixtapes.length]);
 
     // Load recent reviews and fetch missing album art
     useEffect(() => {
@@ -489,21 +516,23 @@ export default function Dashboard() {
                         </div>
                     ) : (
                     <div className="dash-album-row">
-                        <div className="dash-album-grid">
-                            {visibleMixtapes.map((mix, i) => {
-                                const globalIdx = mixPage * mixPerPage + i;
-                                return (
+                        <div className="dash-album-viewport" ref={mixViewportRef}>
+                            <div
+                                className="dash-album-track"
+                                style={{ transform: `translateX(${mixTrackOffset}px)` }}
+                            >
+                                {mixtapes.map((mix, i) => (
                                     <MixtapeCard
                                         key={mix._id}
                                         mix={mix}
-                                        isActive={globalIdx === effectiveMixIdx}
-                                        onEnter={() => setHoveredMix(globalIdx)}
+                                        isActive={i === effectiveMixIdx}
+                                        onEnter={() => setHoveredMix(i)}
                                         onLeave={() => setHoveredMix(-1)}
                                         onView={() => navigate(`/playlist/${mix._id}`)}
                                         onViewProfile={() => mix.creator?._id && navigate(`/profile/${mix.creator._id}`)}
                                     />
-                                );
-                            })}
+                                ))}
+                            </div>
                         </div>
                     </div>
                     )}

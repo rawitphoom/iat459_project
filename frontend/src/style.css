@@ -8182,6 +8182,104 @@ body:has(.admin-page) {
   }
 }
 
+@media (max-width: 600px) {
+  .dash-section {
+    padding: 32px 18px;
+  }
+
+  .dash-album-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-section-header {
+    margin-bottom: 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .dash-section-controls {
+    align-items: flex-start;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .dash-section-sub {
+    font-size: 13px;
+  }
+
+  .dash-album-nav {
+    gap: 4px;
+  }
+
+  .dash-album-dot {
+    font-size: 14px;
+  }
+
+  .dash-nav-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dash-album-track {
+    gap: 16px;
+  }
+
+  /* Show ~1.5 cards on phones — bigger active card with neighbors peeking */
+  .dash-album-viewport .dash-album-card {
+    flex: 0 0 65%;
+  }
+
+  .dash-album-card {
+    padding-bottom: 24px;
+  }
+
+  .dash-album-card.is-active {
+    transform: translateY(-10px);
+  }
+
+  .dash-album-title {
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  .dash-album-artist {
+    font-size: 12px;
+  }
+
+  .dash-album-actions {
+    flex-direction: row;
+    margin-top: 14px;
+    gap: 8px;
+  }
+
+  .dash-album-btn {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+    gap: 6px;
+  }
+
+  .dash-album-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .dash-album-viewport .dash-album-card {
+    flex: 0 0 78%;
+  }
+
+  .dash-album-btn {
+    font-size: 10px;
+    padding: 7px 8px;
+  }
+}
+
 /* ---- Dashboard: Reviews section ---- */
 .dash-reviews-list {
   display: flex;

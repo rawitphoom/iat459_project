@@ -152,7 +152,9 @@ body {
   border-radius: 6px;
   color: #fff;
   font-family: 'DM Mono', monospace;
-  font-size: 13px;
+  /* 16px minimum prevents iOS Safari from auto-zooming on focus.
+     Anything below 16px triggers the zoom on iPhone. */
+  font-size: 16px;
   outline: none;
   transition: border-color 0.2s;
   margin-bottom: 20px;
@@ -6714,7 +6716,8 @@ body:has(.discover-page) {
   padding: 14px 18px;
   color: #fff;
   font-family: 'DM Mono', 'Roboto Mono', monospace;
-  font-size: 14px;
+  /* 16px prevents iOS Safari from auto-zooming on focus */
+  font-size: 16px;
   margin-bottom: 22px;
   outline: none;
   transition: border-color 0.2s;

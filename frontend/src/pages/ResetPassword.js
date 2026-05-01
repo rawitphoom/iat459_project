@@ -60,7 +60,7 @@ export default function ResetPassword() {
       <div className="auth-container">
         {/* Shared auth branding block. */}
         <div className="auth-logo">
-          <img src="/logo.svg" alt="Mixtape" className="auth-logo-img" />
+          <img src="/logo-bright-orange.svg" alt="Mixtape" className="auth-logo-img" />
           <div className="auth-logo-text">
             <span className="auth-logo-title">MIXTAPE</span>
             <span className="auth-logo-sub">Your music collection</span>

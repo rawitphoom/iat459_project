@@ -85,7 +85,7 @@ export function SignInPopup({ onClose, initialMode = "signin" }) {
       <div className="ad-signin-modal" onClick={(e) => e.stopPropagation()}>
         <button className="ad-signin-close" onClick={onClose} aria-label="Close">✕</button>
         <div className="ad-signin-logo">
-          <img src="/logo.svg" alt="Mixtape" className="ad-signin-logo-img" />
+          <img src="/logo-bright-orange.svg" alt="Mixtape" className="ad-signin-logo-img" />
           <div className="ad-signin-logo-text">
             <span className="ad-signin-logo-title">MIXTAPE</span>
             <span className="ad-signin-logo-sub">Your music collection</span>

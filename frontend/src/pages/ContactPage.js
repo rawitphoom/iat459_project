@@ -63,7 +63,7 @@ export default function ContactPage() {
             </div>
             <div className="contact-info-block">
               <div className="info-meta-label">COURSE</div>
-              <div className="info-meta-value">IAT 459 · Group 12</div>
+              <div className="info-meta-value">IAT 459</div>
             </div>
             <div className="contact-info-block">
               <div className="info-meta-label">RESPONSE TIME</div>
@@ -126,7 +126,11 @@ export default function ContactPage() {
             </div>
 
             <button type="submit" className="info-cta primary contact-submit">
-              SEND MESSAGE →
+              SEND MESSAGE
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="13 6 19 12 13 18" />
+              </svg>
             </button>
           </form>
         </div>

@@ -141,7 +141,7 @@ export default function Navbar() {
         <div className="nav-overlay-footer">
           <span className="nav-footer-link" onClick={() => handleNav("/about")}>ABOUT</span>
           <span className="nav-footer-link" onClick={() => handleNav("/contact")}>CONTACT</span>
-          <span className="nav-footer-link">FAQ</span>
+          <span className="nav-footer-link" onClick={() => handleNav("/faq")}>FAQ</span>
         </div>
       </div>
     </>

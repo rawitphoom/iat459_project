@@ -39,6 +39,7 @@ import PlaylistDetail from "./pages/PlaylistDetail";
 import WriteReview from "./pages/WriteReview";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
+import FAQPage from "./pages/FAQPage";
 
 /*
  * AppLayout — the inner shell that sits inside BrowserRouter.
@@ -96,6 +97,7 @@ function AppLayout() {
         {/* informational pages */}
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/faq" element={<FAQPage />} />
 
         {/* discover = browse albums */}
         <Route path="/discover" element={<PublicAlbums />} />

@@ -64,7 +64,7 @@ export default function AboutPage() {
         <div className="info-meta">
           <div>
             <div className="info-meta-label">BUILT FOR</div>
-            <div className="info-meta-value">IAT 459 — Group 12</div>
+            <div className="info-meta-value">IAT 459</div>
           </div>
           <div>
             <div className="info-meta-label">STACK</div>

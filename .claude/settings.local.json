@@ -79,7 +79,8 @@
       "Bash(awk '/^@media/{m=$0; n=NR} /discover-toggle\\\\|discover-controls/{if\\(m && n > NR-200\\) print NR\": \"$0\" \\(under \"m\"\\)\"}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
       "Bash(awk -F: '{print $1}')",
       "Bash(awk '/^@media/{m=NR; q=$0} /profile-/ && m {print m\": \"q\" -> line \"NR}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
-      "Bash(awk '/^@media/{m=NR; q=$0} /\\\\.profile-/ && m && NR > 3500 {print q\" -> line \"NR\": \"$0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)"
+      "Bash(awk '/^@media/{m=NR; q=$0} /\\\\.profile-/ && m && NR > 3500 {print q\" -> line \"NR\": \"$0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
+      "Bash(awk '/^@media/{m=NR; q=$0} /edit-mixtape/ && m {print q\" -> line \"NR\": \"$0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)"
     ]
   }
 }

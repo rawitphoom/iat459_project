@@ -215,6 +215,7 @@ export default function Dashboard() {
     };
     const [reviews, setReviews] = useState([]);
     const [reviewPage, setReviewPage] = useState(0);
+    const reviewsLoadMoreRef = useRef(null);
     const { user, token } = useContext(AuthContext);
     const navigate = useNavigate();
 
@@ -326,6 +327,24 @@ export default function Dashboard() {
         window.addEventListener("resize", compute);
         return () => window.removeEventListener("resize", compute);
     }, [effectiveMixIdx, mixtapes.length]);
+
+    // Infinite scroll for the reviews list — when the sentinel enters the viewport,
+    // load the next page. Uses rootMargin so the next batch arrives before the user hits the bottom.
+    useEffect(() => {
+        if (!hasMore) return;
+        const node = reviewsLoadMoreRef.current;
+        if (!node) return;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((e) => e.isIntersecting)) {
+                    setReviewPage((p) => p + 1);
+                }
+            },
+            { rootMargin: "200px 0px" }
+        );
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [hasMore, reviewPage]);
 
     // Load recent reviews and fetch missing album art
     useEffect(() => {
@@ -598,14 +617,7 @@ export default function Dashboard() {
                     </div>
 
                     {hasMore && (
-                        <div className="dash-reviews-more">
-                            <button
-                                className="dash-load-more-btn"
-                                onClick={() => setReviewPage((p) => p + 1)}
-                            >
-                                Load more...
-                            </button>
-                        </div>
+                        <div ref={reviewsLoadMoreRef} className="dash-reviews-sentinel" aria-hidden="true" />
                     )}
                 </section>
             )}

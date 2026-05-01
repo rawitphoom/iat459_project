@@ -8431,8 +8431,101 @@ body:has(.admin-page) {
 }
 
 @media (max-width: 600px) {
-  .dash-review-cover { display: none; }
-  .dash-review-card { padding: 20px; }
+  .dash-reviews-list {
+    gap: 12px;
+  }
+
+  .dash-review-card {
+    padding: 16px;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .dash-review-body {
+    gap: 8px;
+  }
+
+  .dash-review-album-title {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .dash-review-stars .star {
+    font-size: 15px;
+  }
+
+  .dash-review-user {
+    font-size: 12px;
+    gap: 8px;
+  }
+
+  .dash-review-avatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .dash-review-headline {
+    font-size: 12px;
+  }
+
+  .dash-review-text {
+    font-size: 12px;
+    -webkit-line-clamp: 2;
+    line-height: 1.5;
+  }
+
+  /* === MOBILE REVIEW COVER + VINYL — TWEAK HERE (≤600px) === */
+  .dash-review-cover {
+    /* Container that holds the album art + vinyl. */
+    width: 130px;            /* total horizontal space the art+vinyl combo occupies */
+    height: 100px;           /* vertical box height (vinyl/art are centered inside) */
+    margin-right: 0px;     /* negative = pushes combo RIGHT toward card edge (more negative = further right; 0 = sits at padding edge) */
+    flex-shrink: 0;
+  }
+
+  .dash-review-art {
+    /* The album cover image itself (sits on the LEFT of the cover box). */
+    width: 100px;            /* art size — bigger = bigger album */
+    height: 100px;
+    border-radius: 6px;
+  }
+
+  .dash-review-vinyl {
+    /* The vinyl disc that peeks out from behind the art (on the RIGHT of the cover box). */
+    display: block;
+    width: 100px;             /* vinyl size — bigger = bigger vinyl */
+    height: 100px;
+    right: 0;                /* horizontal offset within the cover box: 0 = vinyl flush right; negative = pokes further right; positive = pulls left under the art */
+  }
+}
+
+@media (max-width: 400px) {
+  .dash-review-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .dash-review-album-title {
+    font-size: 15px;
+  }
+
+  /* === SMALL-PHONE REVIEW COVER + VINYL — TWEAK HERE (≤400px) === */
+  .dash-review-cover {
+    width: 110px;            /* total combo width on small phones */
+    height: 80px;
+    margin-right: -14px;     /* matches the card padding (-14px hugs the edge) */
+  }
+
+  .dash-review-art {
+    width: 80px;             /* album art size */
+    height: 80px;
+  }
+
+  .dash-review-vinyl {
+    width: 72px;             /* vinyl size */
+    height: 72px;
+    right: 0;                /* same rule: 0 = flush right; negative = poke past edge */
+  }
 }
 
 /* =====================================================

@@ -4689,6 +4689,96 @@ body:has(.discover-page) {
   letter-spacing: 1px;
 }
 
+/* ======== DISCOVER PAGE — RESPONSIVE ======== */
+@media (max-width: 900px) {
+  .discover-page {
+    padding: 24px 20px 80px;
+  }
+
+  .discover-hero {
+    font-size: clamp(40px, 13vw, 72px);
+    margin: 12px 0 32px 0;
+  }
+
+  /* Controls row: keep toggle + filter side-by-side, tighter */
+  .discover-controls-row {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .discover-toggle {
+    width: 100%;
+    padding: 4px;
+  }
+
+  .discover-toggle-slider {
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc((100% - 8px) / 3);
+  }
+
+  .discover-toggle-opt {
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 10px 0;
+  }
+
+  .discover-filter-wrap {
+    flex-shrink: 0;
+  }
+
+  .discover-filter-btn {
+    padding: 10px 14px;
+  }
+
+  /* Search bar */
+  .discover-search-bar {
+    padding: 4px 4px 4px 18px;
+    margin-bottom: 28px;
+  }
+
+  .discover-search-input {
+    font-size: 14px;
+  }
+
+  .discover-search-submit {
+    font-size: 11px;
+    padding: 10px 18px;
+  }
+
+  /* Album grid stays 2 columns */
+  .album-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 16px;
+  }
+
+  /* Mixtapes also 2 columns for consistency */
+  .mixtapes-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 16px;
+  }
+
+  /* Smaller back-to-top on mobile */
+  .discover-back-to-top {
+    bottom: 20px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 480px) {
+  .discover-toggle-opt {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .discover-filter-btn {
+    padding: 9px 12px;
+  }
+}
+
 /* Back-to-top floating button (fixed bottom-right) */
 .discover-back-to-top {
   position: fixed;

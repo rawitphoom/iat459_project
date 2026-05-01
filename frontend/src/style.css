@@ -2729,6 +2729,92 @@ body:has(.profile-page) {
   border-bottom-color: #c0633a;
 }
 
+/* ---- Tabs dropdown (mobile only) ---- */
+.profile-tabs-dropdown {
+  display: none;
+  position: relative;
+  margin-bottom: 28px;
+}
+
+.profile-tabs-dropdown-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 14px 22px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.profile-tabs-dropdown-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.profile-tabs-dropdown-toggle svg {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.profile-tabs-dropdown.open .profile-tabs-dropdown-toggle svg {
+  transform: rotate(180deg);
+}
+
+.profile-tabs-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #181818;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 6px;
+  z-index: 20;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: profileTabsDropdownIn 0.18s ease-out;
+}
+
+@keyframes profileTabsDropdownIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-tabs-dropdown-item {
+  width: 100%;
+  text-align: left;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.65);
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.profile-tabs-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.profile-tabs-dropdown-item.active {
+  background: rgba(219, 74, 30, 0.12);
+  color: #DB4A1E;
+}
+
 .profile-content {
   min-height: 200px;
 }
@@ -3049,41 +3135,24 @@ body:has(.profile-page) {
 }
 
 .profile-review-edit-btn {
-  font-family: 'Oswald', Arial, sans-serif;
-  font-size: 11px;
-  font-weight: 600;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
   letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.7);
-  background: linear-gradient(135deg,
-    rgba(221, 183, 168, 0.50) 0%,
-    rgba(221, 183, 168, 0.37) 20%,
-    rgba(221, 183, 168, 0.29) 28%,
-    rgba(221, 183, 168, 0.21) 40%,
-    rgba(221, 183, 168, 0.18) 48%,
-    rgba(221, 183, 168, 0.14) 54%,
-    rgba(221, 183, 168, 0.13) 59%,
-    rgba(221, 183, 168, 0.10) 67%
-  );
-  border: 1.5px solid rgba(236, 236, 236, 0.4);
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   padding: 10px 24px;
-  border-radius: 14px;
+  border-radius: 999px;
   cursor: pointer;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.2s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
   width: 100%;
 }
 
 .profile-review-edit-btn:hover {
   color: #fff;
-  border-color: rgba(236, 236, 236, 0.6);
-  background: linear-gradient(135deg,
-    rgba(221, 183, 168, 0.60) 0%,
-    rgba(221, 183, 168, 0.45) 20%,
-    rgba(221, 183, 168, 0.35) 40%,
-    rgba(221, 183, 168, 0.25) 60%,
-    rgba(221, 183, 168, 0.18) 80%
-  );
+  border-color: #DB4A1E;
+  background: rgba(219, 74, 30, 0.12);
 }
 
 /* ---- Mixtape card layout ---- */
@@ -3805,13 +3874,38 @@ body:has(.profile-page) {
 
   .profile-header {
     flex-direction: column;
+    align-items: center;
     text-align: center;
+    gap: 24px;
+  }
+
+  .profile-header-left {
+    align-items: center;
+    width: 100%;
+  }
+
+  .profile-header-right {
+    align-items: center;
+    width: 100%;
     gap: 20px;
   }
 
   .profile-stats {
     justify-content: center;
     flex-wrap: wrap;
+    gap: 28px;
+    width: 100%;
+  }
+
+  .profile-stat {
+    align-items: center;
+    text-align: center;
+  }
+
+  .profile-header-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
   }
 
   .profile-mixtape-top {
@@ -3845,10 +3939,182 @@ body:has(.profile-page) {
   .profile-tabs {
     overflow-x: auto;
     scrollbar-width: none;
+    margin-bottom: 28px;
   }
 
   .profile-tabs::-webkit-scrollbar {
     display: none;
+  }
+
+  .profile-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 14px 20px;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-tabs {
+    display: none;
+  }
+
+  .profile-tabs-dropdown {
+    display: block;
+  }
+
+  .profile-page {
+    padding: 88px 16px 48px;
+  }
+
+  .profile-avatar {
+    width: 110px;
+    height: 110px;
+    font-size: 46px;
+  }
+
+  .profile-name {
+    font-size: 32px;
+    margin-top: 4px;
+  }
+
+  .profile-handle {
+    font-size: 12px;
+  }
+
+  .profile-stats {
+    gap: 18px;
+    justify-content: center;
+  }
+
+  .profile-stat-num {
+    font-size: 22px;
+  }
+
+  .profile-stat-label {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .profile-header-btn {
+    padding: 9px 18px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .profile-tab {
+    padding: 12px 14px;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .profile-mixtape-card {
+    padding: 20px 18px;
+  }
+
+  .profile-mixtape-edit-btn {
+    top: 14px;
+    right: 14px;
+    padding: 7px 16px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+  }
+
+  .profile-mixtape-cover {
+    width: 160px;
+    height: 160px;
+  }
+
+  .profile-mixtape-name {
+    font-size: 20px;
+  }
+
+  .profile-fav-albums-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .profile-fav-album-card {
+    padding: 16px 14px;
+  }
+
+  .profile-fav-album-cover {
+    width: 140px;
+    height: 140px;
+    transform: translateX(-20px);
+  }
+
+  .profile-fav-album-img,
+  .profile-fav-album-vinyl {
+    width: 130px;
+    height: 130px;
+  }
+
+  .profile-fav-album-vinyl {
+    right: -50px;
+  }
+
+  .profile-fav-songs-list .profile-track {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .profile-fav-songs-list .profile-track-art {
+    width: 44px;
+    height: 44px;
+  }
+
+  .profile-fav-songs-list .profile-track-name {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 400px) {
+  .profile-avatar {
+    width: 92px;
+    height: 92px;
+    font-size: 38px;
+  }
+
+  .profile-name {
+    font-size: 26px;
+  }
+
+  .profile-stats {
+    gap: 12px;
+  }
+
+  .profile-stat-num {
+    font-size: 20px;
+  }
+
+  .profile-stat-label {
+    font-size: 9px;
+  }
+
+  .profile-tab {
+    padding: 10px 12px;
+    font-size: 10px;
+  }
+
+  .profile-fav-album-cover {
+    width: 120px;
+    height: 120px;
+    transform: translateX(-15px);
+  }
+
+  .profile-fav-album-img,
+  .profile-fav-album-vinyl {
+    width: 110px;
+    height: 110px;
+  }
+
+  .profile-fav-album-vinyl {
+    right: -40px;
   }
 }
 

@@ -60,6 +60,7 @@ export default function ProfilePage() {
   // Only show the blocking loader if we have no cached data for this profile.
   const [loading, setLoading] = useState(!cached);
   const [activeTab, setActiveTab] = useState("mixtapes");
+  const [tabDropdownOpen, setTabDropdownOpen] = useState(false);
 
   // Audio preview
   const [playingId, setPlayingId] = useState(null);
@@ -601,20 +602,56 @@ export default function ProfilePage() {
       </div>
 
       {/* ======== TABS ======== */}
-      <div className="profile-tabs">
-        <button className={`profile-tab ${activeTab === "mixtapes" ? "active" : ""}`} onClick={() => setActiveTab("mixtapes")}>
-          MIXTAPES ({playlists.length})
-        </button>
-        <button className={`profile-tab ${activeTab === "albums" ? "active" : ""}`} onClick={() => setActiveTab("albums")}>
-          SAVED ALBUMS ({favAlbums.length})
-        </button>
-        <button className={`profile-tab ${activeTab === "songs" ? "active" : ""}`} onClick={() => setActiveTab("songs")}>
-          LIKED TRACKS ({favSongs.length})
-        </button>
-        <button className={`profile-tab ${activeTab === "reviews" ? "active" : ""}`} onClick={() => setActiveTab("reviews")}>
-          REVIEWS ({reviews.length})
-        </button>
-      </div>
+      {(() => {
+        const tabs = [
+          { id: "mixtapes", label: `MIXTAPES (${playlists.length})` },
+          { id: "albums", label: `SAVED ALBUMS (${favAlbums.length})` },
+          { id: "songs", label: `LIKED TRACKS (${favSongs.length})` },
+          { id: "reviews", label: `REVIEWS (${reviews.length})` },
+        ];
+        const current = tabs.find((t) => t.id === activeTab) || tabs[0];
+        return (
+          <>
+            <div className="profile-tabs">
+              {tabs.map((t) => (
+                <button
+                  key={t.id}
+                  className={`profile-tab ${activeTab === t.id ? "active" : ""}`}
+                  onClick={() => setActiveTab(t.id)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <div className={`profile-tabs-dropdown ${tabDropdownOpen ? "open" : ""}`}>
+              <button
+                className="profile-tabs-dropdown-toggle"
+                onClick={() => setTabDropdownOpen((v) => !v)}
+                aria-expanded={tabDropdownOpen}
+              >
+                <span>{current.label}</span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {tabDropdownOpen && (
+                <div className="profile-tabs-dropdown-menu" role="menu">
+                  {tabs.map((t) => (
+                    <button
+                      key={t.id}
+                      className={`profile-tabs-dropdown-item ${activeTab === t.id ? "active" : ""}`}
+                      onClick={() => { setActiveTab(t.id); setTabDropdownOpen(false); }}
+                      role="menuitem"
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        );
+      })()}
 
       {/* ======== MIXTAPES TAB ======== */}
       {activeTab === "mixtapes" && (

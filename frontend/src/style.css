@@ -4175,6 +4175,44 @@ body:has(.discover-page) {
   animation: discover-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
 }
 
+/* Floating duplicate that appears once the original scrolls out of view.
+   Pure rounded pill — sits in the SAME horizontal slot/size as the original. */
+.discover-controls-floating {
+  position: fixed;
+  top: 80px;
+  z-index: 65;
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.discover-controls-floating.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.discover-controls-floating .discover-toggle {
+  width: 100%; /* fills the inline width set from JS */
+}
+
+/* The pill inside the floating bar gets a stronger drop-shadow + blurred background
+   so it pops cleanly over scrolling content without needing a full-width rect bar. */
+.discover-controls-floating .discover-toggle {
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+}
+
+.discover-controls-floating .discover-filter-btn {
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+}
+
 /* 3-way toggle: TRACKS | ALBUMS | MIXTAPES */
 .discover-toggle {
   position: relative;
@@ -4215,9 +4253,9 @@ body:has(.discover-page) {
   border: none;
   color: rgba(255, 255, 255, 0.55);
   font-family: 'DM Mono', 'Roboto Mono', monospace;
-  font-size: 13px;
-  letter-spacing: 1.5px;
-  padding: 12px 0;
+  font-size: 15px;
+  letter-spacing: 2px;
+  padding: 14px 0;
   border-radius: 999px;
   cursor: pointer;
   transition: color 0.25s ease;
@@ -4719,9 +4757,9 @@ body:has(.discover-page) {
   }
 
   .discover-toggle-opt {
-    font-size: 11px;
-    letter-spacing: 1px;
-    padding: 10px 0;
+    font-size: 13px;
+    letter-spacing: 1.2px;
+    padding: 12px 0;
   }
 
   .discover-filter-wrap {
@@ -4770,8 +4808,8 @@ body:has(.discover-page) {
 
 @media (max-width: 480px) {
   .discover-toggle-opt {
-    font-size: 10px;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    letter-spacing: 0.8px;
   }
 
   .discover-filter-btn {

@@ -62,7 +62,11 @@ export default function Discover() {
   const [chartExhausted, setChartExhausted] = useState(false);
   const [fallbackPage, setFallbackPage] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [showFloatingControls, setShowFloatingControls] = useState(false);
+  const [floatingMetrics, setFloatingMetrics] = useState({ left: 0, width: 0 });
   const sentinelRef = useRef(null);
+  const controlsRowRef = useRef(null);
+  const toggleRef = useRef(null);
   const filterRef = useRef(null);
   const filterSizerRef = useRef(null);
   const filterLabelWrapRef = useRef(null);
@@ -186,6 +190,37 @@ export default function Discover() {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Show the floating tab pill ONLY after the original controls row is fully
+  // scrolled past (entirely above the viewport top).
+  useEffect(() => {
+    const node = controlsRowRef.current;
+    if (!node) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowFloatingControls(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, []);
+
+  // Mirror the original toggle's left/width onto the floating duplicate
+  // so it appears in the exact same horizontal slot, same size.
+  useEffect(() => {
+    const updateMetrics = () => {
+      const t = toggleRef.current;
+      if (!t) return;
+      const rect = t.getBoundingClientRect();
+      setFloatingMetrics({ left: rect.left, width: rect.width });
+    };
+    updateMetrics();
+    window.addEventListener("resize", updateMetrics);
+    window.addEventListener("scroll", updateMetrics, { passive: true });
+    return () => {
+      window.removeEventListener("resize", updateMetrics);
+      window.removeEventListener("scroll", updateMetrics);
+    };
   }, []);
 
   const scrollToTop = () => {
@@ -410,8 +445,8 @@ export default function Discover() {
       </h1>
 
       {/* Toggle + Filter row */}
-      <div className="discover-controls-row">
-        <div className={`discover-toggle pos-${tabIndex}`}>
+      <div className="discover-controls-row" ref={controlsRowRef}>
+        <div className={`discover-toggle pos-${tabIndex}`} ref={toggleRef}>
           <span className="discover-toggle-slider" aria-hidden="true" />
           {TABS.map((t) => (
             <button
@@ -537,8 +572,8 @@ export default function Discover() {
         </div>
       )}
 
-      {/* Infinite-scroll sentinel + status (only shown on chart browse) */}
-      {!loading && !searchedQuery && sortBy !== "genre" && (activeTab === "ALBUMS" || activeTab === "TRACKS") && (
+      {/* Infinite-scroll sentinel — only on ALBUMS tab, only when browsing chart */}
+      {activeTab === "ALBUMS" && !loading && !searchedQuery && sortBy !== "genre" && (
         <div ref={sentinelRef} className="discover-load-more">
           {loadingMore && <span className="discover-loading">Loading more...</span>}
           {!loadingMore && !hasMore && <span className="discover-loading">You've explored every corner — that's everything we have.</span>}
@@ -582,6 +617,14 @@ export default function Discover() {
             </div>
           ))}
           {displayTracks.length === 0 && <p className="discover-empty">No songs found.</p>}
+        </div>
+      )}
+
+      {/* Infinite-scroll sentinel for TRACKS tab */}
+      {activeTab === "TRACKS" && !loading && !searchedQuery && sortBy !== "genre" && (
+        <div ref={sentinelRef} className="discover-load-more">
+          {loadingMore && <span className="discover-loading">Loading more...</span>}
+          {!loadingMore && !hasMore && <span className="discover-loading">You've explored every corner — that's everything we have.</span>}
         </div>
       )}
 
@@ -646,6 +689,26 @@ export default function Discover() {
       )}
 
       {showSignInPopup && <SignInPopup onClose={() => setShowSignInPopup(false)} />}
+
+      {/* Floating tab pill — appears once the original controls row scrolls away */}
+      <div
+        className={`discover-controls-floating ${showFloatingControls ? "visible" : ""}`}
+        style={{ left: `${floatingMetrics.left}px`, width: `${floatingMetrics.width}px` }}
+      >
+        <div className={`discover-toggle pos-${tabIndex}`}>
+          <span className="discover-toggle-slider" aria-hidden="true" />
+          {TABS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              className={`discover-toggle-opt ${activeTab === t ? "active" : ""}`}
+              onClick={() => setActiveTab(t)}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Back-to-top floating button */}
       <button

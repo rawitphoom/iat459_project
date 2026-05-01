@@ -8094,9 +8094,11 @@ body:has(.admin-page) {
   .dash-hero {
     height: auto;
     min-height: 100vh;
-    padding: 80px 24px;
+    /* === Bottom padding controls how far the title sits from the screen bottom — bigger value = title sits HIGHER === */
+    padding: 80px 24px 22vh;
     text-align: center;
-    justify-content: center;
+    justify-content: flex-end;
+    align-items: center;
   }
 
   .dash-hero-content {
@@ -8106,15 +8108,17 @@ body:has(.admin-page) {
     width: 100%;
     position: relative;
     z-index: 2;
+    /* margin-top pushes the title further down inside the hero — bigger value = title sits LOWER === */
+    margin-top: auto;
   }
 
+  /* === Mobile vinyl position + size — TWEAK HERE === */
   .dash-vinyl-wrapper {
-    left: 50%;
-    top: 50%;
+    left: 50%;       /* horizontal anchor (50% = horizontally centered) */
+    top: 0%;        /* vertical anchor — lower this % to move vinyl up, raise to move it down */
     transform: translate(-50%, -50%);
-    width: 90vw;
-    max-width: 420px;
-    opacity: 0.18;
+    width: 200vw;    /* vinyl size — bigger value = bigger vinyl (try 100vw–150vw) */
+    opacity: 1;
     z-index: 0;
   }
 
@@ -8125,7 +8129,7 @@ body:has(.admin-page) {
     }
     to {
       transform: translate(-50%, -50%);
-      opacity: 0.18;
+      opacity: 1;
     }
   }
 
@@ -8135,7 +8139,8 @@ body:has(.admin-page) {
   }
 
   .dash-vinyl-glow {
-    width: 130%;
+    width: 150%;
+    opacity: 0.7;
   }
 
   .dash-welcome {

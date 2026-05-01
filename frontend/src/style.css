@@ -9138,7 +9138,8 @@ body:has(.admin-page) {
 /* ----- Responsive ----- */
 @media (max-width: 900px) {
   .create-mix-page {
-    padding: 24px 24px 80px;
+    /* top padding clears the fixed site navbar (~60px) */
+    padding: 84px 24px 80px;
   }
   .create-mix-row {
     grid-template-columns: 1fr;
@@ -9152,7 +9153,7 @@ body:has(.admin-page) {
 }
 @media (max-width: 600px) {
   .create-mix-page {
-    padding: 20px 16px 72px;
+    padding: 78px 16px 72px;
   }
   .create-mix-save-btn {
     padding: 14px 40px;
@@ -10302,7 +10303,8 @@ body:has(.cm-wiz-page) {
 }
 
 @media (max-width: 640px) {
-  .cm-wiz-page { padding: 16px 18px 24px; }
+  /* top padding clears the fixed site navbar (~60px) */
+  .cm-wiz-page { padding: 84px 18px 24px; }
   .cm-wiz-prompt { font-size: 26px; }
   .cm-wiz-bigInput { font-size: 22px; }
   .cm-wiz-cover { width: 220px; height: 220px; }

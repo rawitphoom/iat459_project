@@ -541,9 +541,10 @@ app.get("/api/music/artist/:id/albums", async (req, res) => {
 // fetch reviews for any album detail page.
 // =============================================
 const reviewSchema = new mongoose.Schema({
-  albumId: { type: String, required: true },    // Deezer album ID
-  albumTitle: String,                            // Album name (for display)
-  albumArt: String,                              // Album cover URL (for display)
+  albumId: String,                               // Deezer album ID (album reviews)
+  playlistId: String,                            // Mongo playlist ID (mixtape reviews)
+  albumTitle: String,                            // Album/mixtape name (for display)
+  albumArt: String,                              // Cover URL (for display)
   userId: String,                                // User who wrote the review
   username: { type: String, required: true },    // Username for display
   title: String,                                 // Review title/headline
@@ -568,15 +569,16 @@ app.get("/api/reviews/album/:albumId", async (req, res) => {
 
 // Protected: create a new review (must be logged in)
 app.post("/api/reviews", verifyToken, async (req, res) => {
-  const { albumId, albumTitle, albumArt, title, rating, text } = req.body || {};
+  const { albumId, playlistId, albumTitle, albumArt, title, rating, text } = req.body || {};
 
-  if (!albumId || !rating) {
-    return res.status(400).json({ error: "Album ID and rating are required" });
+  if ((!albumId && !playlistId) || !rating) {
+    return res.status(400).json({ error: "Album/Playlist ID and rating are required" });
   }
 
   try {
     const review = await Review.create({
-      albumId: String(albumId),
+      albumId: albumId ? String(albumId) : undefined,
+      playlistId: playlistId ? String(playlistId) : undefined,
       albumTitle: albumTitle || "",
       albumArt: albumArt || "",
       userId: req.user?.id,
@@ -588,6 +590,31 @@ app.post("/api/reviews", verifyToken, async (req, res) => {
     res.status(201).json(review);
   } catch (err) {
     res.status(500).json({ error: "Failed to create review" });
+  }
+});
+
+// Public: get all reviews for a specific mixtape (by playlist ID)
+app.get("/api/reviews/playlist/:playlistId", async (req, res) => {
+  try {
+    const reviews = await Review.find({ playlistId: req.params.playlistId })
+      .sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load reviews" });
+  }
+});
+
+// Public: get average rating for a mixtape
+app.get("/api/reviews/playlist/:playlistId/rating", async (req, res) => {
+  try {
+    const result = await Review.aggregate([
+      { $match: { playlistId: req.params.playlistId } },
+      { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+    ]);
+    if (result.length === 0) return res.json({ avg: 0, count: 0 });
+    res.json({ avg: Math.round(result[0].avg * 10) / 10, count: result[0].count });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load rating" });
   }
 });
 

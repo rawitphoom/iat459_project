@@ -2,6 +2,8 @@ import { useEffect, useState, useRef, useCallback, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API_URL from "../config";
 import { AuthContext } from "../context/AuthContext";
+import { SignInPopup } from "./AlbumDetail";
+import ConfirmModal from "../components/ConfirmModal";
 
 /*
  * PlaylistDetail — public/private mixtape detail page.
@@ -14,7 +16,7 @@ import { AuthContext } from "../context/AuthContext";
 export default function PlaylistDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { token } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const [playlist, setPlaylist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,6 +24,16 @@ export default function PlaylistDetail() {
   const [playingId, setPlayingId] = useState(null);
   const [likedTracks, setLikedTracks] = useState([]);
   const audioRef = useRef(null);
+
+  // Reviews
+  const [reviews, setReviews] = useState([]);
+  const [avgRating, setAvgRating] = useState({ avg: 0, count: 0 });
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ title: "", rating: 5, text: "" });
+  const [reviewError, setReviewError] = useState("");
+  const [visibleReviews, setVisibleReviews] = useState(6);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [showSignInPopup, setShowSignInPopup] = useState(false);
 
   // Extract dominant color from cover image
   const extractColor = useCallback((imgUrl) => {
@@ -77,6 +89,18 @@ export default function PlaylistDetail() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [id, extractColor]);
+
+  // Fetch reviews + average rating for this mixtape
+  useEffect(() => {
+    fetch(`${API_URL}/api/reviews/playlist/${id}`)
+      .then((r) => r.json())
+      .then((revs) => setReviews(Array.isArray(revs) ? revs : []))
+      .catch(() => {});
+    fetch(`${API_URL}/api/reviews/playlist/${id}/rating`)
+      .then((r) => r.json())
+      .then((r) => setAvgRating(r))
+      .catch(() => {});
+  }, [id]);
 
   // Load user's liked tracks
   useEffect(() => {
@@ -175,6 +199,66 @@ export default function PlaylistDetail() {
     return Math.round(total / 60);
   };
 
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  };
+
+  const renderStars = (rating) => "★".repeat(rating) + "☆".repeat(5 - rating);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    setReviewError("");
+    if (!token) { setReviewError("You must be logged in to write a review."); return; }
+    if (!reviewForm.rating) { setReviewError("Rating is required."); return; }
+
+    try {
+      const res = await fetch(`${API_URL}/api/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          playlistId: String(id),
+          albumTitle: playlist?.name || "",
+          albumArt: playlist?.image || playlist?.tracks?.[0]?.albumArt || "",
+          title: reviewForm.title,
+          rating: reviewForm.rating,
+          text: reviewForm.text,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setReviewError(data?.error || "Failed to submit"); return; }
+
+      setReviews((prev) => [data, ...prev]);
+      setReviewForm({ title: "", rating: 5, text: "" });
+      setShowReviewForm(false);
+      fetch(`${API_URL}/api/reviews/playlist/${id}/rating`)
+        .then((r) => r.json())
+        .then((r) => setAvgRating(r))
+        .catch(() => {});
+    } catch {
+      setReviewError("Server unavailable");
+    }
+  };
+
+  const performDeleteReview = async () => {
+    const reviewId = confirmDeleteId;
+    setConfirmDeleteId(null);
+    if (!reviewId) return;
+    try {
+      const res = await fetch(`${API_URL}/api/reviews/${reviewId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setReviews((prev) => prev.filter((r) => r._id !== reviewId));
+        fetch(`${API_URL}/api/reviews/playlist/${id}/rating`)
+          .then((r) => r.json())
+          .then((r) => setAvgRating(r))
+          .catch(() => {});
+      }
+    } catch {}
+  };
+
   if (loading) {
     return (
       <div className="ad-wrapper ad-loading pd-wrapper">
@@ -270,6 +354,18 @@ export default function PlaylistDetail() {
                 ))}
               </div>
             )}
+
+            {/* Average rating stars */}
+            <div className="ad-rating-stars">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <span
+                  key={n}
+                  className={`ad-rating-star ${n <= Math.round(avgRating.avg || 0) ? "filled" : ""}`}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -325,6 +421,141 @@ export default function PlaylistDetail() {
           </div>
         </div>
       </div>
+
+      {/* ======== REVIEWS SECTION ======== */}
+      <div className="ad-reviews-section">
+        <div className="ad-reviews-header">
+          <h2 className="ad-reviews-title">REVIEWS ({reviews.length})</h2>
+          <button
+            className="ad-write-review-btn"
+            onClick={() => token ? setShowReviewForm(!showReviewForm) : setShowSignInPopup(true)}
+          >
+            <svg width="28" height="28" viewBox="0 0 43 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="41" height="40" rx="20" stroke="#DB4A1E" strokeWidth="2"/>
+              <path d="M23.3877 18.3486L23.6162 18.915L24.2246 18.9707L29.1484 19.4189L25.3711 22.8633L24.9424 23.2529L25.0684 23.8184L26.1875 28.8623L22.0361 26.2285L21.501 25.8887L20.9648 26.2285L16.8125 28.8643L17.9316 23.8203L18.0576 23.2549L17.6289 22.8643L13.8506 19.4199L18.7773 18.9717L19.3848 18.917L19.6133 18.3506L21.5 13.6719L23.3877 18.3486Z" stroke="#DB4A1E" strokeWidth="2"/>
+            </svg>
+            ADD A REVIEW
+          </button>
+        </div>
+
+        {showReviewForm && (
+          <form className="ad-review-form" onSubmit={handleSubmitReview}>
+            <input
+              className="ad-review-input"
+              placeholder="Review title"
+              value={reviewForm.title}
+              onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })}
+            />
+            <div className="ad-review-rating-select">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <span
+                  key={n}
+                  className={`ad-review-star-pick ${n <= reviewForm.rating ? "active" : ""}`}
+                  onClick={() => setReviewForm({ ...reviewForm, rating: n })}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+            <textarea
+              className="ad-review-textarea"
+              placeholder="Write your review..."
+              rows={4}
+              value={reviewForm.text}
+              onChange={(e) => setReviewForm({ ...reviewForm, text: e.target.value })}
+            />
+            {reviewError && <p className="ad-review-error">{reviewError}</p>}
+            <div className="ad-review-form-actions">
+              <button className="ad-review-submit" type="submit">Submit</button>
+              <button
+                className="ad-review-cancel"
+                type="button"
+                onClick={() => setShowReviewForm(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        <div className="ad-reviews-list">
+          {reviews.slice(0, visibleReviews).map((review) => (
+            <div key={review._id} className="ad-review-card">
+              <div className="ad-review-body">
+                <div className="ad-review-date">Posted {formatDate(review.createdAt)}</div>
+                <div className="ad-review-card-title">{review.title || playlist.name}</div>
+                <div className="ad-review-card-artist">{playlist.creator?.name || playlist.creator?.username || ""}</div>
+                <div className="ad-review-userline">
+                  <div className="ad-review-avatar">
+                    <img
+                      src={`https://api.dicebear.com/7.x/big-smile/svg?seed=${review.username || "user"}`}
+                      alt={review.username}
+                    />
+                  </div>
+                  <span className="ad-review-username">{review.username}</span>
+                </div>
+                <div className="ad-review-stars">{renderStars(review.rating)}</div>
+                {review.title && review.text && (
+                  <div className="ad-review-headline">{review.title}</div>
+                )}
+                <p className="ad-review-text">{review.text}</p>
+                {(user?.role === "admin" || user?.id === review.userId) && (
+                  <button
+                    className="ad-review-delete"
+                    onClick={() => setConfirmDeleteId(review._id)}
+                    title="Delete review"
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <div className="ad-review-right">
+                <div className="ad-review-cover">
+                  <img
+                    src={process.env.PUBLIC_URL + "/review-vinyl.svg"}
+                    alt=""
+                    className="ad-review-vinyl"
+                  />
+                  <img
+                    src={playlist.image || playlist.tracks?.[0]?.albumArt || ""}
+                    alt={playlist.name}
+                    className="ad-review-art"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {reviews.length === 0 && (
+          <p className="ad-reviews-empty">No reviews yet. Be the first to write one!</p>
+        )}
+
+        {visibleReviews < reviews.length && (
+          <button
+            className="ad-reviews-load-more"
+            onClick={() => setVisibleReviews((prev) => prev + 6)}
+          >
+            Load more...
+          </button>
+        )}
+      </div>
+
+      {showSignInPopup && (
+        <SignInPopup onClose={() => setShowSignInPopup(false)} />
+      )}
+
+      <ConfirmModal
+        open={!!confirmDeleteId}
+        title="Delete this review?"
+        message="This action cannot be undone."
+        confirmText="DELETE"
+        cancelText="CANCEL"
+        onConfirm={performDeleteReview}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   );
 }

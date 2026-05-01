@@ -3761,8 +3761,7 @@ body:has(.profile-page) {
 @media (max-width: 768px) {
   .edit-mixtape-overlay {
     padding: 16px;
-    align-items: flex-start;
-    overflow-y: auto;
+    align-items: center;
   }
 
   .edit-mixtape-modal {
@@ -3771,6 +3770,19 @@ body:has(.profile-page) {
     max-height: calc(100vh - 32px);
     padding: 20px 18px;
     border-radius: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .edit-mixtape-tracks-section {
+    overflow: visible;
+    flex: 0 0 auto;
+  }
+
+  .edit-mixtape-tracks-list {
+    overflow-y: visible;
+    min-height: 0;
+    flex: 0 0 auto;
   }
 
   .edit-mixtape-row {
@@ -3797,10 +3809,6 @@ body:has(.profile-page) {
 
   .edit-mixtape-textarea {
     min-height: 90px;
-  }
-
-  .edit-mixtape-tracks-list {
-    min-height: 180px;
   }
 
   .edit-mixtape-bottom {

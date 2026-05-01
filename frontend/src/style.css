@@ -4047,6 +4047,7 @@ body:has(.profile-page) {
 
   .profile-mixtape-top {
     flex-direction: column;
+    align-items: center;
   }
 
   .profile-mixtape-cover {
@@ -4055,6 +4056,7 @@ body:has(.profile-page) {
 
   .profile-mixtape-info {
     text-align: center;
+    width: 100%;
   }
 
   .profile-mixtape-actions {

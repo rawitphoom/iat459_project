@@ -3293,6 +3293,11 @@ body:has(.profile-page) {
   margin-top: 16px;
 }
 
+.profile-fav-album-bottom > div {
+  flex: 1;
+  min-width: 0;
+}
+
 .profile-fav-album-name {
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
@@ -3308,6 +3313,9 @@ body:has(.profile-page) {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.4);
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-fav-album-heart {
@@ -4178,23 +4186,33 @@ body:has(.profile-page) {
   }
 
   .profile-fav-album-card {
-    padding: 16px 14px;
+    padding: 14px 12px;
+    overflow: hidden;
   }
 
+  /* Cover container fills the card width and grows tall for the art square */
   .profile-fav-album-cover {
-    width: 140px;
-    height: 140px;
-    transform: translateX(-20px);
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    transform: none;
+    margin: 0;
+    overflow: hidden;
   }
 
-  .profile-fav-album-img,
-  .profile-fav-album-vinyl {
-    width: 130px;
-    height: 130px;
+  /* Album art on the left; vinyl peeking out from behind on the right */
+  .profile-fav-album-img {
+    width: 75%;
+    height: 75%;
+    left: 0;
+    border-radius: 6px;
   }
 
   .profile-fav-album-vinyl {
-    right: -50px;
+    width: 90%;
+    height: 70%;
+    right: -10%;
+    left: auto;
   }
 
   .profile-fav-songs-list .profile-track {
@@ -4240,20 +4258,26 @@ body:has(.profile-page) {
     font-size: 10px;
   }
 
-  .profile-fav-album-cover {
-    width: 120px;
-    height: 120px;
-    transform: translateX(-15px);
+  .profile-fav-album-card {
+    padding: 12px 10px;
   }
 
-  .profile-fav-album-img,
-  .profile-fav-album-vinyl {
-    width: 110px;
-    height: 110px;
+  .profile-fav-album-name {
+    font-size: 13px;
   }
 
-  .profile-fav-album-vinyl {
-    right: -40px;
+  .profile-fav-album-artist {
+    font-size: 11px;
+  }
+
+  .profile-fav-album-heart {
+    width: 26px;
+    height: 26px;
+  }
+
+  .profile-fav-album-heart svg {
+    width: 14px;
+    height: 14px;
   }
 }
 

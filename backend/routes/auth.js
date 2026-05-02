@@ -4,18 +4,25 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const User = require("../models/User");
 
+// Build a case-insensitive exact-match regex for a user-supplied value.
+// Escapes regex metachars so input like "a.b" won't accidentally match "axb".
+const ciExact = (value) => {
+  const escaped = String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^${escaped}$`, "i");
+};
+
 // POST /api/auth/register
 router.post("/register", async (req, res) => {
   try {
     const { name, username, email, password } = req.body;
     if (!name || !username || !email || !password) return res.status(400).json({ error: "All fields are required" });
 
-    // Check if email is already in use
-    const emailTaken = await User.findOne({ email });
+    // Check if email is already in use (case-insensitive — Email@x.com === email@x.com)
+    const emailTaken = await User.findOne({ email: ciExact(email) });
     if (emailTaken) return res.status(400).json({ error: "Email already in use" });
 
-    //1. Check if username is taken
-    const existing = await User.findOne({ username });
+    //1. Check if username is taken (case-insensitive — TestAcc === testacc)
+    const existing = await User.findOne({ username: ciExact(username) });
     if (existing) return res.status(400).json({ error: "Username already taken" });
 
     //2. Hash password and create user
@@ -44,7 +51,7 @@ router.post("/forgot-password", async (req, res) => {
     if (!email) return res.status(400).json({ error: "Email is required" });
 
     const user = await User.findOne({
-      $or: [{ email }, { username: email }],
+      $or: [{ email: ciExact(email) }, { username: ciExact(email) }],
     });
     if (!user) return res.status(404).json({ error: "No account found with that email/username" });
 
@@ -92,9 +99,9 @@ router.post("/login", async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: "Missing fields" });
 
-    //1. Find user by username or email
+    //1. Find user by username or email (case-insensitive — testacc, TestAcc, TESTACC all match)
     const user = await User.findOne({
-      $or: [{ username }, { email: username }],
+      $or: [{ username: ciExact(username) }, { email: ciExact(username) }],
     });
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
 

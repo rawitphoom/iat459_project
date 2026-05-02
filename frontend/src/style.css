@@ -8414,24 +8414,34 @@ body:has(.admin-page) {
   width: 200px;
   height: 200px;
   margin-right: 40px;
+  /* Isolate so the vinyl SVG's mix-blend-mode:plus-lighter blends only inside this
+     container, not against the page backdrop. Without this iOS Safari recomposites
+     the blend on every scroll frame and the vinyl flickers white. */
+  isolation: isolate;
 }
 
 .dash-review-vinyl {
   position: absolute;
   right: -40px;
   top: 50%;
-  transform: translateY(-50%);
+  /* translateZ(0) forces a dedicated GPU layer so iOS doesn't repaint the vinyl
+     (which has multiple SVG filters + a blend mode) on every scroll tick. */
+  transform: translateY(-50%) translateZ(0);
   width: 160px;
   height: 160px;
   object-fit: contain;
   pointer-events: none;
+  backface-visibility: hidden;
 }
 
 .dash-review-art {
   position: absolute;
   left: 0;
   top: 50%;
-  transform: translateY(-50%);
+  /* Same GPU-layer trick as the vinyl — keeps iOS from re-blending the SVG underneath
+     this image on every scroll frame, which was causing the white flash. */
+  transform: translateY(-50%) translateZ(0);
+  backface-visibility: hidden;
   z-index: 1;
   width: 160px;
   height: 160px;

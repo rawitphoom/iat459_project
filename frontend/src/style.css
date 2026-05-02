@@ -8327,11 +8327,17 @@ body:has(.admin-page) {
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease;
   overflow: hidden;
+  /* iOS: kill the grey/white tap highlight that causes a flash on touch */
+  -webkit-tap-highlight-color: transparent;
 }
 
-.dash-review-card:hover {
-  border-color: rgba(194, 115, 73, 0.5);
-  background: rgba(255, 255, 255, 0.06);
+/* Only apply hover styles on devices with a real pointer.
+   iOS treats every tap as a hover, which causes the flash-on-scroll bug. */
+@media (hover: hover) {
+  .dash-review-card:hover {
+    border-color: rgba(194, 115, 73, 0.5);
+    background: rgba(255, 255, 255, 0.06);
+  }
 }
 
 .dash-review-body {

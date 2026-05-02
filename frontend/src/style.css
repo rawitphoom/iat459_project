@@ -7481,13 +7481,42 @@ body:has(.admin-page) {
   overflow: hidden;
 }
 
+/* === MOBILE VINYL POSITION + SIZE — TWEAK HERE ===
+   These are the defaults used on phones / tablets. iOS Safari sees these
+   immediately on first paint, so the vinyl never flashes at the desktop
+   position. Desktop sizing is in the @media (min-width: 901px) block below. */
 .dash-vinyl-wrapper {
   position: absolute;
-  left: -28%;
-  top: 50%;
-  transform: translateY(-50%);
   pointer-events: none;
-  animation: vinylSlideIn 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  left: 50%;       /* horizontal anchor (50% = horizontally centered) */
+  top: 0%;         /* vertical anchor — raise % to push vinyl down, lower to pull up */
+  transform: translate(-50%, -180%);  /* starts off-screen above; animation slides to resting */
+  opacity: 0;
+  width: 200vw;    /* vinyl size — bigger value = bigger vinyl */
+  z-index: 0;
+  animation: vinylSlideDownMobile 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Desktop layout — only applies above 900px so phones never see this. */
+@media (min-width: 901px) {
+  .dash-vinyl-wrapper {
+    left: -28%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1;
+    width: auto;
+    animation: vinylSlideIn 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+/* Accessibility: users who request reduced motion get the vinyl at its
+   resting position with no slide animation. */
+@media (prefers-reduced-motion: reduce) {
+  .dash-vinyl-wrapper {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    animation: none;
+  }
 }
 
 @keyframes vinylSlideIn {
@@ -8154,30 +8183,8 @@ body:has(.admin-page) {
     margin-top: auto;
   }
 
-  /* === Mobile vinyl position + size — TWEAK HERE === */
-  .dash-vinyl-wrapper {
-    left: 50%;       /* horizontal anchor (50% = horizontally centered) */
-    top: 0%;        /* vertical anchor — lower this % to move vinyl up, raise to move it down */
-    /* Initial state IS the animation's starting position — vinyl sits above the
-       viewport. Eliminates the iOS flash where the static transform briefly
-       paints at the resting position before the animation kicks in. */
-    transform: translate(-50%, -180%);
-    opacity: 0;
-    width: 200vw;    /* vinyl size — bigger value = bigger vinyl (try 100vw–150vw) */
-    z-index: 0;
-    /* `forwards` holds the keyframe's `to` state after the animation ends. */
-    animation: vinylSlideDownMobile 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  /* Accessibility: users who request reduced motion get the vinyl placed
-     directly at its resting position with no slide animation. */
-  @media (prefers-reduced-motion: reduce) {
-    .dash-vinyl-wrapper {
-      transform: translate(-50%, -50%);
-      opacity: 1;
-      animation: none;
-    }
-  }
+  /* Mobile vinyl rules now live at the root .dash-vinyl-wrapper selector
+     (above) so iOS Safari paints them on first frame. Tweak there. */
 
   .dash-vinyl {
     width: 100%;

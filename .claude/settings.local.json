@@ -80,7 +80,9 @@
       "Bash(awk -F: '{print $1}')",
       "Bash(awk '/^@media/{m=NR; q=$0} /profile-/ && m {print m\": \"q\" -> line \"NR}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
       "Bash(awk '/^@media/{m=NR; q=$0} /\\\\.profile-/ && m && NR > 3500 {print q\" -> line \"NR\": \"$0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
-      "Bash(awk '/^@media/{m=NR; q=$0} /edit-mixtape/ && m {print q\" -> line \"NR\": \"$0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)"
+      "Bash(awk '/^@media/{m=NR; q=$0} /edit-mixtape/ && m {print q\" -> line \"NR\": \"$0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
+      "Bash(curl -s \"https://iat459-project.vercel.app/\")",
+      "Bash(curl -s \"https://iat459-project.vercel.app/static/css/main.96cd31e8.css\")"
     ]
   }
 }

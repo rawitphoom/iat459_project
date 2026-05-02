@@ -7501,6 +7501,20 @@ body:has(.admin-page) {
   }
 }
 
+/* Mobile entrance — vinyl slides down from above the viewport into its resting position.
+   Defined at root (not inside the @media block) because some iOS Safari versions fail
+   to register @keyframes scoped inside media queries. */
+@keyframes vinylSlideDownMobile {
+  from {
+    transform: translate(-50%, -180%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
 .dash-vinyl-glow {
   position: absolute;
   top: 50%;
@@ -8149,19 +8163,8 @@ body:has(.admin-page) {
     opacity: 1;
     z-index: 0;
     /* Override the desktop slide-from-left animation so mobile slides down from above
-       into its resting position. Keeps the same easing/duration as desktop. */
+       into its resting position. Keyframe is defined at root level for iOS compatibility. */
     animation: vinylSlideDownMobile 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  @keyframes vinylSlideDownMobile {
-    from {
-      transform: translate(-50%, -180%);  /* starts well above the screen */
-      opacity: 0;
-    }
-    to {
-      transform: translate(-50%, -50%);   /* lands at resting position */
-      opacity: 1;
-    }
   }
 
   .dash-vinyl {

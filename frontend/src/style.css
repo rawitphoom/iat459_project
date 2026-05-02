@@ -8148,15 +8148,18 @@ body:has(.admin-page) {
     width: 200vw;    /* vinyl size — bigger value = bigger vinyl (try 100vw–150vw) */
     opacity: 1;
     z-index: 0;
+    /* Override the desktop slide-from-left animation so mobile slides down from above
+       into its resting position. Keeps the same easing/duration as desktop. */
+    animation: vinylSlideDownMobile 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  @keyframes vinylSlideIn {
+  @keyframes vinylSlideDownMobile {
     from {
-      transform: translate(-50%, -50%) scale(0.8);
+      transform: translate(-50%, -180%);  /* starts well above the screen */
       opacity: 0;
     }
     to {
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);   /* lands at resting position */
       opacity: 1;
     }
   }

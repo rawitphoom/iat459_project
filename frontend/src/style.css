@@ -7549,19 +7549,33 @@ body:has(.admin-page) {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 110%;
+  /* Mobile-first default — desktop overrides via @media below */
+  width: 150%;
+  opacity: 0.7;
   pointer-events: none;
   z-index: 0;
 }
 
 .dash-vinyl {
   position: relative;
-  width: 100vh;
-  max-width: 850px;
+  /* Mobile-first default — desktop overrides via @media below */
+  width: 100%;
+  max-width: 100%;
   animation: vinylSpin 20s linear infinite;
   opacity: 1;
   filter: brightness(1);
   z-index: 1;
+}
+
+@media (min-width: 901px) {
+  .dash-vinyl-glow {
+    width: 110%;
+    opacity: 1;
+  }
+  .dash-vinyl {
+    width: 100vh;
+    max-width: 850px;
+  }
 }
 
 @keyframes vinylSpin {
@@ -8183,18 +8197,9 @@ body:has(.admin-page) {
     margin-top: auto;
   }
 
-  /* Mobile vinyl rules now live at the root .dash-vinyl-wrapper selector
-     (above) so iOS Safari paints them on first frame. Tweak there. */
-
-  .dash-vinyl {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .dash-vinyl-glow {
-    width: 150%;
-    opacity: 0.7;
-  }
+  /* Mobile vinyl rules (.dash-vinyl-wrapper, .dash-vinyl, .dash-vinyl-glow) now
+     live at the root selector level so iOS Safari paints them on first frame.
+     Desktop overrides are in @media (min-width: 901px) blocks. */
 
   .dash-welcome {
     font-size: clamp(28px, 8vw, 44px);

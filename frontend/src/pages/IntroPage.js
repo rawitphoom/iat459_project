@@ -51,8 +51,11 @@ export default function IntroPage() {
     navigate("/home", { replace: true });
   }
 
-  // Build columns — duplicate covers so animation loops seamlessly
-  const columnCount = Math.ceil(window.innerWidth / 160);
+  // Build columns — duplicate covers so animation loops seamlessly.
+  // The container is ~4× the viewport wide (inset: -150% horizontal) and
+  // tilted/rotated, so a strict viewport-based count leaves big black gaps
+  // on mobile after the rotation. Enforce a sensible minimum.
+  const columnCount = Math.max(8, Math.ceil(window.innerWidth / 120));
   const columns = [];
   for (let i = 0; i < columnCount; i++) {
     const offset = (i * 7) % Math.max(albums.length, 1);

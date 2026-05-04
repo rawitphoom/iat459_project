@@ -4288,6 +4288,10 @@ body:has(.profile-page) {
 .intro-page {
   position: relative;
   min-height: 100vh;
+  /* Use dynamic viewport height on supporting browsers so iOS Safari's
+     URL bar / bottom toolbar don't push content (like ENTER WITHOUT AUDIO)
+     below the fold. */
+  min-height: 100dvh;
   background: #111;
   display: flex;
   align-items: center;
@@ -4425,10 +4429,12 @@ body:has(.profile-page) {
   line-height: 1;
 }
 
-/* "Enter without audio" link at the bottom of the intro page */
+/* "Enter without audio" link at the bottom of the intro page.
+   position: fixed so iOS Safari's collapsing URL bar can't push it
+   below the visible viewport. */
 .intro-skip-audio {
-  position: absolute;
-  bottom: 32px;
+  position: fixed;
+  bottom: max(32px, env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   background: transparent;
@@ -4447,6 +4453,30 @@ body:has(.profile-page) {
 
 .intro-skip-audio:hover {
   color: #DB4A1E;
+}
+
+/* ---- Mobile responsive: tighten card + title so everything fits ---- */
+@media (max-width: 640px) {
+  .intro-card {
+    padding: 24px 20px;
+  }
+  .intro-title {
+    font-size: clamp(44px, 14vw, 64px);
+    margin-bottom: 24px;
+  }
+  .intro-enter-btn {
+    padding: 14px 56px;
+    font-size: 17px;
+  }
+  .intro-skip-audio {
+    bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    font-size: 11px;
+  }
+  /* Reduce the album-wall scale a touch so the perspective doesn't
+     overwhelm the small viewport. */
+  .intro-albums-bg {
+    transform: perspective(1000px) rotateX(28deg) rotateZ(-14deg) translateY(-10%) scale(0.5);
+  }
 }
 
 /* ---- Music toggle button ---- */

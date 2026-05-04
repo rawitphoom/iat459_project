@@ -83,6 +83,14 @@ function AppLayout() {
     }
   }, []);
 
+  // Scroll to top whenever the route changes. React Router preserves
+  // the previous scroll Y by default, which means after logging in on
+  // mobile (where the user has scrolled down to reach SIGN IN) the
+  // dashboard would load mid-page. This restores the expected behavior.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
     <>
       {showSiteChrome ? <Navbar /> : null}

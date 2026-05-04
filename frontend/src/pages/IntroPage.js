@@ -52,7 +52,7 @@ export default function IntroPage() {
   }
 
   // Build columns — duplicate covers so animation loops seamlessly
-  const columnCount = Math.ceil(window.innerWidth / 80);
+  const columnCount = Math.ceil(window.innerWidth / 160);
   const columns = [];
   for (let i = 0; i < columnCount; i++) {
     const offset = (i * 7) % Math.max(albums.length, 1);

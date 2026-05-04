@@ -188,6 +188,21 @@ function StarRating({ rating }) {
 }
 
 export default function Dashboard() {
+    // The vinyl wrapper renders immediately at its off-screen starting position.
+    // One animation frame later we flip `vinylActive` to true, which adds
+    // `.is-active` and triggers the CSS transition into resting position.
+    // Two-step ensures the browser commits the off-screen state before the
+    // transition target — without it, iOS Safari skips the slide.
+    const [vinylActive, setVinylActive] = useState(false);
+    useEffect(() => {
+        // Double rAF: first frame paints the initial state, second triggers transition.
+        const id1 = requestAnimationFrame(() => {
+            const id2 = requestAnimationFrame(() => setVinylActive(true));
+            return () => cancelAnimationFrame(id2);
+        });
+        return () => cancelAnimationFrame(id1);
+    }, []);
+
     const [albums, setAlbums] = useState([]);
     const [activeIdx, setActiveIdx] = useState(0);
     const [hoveredIdx, setHoveredIdx] = useState(-1);
@@ -369,9 +384,12 @@ export default function Dashboard() {
 
     return (
         <div className="dash-page">
-            {/* ---- Hero with vinyl ---- */}
+            {/* ---- Hero with vinyl ----
+                The wrapper always renders. CSS keeps it off-screen until the
+                .is-active class is added (one frame after mount), at which
+                point a CSS transition slides it into place. */}
             <div className="dash-hero">
-                <div className="dash-vinyl-wrapper">
+                <div className={`dash-vinyl-wrapper${vinylActive ? " is-active" : ""}`}>
                     <img
                         src={process.env.PUBLIC_URL + "/vinyl-glow.svg"}
                         alt=""

@@ -7482,19 +7482,34 @@ body:has(.admin-page) {
 }
 
 /* === MOBILE VINYL POSITION + SIZE — TWEAK HERE ===
-   These are the defaults used on phones / tablets. iOS Safari sees these
-   immediately on first paint, so the vinyl never flashes at the desktop
-   position. Desktop sizing is in the @media (min-width: 901px) block below. */
+   Mobile-first defaults. The wrapper starts off-screen above (using vh units
+   so it's correct even before the SVG image loads and gives the wrapper its
+   real height) and slides into resting position when JS adds .is-active. */
 .dash-vinyl-wrapper {
   position: absolute;
   pointer-events: none;
-  left: 50%;       /* horizontal anchor (50% = horizontally centered) */
-  top: 0%;         /* vertical anchor — raise % to push vinyl down, lower to pull up */
-  transform: translate(-50%, -180%);  /* starts off-screen above; animation slides to resting */
+  left: 50%;       /* horizontal anchor */
+  top: 0%;         /* vertical anchor — raise % to push vinyl down */
+  /* Translate is vh-based, NOT percentage-of-self — guarantees the wrapper is
+     pushed fully off-screen above regardless of whether the SVG has loaded. */
+  transform: translate(-50%, -150vh);
   opacity: 0;
   width: 200vw;    /* vinyl size — bigger value = bigger vinyl */
+  /* Explicit aspect-ratio + height so the wrapper has a stable size from the
+     very first paint, before the SVG inside has loaded. */
+  aspect-ratio: 1;
   z-index: 0;
-  animation: vinylSlideDownMobile 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* When the wrapper is ready (JS adds .is-active one frame after mount), it
+   transitions from off-screen above into the resting position. The resting
+   transform uses percentages so it always centers correctly relative to the
+   wrapper's own size. */
+.dash-vinyl-wrapper.is-active {
+  transform: translate(-50%, -50%);
+  opacity: 1;
 }
 
 /* Desktop layout — only applies above 900px so phones never see this. */
@@ -7502,20 +7517,27 @@ body:has(.admin-page) {
   .dash-vinyl-wrapper {
     left: -28%;
     top: 50%;
-    transform: translateY(-50%);
-    opacity: 1;
+    transform: translate(-150vw, -50%);  /* off-screen left initially (vw not %) */
     width: auto;
-    animation: vinylSlideIn 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    aspect-ratio: auto;                   /* let desktop image size naturally */
+  }
+  .dash-vinyl-wrapper.is-active {
+    transform: translate(0, -50%);
   }
 }
 
 /* Accessibility: users who request reduced motion get the vinyl at its
-   resting position with no slide animation. */
+   resting position instantly with no transition. */
 @media (prefers-reduced-motion: reduce) {
   .dash-vinyl-wrapper {
     transform: translate(-50%, -50%);
     opacity: 1;
-    animation: none;
+    transition: none;
+  }
+  @media (min-width: 901px) {
+    .dash-vinyl-wrapper {
+      transform: translate(0, -50%);
+    }
   }
 }
 

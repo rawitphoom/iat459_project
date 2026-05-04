@@ -86,7 +86,9 @@
       "Bash(curl -s \"https://iat459-project.vercel.app/static/css/main.f03d4826.css\")",
       "Bash(grep -oE \"@keyframes vinylSlide[A-Za-z]*[^@]{0,150}\")",
       "Bash(curl -sI \"https://iat459-project.vercel.app/static/css/main.96cd31e8.css\")",
-      "Bash(curl -sI \"https://iat459-project.vercel.app/static/css/main.f03d4826.css\")"
+      "Bash(curl -sI \"https://iat459-project.vercel.app/static/css/main.f03d4826.css\")",
+      "Bash(curl -s \"https://iat459-project.vercel.app/static/css/main.3e80b690.css\")",
+      "Bash(curl -sI \"https://iat459-project.vercel.app/static/css/main.3e80b690.css\")"
     ]
   }
 }

@@ -107,7 +107,8 @@
       "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"https://mixtape-api-vuri.onrender.com/api/music/album/407903997\" --max-time 30)",
       "Bash(curl -s \"https://mixtape-api-vuri.onrender.com/api/music/chart\" --max-time 30)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\([a.get\\('cover_big'\\) or a.get\\('cover'\\) for a in d.get\\('albums',[]\\)][:50], indent=0\\)\\)\")",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(python3)"
     ]
   }
 }

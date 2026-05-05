@@ -1611,6 +1611,7 @@ body::-webkit-scrollbar {
   letter-spacing: 0.5px;
 }
 
+/* Creator pill (circular avatar + username) under each mixtape name */
 .landing-top3-creator {
   display: inline-flex;
   align-items: center;
@@ -1625,8 +1626,8 @@ body::-webkit-scrollbar {
 }
 
 .landing-top3-creator-avatar {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   object-fit: cover;
   background: #1a1a1a;
@@ -1635,7 +1636,7 @@ body::-webkit-scrollbar {
 
 .landing-top3-creator-name {
   font-family: 'DM Mono', 'Roboto Mono', monospace;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.5px;
   color: rgba(255, 255, 255, 0.55);
 }

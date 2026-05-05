@@ -572,7 +572,7 @@ function PopularMixtapes({ mixtapes, navigate }) {
                   alt=""
                 />
                 <span className="landing-top3-creator-name">
-                  {mix.creator.name || mix.creator.username}
+                  {mix.creator.username || mix.creator.name}
                 </span>
               </div>
             )}

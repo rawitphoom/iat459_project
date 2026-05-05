@@ -693,7 +693,7 @@ export default function Discover() {
                   </div>
                   <div className="mixtape-card-creator-info">
                     <div className="mixtape-card-title">{playlist.name}</div>
-                    {creatorUsername && <div className="mixtape-card-creator">{creatorUsername}</div>}
+                    {creatorName && <div className="mixtape-card-creator">{creatorName}</div>}
                   </div>
                 </div>
               </div>

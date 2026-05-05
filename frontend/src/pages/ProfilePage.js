@@ -124,19 +124,43 @@ export default function ProfilePage() {
         setFavSongs(nextFavSongs);
 
         const rawReviews = Array.isArray(reviewData) ? reviewData : [];
-        // Enrich reviews with album art from Deezer API
+        // Enrich reviews with cover art:
+        //   - Album reviews → fetch from Deezer (/api/music/album/:id)
+        //   - Mixtape reviews → fetch from playlist detail (/api/playlists/detail/:id)
         Promise.all(
           rawReviews.map(async (r) => {
-            if ((r.albumArt && r.artistName) || !r.albumId) return r;
-            try {
-              const res = await fetch(`${API_URL}/api/music/album/${r.albumId}`);
-              const album = await res.json();
-              return {
-                ...r,
-                albumArt: r.albumArt || album.coverXl || album.cover || "",
-                artistName: r.artistName || album.artist || "",
-              };
-            } catch { return r; }
+            // Album review path
+            if (r.albumId) {
+              if (r.albumArt && r.artistName) return r;
+              try {
+                const res = await fetch(`${API_URL}/api/music/album/${r.albumId}`);
+                const album = await res.json();
+                return {
+                  ...r,
+                  albumArt: r.albumArt || album.coverXl || album.cover || "",
+                  artistName: r.artistName || album.artist || "",
+                };
+              } catch { return r; }
+            }
+            // Mixtape review path — pull cover from the playlist's own
+            // image (or first track art) and use the creator name in the
+            // artist slot so the card has something to render.
+            if (r.playlistId) {
+              if (r.albumArt && r.artistName) return r;
+              try {
+                const res = await fetch(`${API_URL}/api/playlists/detail/${r.playlistId}`);
+                const pl = await res.json();
+                const cover = pl?.image || pl?.tracks?.[0]?.albumArt || "";
+                const creator = pl?.creator?.name || pl?.creator?.username || "";
+                return {
+                  ...r,
+                  albumTitle: r.albumTitle || pl?.name || "",
+                  albumArt: r.albumArt || cover,
+                  artistName: r.artistName || creator,
+                };
+              } catch { return r; }
+            }
+            return r;
           })
         ).then((enrichedReviews) => {
           setReviews(enrichedReviews);

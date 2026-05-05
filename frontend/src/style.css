@@ -10108,6 +10108,110 @@ body:has(.admin-page) {
   cursor: not-allowed;
 }
 
+/* ===== Edit Profile — Responsive ===== */
+/* Tablet: collapse the 200px / 1fr grid to a single centered column so
+   inputs get the full width of the modal instead of being squeezed. */
+@media (max-width: 720px) {
+  .edit-profile-overlay {
+    padding: 12px;
+  }
+  .edit-profile-modal {
+    padding: 20px 22px 24px;
+    border-radius: 16px;
+    max-height: 92vh;
+  }
+  .edit-profile-modal--pw {
+    max-width: 100%;
+  }
+  .edit-profile-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .edit-profile-avatar {
+    width: 130px;
+    height: 130px;
+    font-size: 52px;
+  }
+  .edit-profile-right {
+    gap: 14px;
+  }
+  .edit-profile-input {
+    padding: 14px 18px;
+    font-size: 14px;
+    border-radius: 24px;
+  }
+  .edit-profile-pw-row {
+    border-radius: 24px;
+    padding: 4px 4px 4px 18px;
+  }
+  .edit-profile-bottom {
+    flex-direction: row;
+    gap: 10px;
+  }
+  .edit-profile-cancel,
+  .edit-profile-save {
+    flex: 1;
+    padding: 13px 16px;
+    font-size: 12px;
+    letter-spacing: 1.2px;
+  }
+}
+
+/* Phone: tighter padding, smaller avatar, shrink the change-image pill */
+@media (max-width: 480px) {
+  .edit-profile-overlay {
+    padding: 8px;
+  }
+  .edit-profile-modal {
+    padding: 18px 16px 20px;
+    border-radius: 14px;
+  }
+  .edit-profile-avatar {
+    width: 110px;
+    height: 110px;
+    font-size: 44px;
+  }
+  .edit-profile-change-image {
+    padding: 10px 18px;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+  }
+  .edit-profile-label {
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    margin-bottom: 6px;
+  }
+  .edit-profile-input {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+  .edit-profile-change-pw {
+    font-size: 10px;
+    padding: 9px 16px;
+  }
+  .edit-profile-bottom {
+    margin-top: 12px;
+  }
+}
+
+/* iPhone SE / very narrow: drop the back-button + heading row spacing */
+@media (max-width: 380px) {
+  .edit-profile-modal {
+    padding: 14px 12px 18px;
+  }
+  .edit-profile-grid {
+    gap: 18px;
+  }
+  .edit-profile-avatar {
+    width: 96px;
+    height: 96px;
+    font-size: 38px;
+  }
+  .edit-profile-input {
+    padding: 11px 14px;
+  }
+}
+
 /* ============================================================
    Admin — Reviews tab (grid cards + list rows)
    ============================================================ */

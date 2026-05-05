@@ -88,7 +88,12 @@
       "Bash(curl -sI \"https://iat459-project.vercel.app/static/css/main.96cd31e8.css\")",
       "Bash(curl -sI \"https://iat459-project.vercel.app/static/css/main.f03d4826.css\")",
       "Bash(curl -s \"https://iat459-project.vercel.app/static/css/main.3e80b690.css\")",
-      "Bash(curl -sI \"https://iat459-project.vercel.app/static/css/main.3e80b690.css\")"
+      "Bash(curl -sI \"https://iat459-project.vercel.app/static/css/main.3e80b690.css\")",
+      "Bash(awk '/@media \\\\\\(max-width: 900px\\\\\\)/{found=1; start=NR} found && /^}/{print start\":\"NR; found=0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
+      "Bash(awk 'NR>=4731 && /^}/{print NR; if\\(++c==2\\)exit}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
+      "Bash(awk -F: '$1>=4700 && $1<=4900')",
+      "Bash(awk -F: '$1>=4700 && $1<=4900 {print}')",
+      "Bash(awk -v RS= 'NR<5500 && /discover-toggle-opt/' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)"
     ]
   }
 }

@@ -584,10 +584,11 @@ export default function LandingPage() {
   useEffect(() => {
     const onResize = () => {
       const w = window.innerWidth;
-      if (w < 480) setRadius(200);
-      else if (w < 768) setRadius(260);
-      else if (w < 1024) setRadius(360);
-      else setRadius(485);
+      if (w < 480) setRadius(170);
+      else if (w < 768) setRadius(220);
+      else if (w < 1024) setRadius(310);
+      else if (w < 1280) setRadius(380);
+      else setRadius(420);
     };
     onResize();
     window.addEventListener("resize", onResize);

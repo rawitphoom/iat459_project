@@ -1905,6 +1905,101 @@ body::-webkit-scrollbar {
 
 }
 
+/* ===== TABLET (iPad portrait/landscape, ~901–1280px) ===== */
+/* The desktop carousel is sized for tall viewports; on iPad-class screens
+   the 300px album + 80px title + info + controls don't fit, and the
+   center cover starts to crash into the title above and the song name
+   below. Shrink everything proportionally. */
+@media (min-width: 901px) and (max-width: 1280px) {
+  .explore-section {
+    padding: 24px 48px 24px;
+  }
+  .explore-title {
+    font-size: clamp(36px, 4.2vw, 60px);
+    margin: 0 0 20px 0;
+  }
+  .explore-carousel {
+    height: 240px;
+    margin-bottom: 14px;
+  }
+  .explore-card-img {
+    width: 220px;
+    height: 220px;
+  }
+  .explore-glow {
+    width: 260px;
+    height: 260px;
+  }
+  .explore-track-name {
+    font-size: 22px;
+  }
+  .explore-track-artist {
+    font-size: 14px;
+  }
+  .explore-info {
+    margin-bottom: 10px;
+  }
+  .explore-controls {
+    gap: 18px;
+    margin-bottom: 12px;
+  }
+
+  /* Popular Mixtapes hero on tablet */
+  .landing-top3 {
+    padding: 40px 48px;
+  }
+  .landing-top3-title {
+    font-size: clamp(36px, 4.2vw, 60px);
+    margin: 0 0 36px 0;
+  }
+  .landing-top3-grid {
+    gap: 24px;
+    max-width: 880px;
+  }
+}
+
+/* Short landscape (iPad landscape, browser dev tools open, etc.) — when
+   the viewport is wide but vertically tight, the 100vh sections overflow.
+   Compress the carousel further so nothing overlaps. */
+@media (min-width: 901px) and (max-height: 720px) {
+  .explore-section {
+    padding: 16px 48px 16px;
+  }
+  .explore-title {
+    font-size: clamp(32px, 3.6vw, 52px);
+    margin: 0 0 14px 0;
+  }
+  .explore-carousel {
+    height: 200px;
+    margin-bottom: 10px;
+  }
+  .explore-card-img {
+    width: 180px;
+    height: 180px;
+  }
+  .explore-glow {
+    width: 220px;
+    height: 220px;
+  }
+  .explore-info {
+    margin-bottom: 8px;
+  }
+  .explore-track-name {
+    font-size: 20px;
+  }
+  .explore-controls {
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .landing-top3 {
+    padding: 32px 48px;
+  }
+  .landing-top3-title {
+    margin: 0 0 24px 0;
+  }
+}
+
 /* ======== WRITE REVIEW PAGE ======== */
 .wr-page {
   min-height: 100vh;
@@ -5270,12 +5365,29 @@ body:has(.discover-page) {
 
 @media (max-width: 480px) {
   .discover-toggle-opt {
-    font-size: 12px;
-    letter-spacing: 0.8px;
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    padding: 10px 0;
   }
 
   .discover-filter-btn {
     padding: 9px 12px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .discover-toggle-opt {
+    font-size: 10px;
+    letter-spacing: 0.4px;
+  }
+
+  .discover-filter-btn {
+    padding: 8px 10px;
+    font-size: 10px;
+    letter-spacing: 0.8px;
   }
 }
 
@@ -7480,8 +7592,10 @@ body:has(.admin-page) {
   }
 }
 
-/* Tablet / small laptop sizes */
-@media (min-width: 721px) and (max-width: 1024px) {
+/* Tablet / small laptop sizes — extended up to ~1280 so iPad landscape
+   (≈1024–1180) and short laptop windows don't fall back to desktop sizing
+   and crash the ring into the navbar. */
+@media (min-width: 721px) and (max-width: 1280px) {
   .landing-ring-item {
     width: 125px;
     height: 125px;
@@ -7492,6 +7606,37 @@ body:has(.admin-page) {
   .landing-ring-wrapper {
     height: 175px;
     margin-top: 80px;
+  }
+}
+
+/* MIXTAPE LETS YOU — tablet: shrink padding/gap so the right column
+   has room to breathe instead of wrapping every word onto its own line. */
+@media (min-width: 901px) and (max-width: 1280px) {
+  .features-sticky {
+    padding: 0 80px;
+    gap: 80px;
+  }
+  .features-title {
+    font-size: clamp(40px, 5vw, 64px);
+    min-width: 220px;
+  }
+  .features-display {
+    max-width: none;
+  }
+  .features-card-text {
+    font-size: clamp(18px, 2vw, 24px);
+  }
+}
+
+/* Even tighter for narrow tablet (901–1100) where 80px each side is
+   still a lot relative to viewport. */
+@media (min-width: 901px) and (max-width: 1100px) {
+  .features-sticky {
+    padding: 0 56px;
+    gap: 56px;
+  }
+  .features-title {
+    min-width: 200px;
   }
 }
 

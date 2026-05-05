@@ -93,7 +93,21 @@
       "Bash(awk 'NR>=4731 && /^}/{print NR; if\\(++c==2\\)exit}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
       "Bash(awk -F: '$1>=4700 && $1<=4900')",
       "Bash(awk -F: '$1>=4700 && $1<=4900 {print}')",
-      "Bash(awk -v RS= 'NR<5500 && /discover-toggle-opt/' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)"
+      "Bash(awk -v RS= 'NR<5500 && /discover-toggle-opt/' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "WebFetch(domain:iat459-project.vercel.app)",
+      "Bash(curl -s -o /dev/null -w \"album-direct: %{http_code}\\\\n\" https://iat459-project.vercel.app/album/302127)",
+      "Bash(curl -s https://iat459-project.vercel.app/discover)",
+      "Bash(curl -s https://iat459-project.vercel.app/static/js/main.d4ea25a3.js)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}, time %{time_total}s\\\\n\" \"https://mixtape-api-vuri.onrender.com/api/music/album/302127\" --max-time 60)",
+      "Bash(curl -s -w 'HTTP %{http_code}\\\\n' https://mixtape-api-vuri.onrender.com/api/__TRACKED_VAR__ --max-time 30 -o /tmp/resp.json)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"https://mixtape-api-vuri.onrender.com/api/music/album/415184487\" --max-time 30)",
+      "Bash(git -C /Users/rawitphoom/Documents/GitHub/iat459_project log --oneline -10)",
+      "Bash(git -C /Users/rawitphoom/Documents/GitHub/iat459_project diff HEAD~3 -- frontend/src/pages/AlbumDetail.js)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"https://mixtape-api-vuri.onrender.com/api/music/album/407903997\" --max-time 30)",
+      "Bash(curl -s \"https://mixtape-api-vuri.onrender.com/api/music/chart\" --max-time 30)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\([a.get\\('cover_big'\\) or a.get\\('cover'\\) for a in d.get\\('albums',[]\\)][:50], indent=0\\)\\)\")",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

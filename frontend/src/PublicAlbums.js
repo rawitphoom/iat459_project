@@ -453,7 +453,18 @@ export default function Discover() {
               key={t}
               type="button"
               className={`discover-toggle-opt ${activeTab === t ? "active" : ""}`}
-              onClick={() => setActiveTab(t)}
+              onClick={() => {
+                setActiveTab(t);
+                // MIXTAPES only supports default + A-Z, so clear any
+                // tab-specific sort/filter state when switching to it.
+                if (t === "MIXTAPES" && (sortBy === "date" || sortBy === "genre")) {
+                  setSortBy("default");
+                  setSelectedYear(null);
+                  setGenreId(null);
+                  setDateMenuOpen(false);
+                  setGenreMenuOpen(false);
+                }
+              }}
             >
               {t}
             </button>
@@ -476,49 +487,55 @@ export default function Discover() {
           <div className={`discover-filter-menu ${filterOpen ? "open" : ""}`}>
             <button className={`discover-filter-item ${sortBy === "default" ? "active" : ""}`} onClick={() => handlePickSort("default")}>DEFAULT</button>
             <button className={`discover-filter-item ${sortBy === "az" ? "active" : ""}`} onClick={() => handlePickSort("az")}>A-Z</button>
-            <button
-              className={`discover-filter-item discover-filter-item-parent ${sortBy === "date" ? "active" : ""}`}
-              onClick={() => { handlePickSort("date"); setDateMenuOpen((o) => !o); }}
-              type="button"
-            >
-              DATE RELEASED
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            {dateMenuOpen && (
-              <div className="discover-filter-genre-list">
-                {availableDecades.length === 0 && <div className="discover-filter-empty">No decades</div>}
-                {availableDecades.map((d) => (
-                  <button
-                    key={d}
-                    className={`discover-filter-item ${selectedYear === d ? "active" : ""}`}
-                    onClick={() => setSelectedYear((cur) => (cur === d ? null : d))}
-                  >
-                    {selectedYear === d ? "✓ " : ""}{d}s
-                  </button>
-                ))}
-              </div>
-            )}
-            <button
-              className={`discover-filter-item discover-filter-item-parent ${sortBy === "genre" ? "active" : ""}`}
-              onClick={() => setGenreMenuOpen((o) => !o)}
-              type="button"
-            >
-              GENRE
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            {genreMenuOpen && (
-              <div className="discover-filter-genre-list">
-                {genres.length === 0 && <div className="discover-filter-empty">No genres</div>}
-                {genres.map((g) => (
-                  <button
-                    key={g.id}
-                    className={`discover-filter-item ${genreId === g.id ? "active" : ""}`}
-                    onClick={() => handlePickGenre(g)}
-                  >
-                    {g.name.toUpperCase()}
-                  </button>
-                ))}
-              </div>
+            {/* DATE RELEASED + GENRE only apply to TRACKS / ALBUMS — mixtapes
+                are user-created, so date and genre sorts aren't meaningful. */}
+            {activeTab !== "MIXTAPES" && (
+              <>
+                <button
+                  className={`discover-filter-item discover-filter-item-parent ${sortBy === "date" ? "active" : ""}`}
+                  onClick={() => { handlePickSort("date"); setDateMenuOpen((o) => !o); }}
+                  type="button"
+                >
+                  DATE RELEASED
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                {dateMenuOpen && (
+                  <div className="discover-filter-genre-list">
+                    {availableDecades.length === 0 && <div className="discover-filter-empty">No decades</div>}
+                    {availableDecades.map((d) => (
+                      <button
+                        key={d}
+                        className={`discover-filter-item ${selectedYear === d ? "active" : ""}`}
+                        onClick={() => setSelectedYear((cur) => (cur === d ? null : d))}
+                      >
+                        {selectedYear === d ? "✓ " : ""}{d}s
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button
+                  className={`discover-filter-item discover-filter-item-parent ${sortBy === "genre" ? "active" : ""}`}
+                  onClick={() => setGenreMenuOpen((o) => !o)}
+                  type="button"
+                >
+                  GENRE
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                {genreMenuOpen && (
+                  <div className="discover-filter-genre-list">
+                    {genres.length === 0 && <div className="discover-filter-empty">No genres</div>}
+                    {genres.map((g) => (
+                      <button
+                        key={g.id}
+                        className={`discover-filter-item ${genreId === g.id ? "active" : ""}`}
+                        onClick={() => handlePickGenre(g)}
+                      >
+                        {g.name.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

@@ -558,6 +558,24 @@ function PopularMixtapes({ mixtapes, navigate }) {
           >
             <CyclingMosaic tracks={mix.tracks} />
             <div className="landing-top3-label">{mix.name}</div>
+            {mix.creator && (
+              <div
+                className="landing-top3-creator"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/profile/${mix.creator._id}`);
+                }}
+              >
+                <img
+                  className="landing-top3-creator-avatar"
+                  src={mix.creator.avatar || `https://api.dicebear.com/7.x/big-smile/svg?seed=${mix.creator.username || mix.creator._id}`}
+                  alt=""
+                />
+                <span className="landing-top3-creator-name">
+                  {mix.creator.name || mix.creator.username}
+                </span>
+              </div>
+            )}
           </div>
         ))}
       </div>

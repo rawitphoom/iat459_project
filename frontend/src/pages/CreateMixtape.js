@@ -87,17 +87,31 @@ export default function CreateMixtape() {
           if (m) max = Math.max(max, parseInt(m[1], 10));
         });
         setName(`My mixtape #${max + 1}`);
+        // Re-select after the async setName so the orange highlight is visible
+        // (the autofocus useEffect already ran by the time this fetch resolves,
+        // and the value change wiped the previous selection). Skip if the user
+        // has already focused/edited the input.
+        requestAnimationFrame(() => {
+          const el = nameInputRef.current;
+          if (!el) return;
+          // If the user is already typing in some other field, don't steal focus.
+          if (document.activeElement && document.activeElement !== document.body && document.activeElement !== el) return;
+          el.focus();
+          el.select();
+        });
       })
       .catch(() => {});
   }, [token]);
 
-  // Autofocus + select name input when wizard mounts
+  // Autofocus + select name input when the user lands on (or returns to) step 0.
+  // Critically NOT depending on `name` — re-selecting on every keystroke would
+  // make the next character overwrite the selection (one-char-only typing bug).
   useEffect(() => {
     if (step === 0 && nameInputRef.current) {
       nameInputRef.current.focus();
       nameInputRef.current.select();
     }
-  }, [step, name]);
+  }, [step]);
 
   // -------- image handling --------
   const handlePickImage = () => fileInputRef.current?.click();

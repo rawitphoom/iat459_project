@@ -108,7 +108,15 @@
       "Bash(curl -s \"https://mixtape-api-vuri.onrender.com/api/music/chart\" --max-time 30)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\([a.get\\('cover_big'\\) or a.get\\('cover'\\) for a in d.get\\('albums',[]\\)][:50], indent=0\\)\\)\")",
       "Bash(python3 -c ' *)",
-      "Bash(python3)"
+      "Bash(python3)",
+      "Bash(curl -s \"https://api.deezer.com/chart/0/albums?limit=50\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\([a.get\\('cover_big'\\) or a.get\\('cover_medium'\\) or a.get\\('cover'\\) for a in d.get\\('data', []\\)]\\)\\)\")",
+      "Bash(curl -s https://api.deezer.com/genre/__TRACKED_VAR__/artists)",
+      "Bash(grep -v \"^$\")",
+      "Bash(curl -s 'https://api.deezer.com/search/album?q=__TRACKED_VAR__&limit=10')",
+      "Bash(for q in \"rock\" \"pop\" \"metal\" \"jazz\" \"hip+hop\" \"indie\" \"electronic\" \"classical\" \"soul\" \"country\" \"punk\" \"ambient\"; do *)",
+      "Bash(awk '{printf \"  \\\\\"%s\\\\\",\\\\n\", $0}' /tmp/covers.txt)",
+      "Bash(awk '{gsub\\(\"1000x1000\", \"500x500\"\\); printf \"  \\\\\"%s\\\\\",\\\\n\", $0}' /tmp/covers.txt > /tmp/covers-formatted.txt; wc -l /tmp/covers-formatted.txt)"
     ]
   }
 }

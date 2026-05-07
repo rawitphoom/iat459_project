@@ -958,7 +958,23 @@ export default function ProfilePage() {
                     <div className="edit-mixtape-image-empty">♪</div>
                   )}
                 </div>
-                <button className="edit-mixtape-change-image" onClick={() => editFileInputRef.current?.click()}>CHANGE IMAGE</button>
+                <div className="edit-mixtape-image-actions">
+                  <button className="edit-mixtape-change-image" onClick={() => editFileInputRef.current?.click()}>CHANGE IMAGE</button>
+                  {editImage && (
+                    <button
+                      type="button"
+                      className="edit-mixtape-remove-image"
+                      onClick={() => {
+                        setEditImage("");
+                        // Reset the input so picking the SAME file again still triggers onChange
+                        if (editFileInputRef.current) editFileInputRef.current.value = "";
+                      }}
+                      title="Remove custom cover and fall back to the track-art mosaic"
+                    >
+                      REMOVE IMAGE
+                    </button>
+                  )}
+                </div>
                 <input ref={editFileInputRef} type="file" accept="image/*" hidden onChange={handleEditImageChange} />
               </div>
 

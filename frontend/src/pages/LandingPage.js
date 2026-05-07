@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState, useCallback, useContext } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import API_URL from "../config";
 import { SignInPopup } from "./AlbumDetail";
@@ -248,21 +248,14 @@ function ExploreCarousel({ navigate, token }) {
   const [analyser, setAnalyser] = useState(null);
   const eqColor = useDominantColor(tracks[center]?.cover);
 
-  // Fetch chart tracks with preview URLs (shuffled per visit so the carousel
-  // shows a different order each time the user lands on the page).
+  // Fetch chart tracks with preview URLs
   useEffect(() => {
     fetch(`${API_URL}/api/music/chart`)
       .then((r) => r.json())
       .then((data) => {
         if (data.tracks && data.tracks.length > 0) {
-          // Fisher–Yates shuffle on a copy so the same chart never plays in
-          // the same order twice in a row.
-          const pool = data.tracks.filter((t) => t.previewUrl && t.albumArt).slice();
-          for (let i = pool.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [pool[i], pool[j]] = [pool[j], pool[i]];
-          }
-          const withPreviews = pool
+          const withPreviews = data.tracks
+            .filter((t) => t.previewUrl && t.albumArt)
             .slice(0, 12)
             .map((t) => ({
               id: t.trackId,
@@ -602,7 +595,17 @@ export default function LandingPage() {
   const releasesTrackRef = useRef(null);
   const releasesWrapRef = useRef(null);
 
-  const count = ALBUMS.length;
+  // Shuffle the hero ring once per page load so visitors see the albums in a
+  // different order each visit (Fisher–Yates on a copy — never mutates ALBUMS).
+  const ringAlbums = useMemo(() => {
+    const a = ALBUMS.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }, []);
+  const count = ringAlbums.length;
   const angleStep = 360 / count;
   const [radius, setRadius] = useState(typeof window !== "undefined" && window.innerWidth < 768 ? 220 : 460);
 
@@ -743,7 +746,7 @@ export default function LandingPage() {
       <div className="landing">
         <div className="landing-ring-wrapper">
           <div className="landing-ring">
-            {ALBUMS.map((album, i) => (
+            {ringAlbums.map((album, i) => (
               <div
                 key={album.id}
                 className="landing-ring-item"

@@ -248,14 +248,21 @@ function ExploreCarousel({ navigate, token }) {
   const [analyser, setAnalyser] = useState(null);
   const eqColor = useDominantColor(tracks[center]?.cover);
 
-  // Fetch chart tracks with preview URLs
+  // Fetch chart tracks with preview URLs (shuffled per visit so the carousel
+  // shows a different order each time the user lands on the page).
   useEffect(() => {
     fetch(`${API_URL}/api/music/chart`)
       .then((r) => r.json())
       .then((data) => {
         if (data.tracks && data.tracks.length > 0) {
-          const withPreviews = data.tracks
-            .filter((t) => t.previewUrl && t.albumArt)
+          // Fisher–Yates shuffle on a copy so the same chart never plays in
+          // the same order twice in a row.
+          const pool = data.tracks.filter((t) => t.previewUrl && t.albumArt).slice();
+          for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+          }
+          const withPreviews = pool
             .slice(0, 12)
             .map((t) => ({
               id: t.trackId,

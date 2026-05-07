@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useRef, useState, useCallback, useContext } from "react";
+import { useEffect, useRef, useState, useCallback, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import API_URL from "../config";
 import { SignInPopup } from "./AlbumDetail";
@@ -595,17 +595,7 @@ export default function LandingPage() {
   const releasesTrackRef = useRef(null);
   const releasesWrapRef = useRef(null);
 
-  // Shuffle the hero ring once per page load so visitors see the albums in a
-  // different order each visit (Fisher–Yates on a copy — never mutates ALBUMS).
-  const ringAlbums = useMemo(() => {
-    const a = ALBUMS.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }, []);
-  const count = ringAlbums.length;
+  const count = ALBUMS.length;
   const angleStep = 360 / count;
   const [radius, setRadius] = useState(typeof window !== "undefined" && window.innerWidth < 768 ? 220 : 460);
 
@@ -746,7 +736,7 @@ export default function LandingPage() {
       <div className="landing">
         <div className="landing-ring-wrapper">
           <div className="landing-ring">
-            {ringAlbums.map((album, i) => (
+            {ALBUMS.map((album, i) => (
               <div
                 key={album.id}
                 className="landing-ring-item"

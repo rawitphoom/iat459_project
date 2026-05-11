@@ -584,6 +584,22 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
+      {/* Back button — only visible when viewing someone ELSE'S profile, so
+          the visitor knows how to return to wherever they came from. */}
+      {!isOwn && (
+        <button
+          type="button"
+          className="profile-back-btn"
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/discover"))}
+          aria-label="Back"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span>BACK</span>
+        </button>
+      )}
+
       {/* ======== HEADER ======== */}
       <div className="profile-header">
         <div className="profile-header-left">

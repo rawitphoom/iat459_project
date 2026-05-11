@@ -2689,6 +2689,34 @@ body:has(.profile-page) {
   font-size: 16px;
 }
 
+/* Back button — only rendered when viewing another user's profile. */
+.profile-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.65);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 9px 18px 9px 14px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  margin-bottom: 28px;
+}
+
+.profile-back-btn:hover {
+  color: #fff;
+  border-color: #DB4A1E;
+  background: rgba(219, 74, 30, 0.08);
+}
+
+.profile-back-btn svg {
+  flex-shrink: 0;
+}
+
 /* ---- Header ---- */
 .profile-header {
   display: flex;
@@ -7547,7 +7575,7 @@ body:has(.admin-page) {
 }
 
 .admin-mixtape-name {
-  font-family: 'Oswald', sans-serif;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -7555,14 +7583,14 @@ body:has(.admin-page) {
 }
 
 .admin-mixtape-tracks {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
   font-size: 11px;
   color: rgba(255,255,255,0.4);
   letter-spacing: 1px;
 }
 
 .admin-mixtape-creator {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
   font-size: 12px;
   color: rgba(255,255,255,0.45);
   padding: 0 16px;
@@ -7571,6 +7599,14 @@ body:has(.admin-page) {
 .admin-mixtape-card .admin-remove-btn {
   margin: 24px 16px 0;
   width: calc(100% - 32px);
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
+}
+
+/* Cover overlays (empty + small empty placeholders) within the mixtape tab
+   should also use DM Mono so the entire admin mixtape page is uniform. */
+.admin-mixtape-card .admin-mixtape-empty,
+.admin-mixtape-card .admin-mixtape-empty-sm {
+  font-family: 'DM Mono', 'Roboto Mono', monospace;
 }
 
 .admin-list-mixtape-thumb {

@@ -34,8 +34,17 @@ export default function Navbar() {
         { label: "REGISTER", path: "/register" },
       ];
 
-  const isActive = (path) =>
-    location.pathname === path || location.pathname.startsWith(path + "/");
+  const isActive = (path) => {
+    // PROFILE link should only highlight when the current page is the
+    // logged-in user's OWN profile. Visiting /profile/<someone-else> shows
+    // a different user, so leave PROFILE inactive there.
+    if (path === "/profile") {
+      if (location.pathname === "/profile") return true;
+      if (user?.id && location.pathname === `/profile/${user.id}`) return true;
+      return false;
+    }
+    return location.pathname === path || location.pathname.startsWith(path + "/");
+  };
 
   return (
     <>

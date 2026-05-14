@@ -281,7 +281,8 @@ body:has(.auth-page) {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  font-size: 14px;
+  /* 16px minimum prevents iOS Safari from auto-zooming on focus. */
+  font-size: 16px;
 }
 
 .primary-btn,
@@ -2105,7 +2106,8 @@ body:has(.wr-page) {
   border: none;
   color: #fff;
   font-family: 'DM Mono', monospace;
-  font-size: 14px;
+  /* 16px minimum prevents iOS Safari from auto-zooming on focus. */
+  font-size: 16px;
   outline: none;
 }
 
@@ -5108,7 +5110,8 @@ body:has(.discover-page) {
   outline: none;
   color: #fff;
   font-family: 'Roboto', Arial, sans-serif;
-  font-size: 15px;
+  /* 16px minimum prevents iOS Safari from auto-zooming on focus. */
+  font-size: 16px;
   padding: 16px 0;
 }
 
@@ -5445,7 +5448,8 @@ body:has(.discover-page) {
   }
 
   .discover-search-input {
-    font-size: 14px;
+    /* Stay at 16px on mobile too — anything smaller triggers iOS auto-zoom. */
+    font-size: 16px;
   }
 
   .discover-search-submit {
@@ -9345,7 +9349,8 @@ body:has(.admin-page) {
   border: none;
   color: #fff;
   font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 15px;
+  /* 16px minimum prevents iOS Safari from auto-zooming on focus. */
+  font-size: 16px;
   letter-spacing: 0;
   outline: none;
   padding: 16px 0;

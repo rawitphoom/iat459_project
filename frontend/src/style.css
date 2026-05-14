@@ -6245,7 +6245,8 @@ body:has(.discover-page) {
   padding: 10px 14px;
   color: #fff;
   font-family: 'Roboto', sans-serif;
-  font-size: 14px;
+  /* 16px minimum prevents iOS Safari from auto-zooming on input focus. */
+  font-size: 16px;
   outline: none;
 }
 
@@ -6261,7 +6262,8 @@ body:has(.discover-page) {
   padding: 10px 14px;
   color: #fff;
   font-family: 'Roboto', sans-serif;
-  font-size: 14px;
+  /* 16px minimum prevents iOS Safari from auto-zooming on textarea focus. */
+  font-size: 16px;
   resize: vertical;
   outline: none;
 }

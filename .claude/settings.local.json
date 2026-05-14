@@ -116,7 +116,9 @@
       "Bash(curl -s 'https://api.deezer.com/search/album?q=__TRACKED_VAR__&limit=10')",
       "Bash(for q in \"rock\" \"pop\" \"metal\" \"jazz\" \"hip+hop\" \"indie\" \"electronic\" \"classical\" \"soul\" \"country\" \"punk\" \"ambient\"; do *)",
       "Bash(awk '{printf \"  \\\\\"%s\\\\\",\\\\n\", $0}' /tmp/covers.txt)",
-      "Bash(awk '{gsub\\(\"1000x1000\", \"500x500\"\\); printf \"  \\\\\"%s\\\\\",\\\\n\", $0}' /tmp/covers.txt > /tmp/covers-formatted.txt; wc -l /tmp/covers-formatted.txt)"
+      "Bash(awk '{gsub\\(\"1000x1000\", \"500x500\"\\); printf \"  \\\\\"%s\\\\\",\\\\n\", $0}' /tmp/covers.txt > /tmp/covers-formatted.txt; wc -l /tmp/covers-formatted.txt)",
+      "Bash(awk '/@media/{m=NR; q=$0} /discover-/ && m && NR > 5400 {print q\" -> line \"NR\": \"$0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
+      "Bash(awk -F: 'NR>1 && $1+0 > 5380 && $1+0 < 5800 {print}')"
     ]
   }
 }

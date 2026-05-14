@@ -518,17 +518,33 @@ export default function CreateMixtape() {
       {/* Error */}
       {error && <p className="cm-wiz-error">{error}</p>}
 
-      {/* Floating centered Next/Save button */}
+      {/* Floating centered Next/Save button.
+          On the last step we pair the SAVE MIXTAPE button with a quick-access
+          back arrow on its left, so mobile users don't have to reach the
+          top-left back button while looking at the bottom action area. */}
       <div className="cm-wiz-floating-action">
         {isLast ? (
-          <button
-            type="button"
-            className="cm-wiz-next"
-            onClick={handleSave}
-            disabled={isSaving || selectedTracks.length === 0}
-          >
-            {isSaving ? "SAVING..." : "SAVE MIXTAPE"}
-          </button>
+          <>
+            <button
+              type="button"
+              className="cm-wiz-back-inline"
+              onClick={goBack}
+              aria-label="Back"
+              disabled={isSaving}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="cm-wiz-next"
+              onClick={handleSave}
+              disabled={isSaving || selectedTracks.length === 0}
+            >
+              {isSaving ? "SAVING..." : "SAVE MIXTAPE"}
+            </button>
+          </>
         ) : (
           <button
             type="button"

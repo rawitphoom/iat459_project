@@ -1164,6 +1164,13 @@ body::-webkit-scrollbar {
   overflow: hidden;
   display: flex;
   align-items: center;
+  /* Promote to its own compositing layer so iOS Safari doesn't repaint the
+     sticky pane while it transitions in/out of its sticky state. This
+     smooths the boundary between the releases scene and Popular Mixtapes. */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  contain: paint;
 }
 
 .landing-releases-left {

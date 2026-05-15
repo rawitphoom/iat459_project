@@ -631,9 +631,10 @@ export default function LandingPage() {
   }, []);
 
   // Scroll-driven horizontal scroll for New Releases.
-  // innerHeight/innerWidth are CACHED and only refreshed on resize, NOT read
-  // on every scroll frame — iOS Safari changes innerHeight as the URL bar
-  // collapses, which makes progress jump mid-scroll if we re-read it live.
+  // Every layout-reading property is CACHED and refreshed only on resize/
+  // orientation change — never on a scroll frame. Reading offsetHeight or
+  // scrollWidth during scroll forces a layout reflow on iOS Safari, which is
+  // the source of the jank/glitch right around section boundaries.
   useEffect(() => {
     const wrap = releasesWrapRef.current;
     const trackEl = releasesTrackRef.current;
@@ -642,41 +643,46 @@ export default function LandingPage() {
 
     let cachedVH = window.innerHeight;
     let cachedVW = window.innerWidth;
+    let cachedWrapH = wrap.offsetHeight;
+    let cachedTrackW = trackEl.scrollWidth;
 
     const handleScroll = () => {
       const rect = wrap.getBoundingClientRect();
-      const totalScroll = wrap.offsetHeight - cachedVH;
+      const totalScroll = cachedWrapH - cachedVH;
+      if (totalScroll <= 0) return;
       const scrolled = -rect.top;
       const progress = Math.min(Math.max(scrolled / totalScroll, 0), 1);
 
       // Drive horizontal translate from vertical scroll progress
-      const maxTranslate = trackEl.scrollWidth - cachedVW;
-      trackEl.style.transform = `translateX(${-progress * maxTranslate}px)`;
+      const maxTranslate = Math.max(0, cachedTrackW - cachedVW);
+      trackEl.style.transform = `translate3d(${-progress * maxTranslate}px, 0, 0)`;
 
       // Fade out "NEW RELEASES" text as albums scroll in
       if (textEl) {
         const fadeProgress = Math.min(progress * 3, 1); // fade faster
         const scale = 1 - fadeProgress * 0.6;
         const opacity = 1 - fadeProgress;
-        textEl.style.transform = `translateY(-50%) scale(${scale})`;
+        textEl.style.transform = `translate3d(0, -50%, 0) scale(${scale})`;
         textEl.style.opacity = opacity;
       }
     };
 
-    const refreshViewport = () => {
+    const refreshLayout = () => {
       cachedVH = window.innerHeight;
       cachedVW = window.innerWidth;
+      cachedWrapH = wrap.offsetHeight;
+      cachedTrackW = trackEl.scrollWidth;
       handleScroll();
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", refreshViewport);
-    window.addEventListener("orientationchange", refreshViewport);
+    window.addEventListener("resize", refreshLayout);
+    window.addEventListener("orientationchange", refreshLayout);
     handleScroll();
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", refreshViewport);
-      window.removeEventListener("orientationchange", refreshViewport);
+      window.removeEventListener("resize", refreshLayout);
+      window.removeEventListener("orientationchange", refreshLayout);
     };
   }, [newReleases]);
 
@@ -706,17 +712,19 @@ export default function LandingPage() {
   const featuresWrapRef = useRef(null);
   const [featuresProgress, setFeaturesProgress] = useState(-1);
 
-  // Features scroll-driver. Same iOS fix as the releases handler — cache the
-  // viewport height once so the URL bar collapsing during scroll doesn't make
-  // the active feature index jump unexpectedly.
+  // Features scroll-driver. Layout reads (innerHeight, offsetHeight) are
+  // cached on resize/orientation change so the scroll handler never triggers
+  // a layout reflow — keeps the slides smooth on iOS Safari.
   useEffect(() => {
     let cachedVH = window.innerHeight;
+    let cachedWrapH = featuresWrapRef.current?.offsetHeight || 0;
 
     const handleScroll = () => {
       const wrap = featuresWrapRef.current;
       if (!wrap) return;
+      const totalScroll = cachedWrapH - cachedVH;
+      if (totalScroll <= 0) return;
       const rect = wrap.getBoundingClientRect();
-      const totalScroll = wrap.offsetHeight - cachedVH;
       const scrolled = -rect.top;
       const progress = Math.min(Math.max(scrolled / totalScroll, 0), 1);
       // Hold the title for the first bit, then advance through each feature.
@@ -733,19 +741,20 @@ export default function LandingPage() {
       setFeaturesProgress(idx);
     };
 
-    const refreshViewport = () => {
+    const refreshLayout = () => {
       cachedVH = window.innerHeight;
+      cachedWrapH = featuresWrapRef.current?.offsetHeight || 0;
       handleScroll();
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", refreshViewport);
-    window.addEventListener("orientationchange", refreshViewport);
+    window.addEventListener("resize", refreshLayout);
+    window.addEventListener("orientationchange", refreshLayout);
     handleScroll();
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", refreshViewport);
-      window.removeEventListener("orientationchange", refreshViewport);
+      window.removeEventListener("resize", refreshLayout);
+      window.removeEventListener("orientationchange", refreshLayout);
     };
   }, []);
 

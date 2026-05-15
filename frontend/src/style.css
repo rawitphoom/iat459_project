@@ -5680,6 +5680,16 @@ body:has(.discover-page) {
   font-family: inherit;
 }
 
+/* Grid items default to min-width: auto, which keeps them from shrinking
+   below their intrinsic content width. With long track titles that means
+   the row gets wider than the viewport and the action buttons on the right
+   get pushed off-screen. min-width: 0 lets the inner flex layout actually
+   ellipsize the title and keep the row inside the viewport. */
+.songs-list .track-row {
+  min-width: 0;
+  overflow: hidden;
+}
+
 /* Override track-row for dark theme on Discover page */
 .discover-page .track-row {
   background: transparent;

@@ -121,7 +121,14 @@
       "Bash(awk -F: 'NR>1 && $1+0 > 5380 && $1+0 < 5800 {print}')",
       "Bash(grep -nB1 \"font-size: 1[0-5]px\" /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
       "Bash(xargs -I{} echo {})",
-      "Bash(awk ' *)"
+      "Bash(awk ' *)",
+      "Bash(curl -s \"https://iat459-project.vercel.app/static/css/main.c19114fb.css\")",
+      "Bash(curl -sI \"https://iat459-project.vercel.app/static/css/main.c19114fb.css\")",
+      "Bash(awk '/^@media/{m=$0; mln=NR} /landing-top3 / && m {print mln\": \"m\" -> line \"NR\": \"$0}' /Users/rawitphoom/Documents/GitHub/iat459_project/frontend/src/style.css)",
+      "Bash(curl -s \"https://iat459-project.vercel.app/static/js/main.e01c671d.js\")",
+      "Bash(curl -sI \"https://mixtape-api-vuri.onrender.com/api/music/chart\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('tracks count:', len\\(d.get\\('tracks', []\\)\\)\\); t=d.get\\('tracks',[]\\)[:2]; print\\(json.dumps\\(t, indent=2\\)[:400]\\)\")",
+      "Bash(curl -sH \"Origin: https://iat459-project.vercel.app\" -H \"Referer: https://iat459-project.vercel.app/\" \"https://mixtape-api-vuri.onrender.com/api/music/chart\" -I)"
     ]
   }
 }

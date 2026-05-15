@@ -630,21 +630,27 @@ export default function LandingPage() {
       .catch(() => {});
   }, []);
 
-  // Scroll-driven horizontal scroll for New Releases
+  // Scroll-driven horizontal scroll for New Releases.
+  // innerHeight/innerWidth are CACHED and only refreshed on resize, NOT read
+  // on every scroll frame — iOS Safari changes innerHeight as the URL bar
+  // collapses, which makes progress jump mid-scroll if we re-read it live.
   useEffect(() => {
     const wrap = releasesWrapRef.current;
     const trackEl = releasesTrackRef.current;
     const textEl = releasesLeftRef.current;
     if (!wrap || !trackEl) return;
 
+    let cachedVH = window.innerHeight;
+    let cachedVW = window.innerWidth;
+
     const handleScroll = () => {
       const rect = wrap.getBoundingClientRect();
-      const totalScroll = wrap.offsetHeight - window.innerHeight;
+      const totalScroll = wrap.offsetHeight - cachedVH;
       const scrolled = -rect.top;
       const progress = Math.min(Math.max(scrolled / totalScroll, 0), 1);
 
       // Drive horizontal translate from vertical scroll progress
-      const maxTranslate = trackEl.scrollWidth - window.innerWidth;
+      const maxTranslate = trackEl.scrollWidth - cachedVW;
       trackEl.style.transform = `translateX(${-progress * maxTranslate}px)`;
 
       // Fade out "NEW RELEASES" text as albums scroll in
@@ -657,9 +663,21 @@ export default function LandingPage() {
       }
     };
 
+    const refreshViewport = () => {
+      cachedVH = window.innerHeight;
+      cachedVW = window.innerWidth;
+      handleScroll();
+    };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", refreshViewport);
+    window.addEventListener("orientationchange", refreshViewport);
     handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", refreshViewport);
+      window.removeEventListener("orientationchange", refreshViewport);
+    };
   }, [newReleases]);
 
   // Intersection Observer for scroll-reveal animations
@@ -688,12 +706,17 @@ export default function LandingPage() {
   const featuresWrapRef = useRef(null);
   const [featuresProgress, setFeaturesProgress] = useState(-1);
 
+  // Features scroll-driver. Same iOS fix as the releases handler — cache the
+  // viewport height once so the URL bar collapsing during scroll doesn't make
+  // the active feature index jump unexpectedly.
   useEffect(() => {
+    let cachedVH = window.innerHeight;
+
     const handleScroll = () => {
       const wrap = featuresWrapRef.current;
       if (!wrap) return;
       const rect = wrap.getBoundingClientRect();
-      const totalScroll = wrap.offsetHeight - window.innerHeight;
+      const totalScroll = wrap.offsetHeight - cachedVH;
       const scrolled = -rect.top;
       const progress = Math.min(Math.max(scrolled / totalScroll, 0), 1);
       // Hold the title for the first bit, then advance through each feature.
@@ -710,9 +733,20 @@ export default function LandingPage() {
       setFeaturesProgress(idx);
     };
 
+    const refreshViewport = () => {
+      cachedVH = window.innerHeight;
+      handleScroll();
+    };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", refreshViewport);
+    window.addEventListener("orientationchange", refreshViewport);
     handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", refreshViewport);
+      window.removeEventListener("orientationchange", refreshViewport);
+    };
   }, []);
 
 

@@ -5492,7 +5492,7 @@ body:has(.discover-page) {
 @media (max-width: 600px) {
   /* Tracks list — tighten rows so each track fits comfortably on narrow phones. */
   .discover-page .track-row {
-    gap: 12px;
+    gap: 10px;
     padding: 8px 6px;
   }
   .discover-page .track-art {
@@ -5509,8 +5509,31 @@ body:has(.discover-page) {
     width: 22px;
     font-size: 13px;
   }
-  .discover-track-heart {
+
+  /* Make sure the heart + play buttons are visible and pinned to the right
+     edge instead of getting pushed off-screen by long track titles. */
+  .discover-page .track-actions {
+    flex-shrink: 0;
+    margin-left: auto;
+    gap: 4px;
+  }
+  .discover-page .discover-track-heart {
     padding: 4px;
+    color: rgba(255, 255, 255, 0.7);
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+  .discover-page .discover-track-heart svg {
+    width: 18px;
+    height: 18px;
+  }
+  .discover-page .icon-btn {
+    width: 32px;
+    height: 32px;
+    color: #fff;
+    font-size: 14px;
+    flex-shrink: 0;
   }
 }
 
@@ -5530,7 +5553,7 @@ body:has(.discover-page) {
 
   /* Even tighter tracks on small phones. */
   .discover-page .track-row {
-    gap: 10px;
+    gap: 8px;
     padding: 6px 4px;
   }
   .discover-page .track-art {
@@ -5546,6 +5569,14 @@ body:has(.discover-page) {
   .discover-page .track-number {
     width: 18px;
     font-size: 12px;
+  }
+  .discover-page .track-actions {
+    gap: 2px;
+  }
+  .discover-page .discover-track-heart,
+  .discover-page .icon-btn {
+    width: 30px;
+    height: 30px;
   }
 }
 

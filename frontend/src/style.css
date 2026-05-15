@@ -1088,8 +1088,13 @@ html, body {
   scrollbar-width: none;
   /* Prevent stray horizontal scroll caused by hero slide-in animations and
      other off-screen-positioned elements. The whole site is intentionally
-     vertical-scroll only. */
-  overflow-x: hidden;
+     vertical-scroll only.
+
+     NOTE: must use `clip` here, not `hidden`. `overflow-x: hidden` on the root
+     creates a scroll container which breaks `position: sticky` on every
+     descendant (the landing page scroll-driven scenes rely on sticky panes).
+     `overflow-x: clip` clips overflow without affecting sticky. */
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -4785,8 +4790,9 @@ body:has(.discover-page) {
   margin: 0 auto;
   box-sizing: border-box;
   /* Clip the hero's slide-from-left intro so nothing pokes past the viewport
-     and causes a horizontal scrollbar on mobile. */
-  overflow-x: hidden;
+     and causes a horizontal scrollbar on mobile. Using `clip` (not `hidden`)
+     so descendant `position: sticky` continues to work. */
+  overflow-x: clip;
 }
 
 /* ---- Hero title ---- */
